@@ -369,7 +369,6 @@ cog.render = function (layoutSrc) {
     var layout;
     step_start();
     function step_start() {
-        cog.init();
         cog.xhr(layoutSrc, function (xhr) {
             if (xhr.readyState == 4) {
                 if (xhr.status == 200) {
@@ -665,3 +664,4 @@ cog.getScript = function (url, callback) {
         }
     });
 };
+cog.init();
