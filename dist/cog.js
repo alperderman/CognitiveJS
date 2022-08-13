@@ -107,7 +107,7 @@ cog.newBind = function (arg) {
     }
 };
 cog.bind = function (node, nodeParam1, nodeParam2) {
-    var nodeProp, nodePropData;
+    var nodeProp, nodePropData, nodeAttr;
     if (typeof node === 'string') {
         cog.get(node, nodeParam1, nodeParam2);
         return function (val, callback) {
@@ -116,6 +116,7 @@ cog.bind = function (node, nodeParam1, nodeParam2) {
     } else {
         if (nodeParam1 != null) {
             nodePropData = nodeParam1;
+            node.setAttribute(cog.labelProp, nodeParam1);
         } else {
             nodePropData = node.getAttribute(cog.labelProp);
         }
@@ -133,9 +134,15 @@ cog.bind = function (node, nodeParam1, nodeParam2) {
             if (typeof nodeParam2 === 'string') {
                 node.setAttribute(cog.labelBind, nodeParam2);
             } else {
-                nodeParam2.forEach(function (bind) {
-                    node.setAttribute(cog.labelBind, bind);
+                nodeAttr = "";
+                nodeParam2.forEach(function (bind, i) {
+                    if (i != nodeParam2.length-1) {
+                        nodeAttr += bind+",";
+                    } else {
+                        nodeAttr += bind;
+                    }
                 });
+                node.setAttribute(cog.labelBind, nodeAttr);
             }
         }
         if (Array.isArray(nodeProp)) {
