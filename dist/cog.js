@@ -57,7 +57,7 @@ cog.get = function (key, val, callback) {
             elem = elems[i];
             elemBind = elem.getAttribute(cog.labelBind);
             if (elemBind.indexOf(key) != -1 || key.indexOf(elemBind) != -1) {
-                elemBindSplit = elemBind.split(",");
+                elemBindSplit = cog.parseBind(elemBind);
                 for (ii = 0;ii < elemBindSplit.length;ii++) {
                     if (elemBindSplit[ii].trim().indexOf(key) === 0 || key.indexOf(elemBindSplit[ii].trim()) === 0) {
                         bound = true;
@@ -71,6 +71,40 @@ cog.get = function (key, val, callback) {
             }
             i++;
             rebind(key, i);
+        }
+    }
+    return result;
+};
+cog.getElementBind = function (elem) {
+    var elemBinds = elem.getAttribute(cog.labelBind), binds;
+    if (elemBinds != null) {
+        binds = [];
+        cog.parseBind(elemBinds).forEach(function (bind) {
+            binds.push(bind.trim());
+        });
+    }
+    return binds;
+};
+cog.getElementProp = function (elem) {
+    var elemProps = elem.getAttribute(cog.labelProp), props;
+    if (elemProps != null) {
+        props = cog.parseProp(elemProps);
+    }
+    return props;
+};
+cog.parseSet = function (str) {
+    return str.split(":");
+};
+cog.parseBind = function (str) {
+    return str.split(",");
+};
+cog.parseProp = function (str) {
+    var result = cog.isValidJSON(str);
+    if (!result) {
+        if (str.trim().indexOf("{") === 0) {
+            result = eval("(["+str+"])");
+        } else {
+            result = eval("({"+str+"})");
         }
     }
     return result;
@@ -89,51 +123,67 @@ cog.newBind = function (arg) {
         cog.bindTypes[arg.name][cog.bindKeySet] = function (elem, key) {arg.set(elem, key);};
     }
 };
-cog.bind = function (node, nodeParam1, nodeParam2) {
+cog.bind = function (node, arg) {
     var nodeProp, nodePropData, nodeAttr;
+    if (!arg) {arg = {};}
     if (typeof node === 'string') {
-        cog.get(node, nodeParam1, nodeParam2);
+        cog.get(node, arg.value, arg.callback);
         return function (val, callback) {
             return cog.get(node, val, callback);
         };
     } else {
-        if (nodeParam1 != null) {
-            nodePropData = nodeParam1;
-            node.setAttribute(cog.labelProp, nodeParam1);
+        if (arg.prop !== undefined) {
+            if (arg.prop == "" || Object.keys(arg.prop).length == 0) {
+                node.removeAttribute(cog.labelProp);
+                nodePropData = null;
+            } else {
+                nodePropData = arg.prop;
+            }
+            if (typeof arg.prop === 'string' && arg.prop != "") {
+                node.setAttribute(cog.labelProp, arg.prop);
+            }
+            if (typeof arg.prop !== 'string' && Object.keys(arg.prop).length != 0) {
+                node.setAttribute(cog.labelProp, JSON.stringify(arg.prop));
+            }
         } else {
             nodePropData = node.getAttribute(cog.labelProp);
         }
-        if (typeof nodePropData === 'string') {
-            nodeProp = cog.isValidJSON(nodePropData);
-            if (!nodeProp) {
-                if (nodePropData.trim().indexOf("{") === 0) {
-                    nodeProp = eval("(["+nodePropData+"])");
+        if (typeof nodePropData === 'string' && nodePropData != null) {
+            nodeProp = cog.parseProp(nodePropData);
+        } else {
+            nodeProp = nodePropData;
+        }
+        if (arg.bind !== undefined) {
+            if (typeof arg.bind === 'string') {
+                if (arg.bind != "") {
+                    node.setAttribute(cog.labelBind, arg.bind);
                 } else {
-                    nodeProp = eval("({"+nodePropData+"})");
+                    node.removeAttribute(cog.labelBind);
+                }
+            } else {
+                if (arg.bind.length > 0) {
+                    nodeAttr = "";
+                    arg.bind.forEach(function (bind, i) {
+                        if (i != arg.bind.length-1) {
+                            nodeAttr += bind+",";
+                        } else {
+                            nodeAttr += bind;
+                        }
+                    });
+                    node.setAttribute(cog.labelBind, nodeAttr);
+                } else {
+                    node.removeAttribute(cog.labelBind);
                 }
             }
         }
-        if (nodeParam2 != null) {
-            if (typeof nodeParam2 === 'string') {
-                node.setAttribute(cog.labelBind, nodeParam2);
-            } else {
-                nodeAttr = "";
-                nodeParam2.forEach(function (bind, i) {
-                    if (i != nodeParam2.length-1) {
-                        nodeAttr += bind+",";
-                    } else {
-                        nodeAttr += bind;
-                    }
+        if (nodeProp != null) {
+            if (Array.isArray(nodeProp)) {
+                nodeProp.forEach(function (prop, i) {
+                    bind_prop(node, prop, nodeProp, i);
                 });
-                node.setAttribute(cog.labelBind, nodeAttr);
+            } else {
+                bind_prop(node, nodeProp);
             }
-        }
-        if (Array.isArray(nodeProp)) {
-            nodeProp.forEach(function (prop, i) {
-                bind_prop(node, prop, nodeProp, i);
-            });
-        } else {
-            bind_prop(node, nodeProp);
         }
     }
     function bind_prop(node, prop, props, propIndex) {
@@ -412,8 +462,8 @@ cog.render = function (layoutSrc) {
         var elem, attr, type, key, bindType;
         while (elem = document.querySelector("["+cog.labelSet+"]")) {
             attr = elem.getAttribute(cog.labelSet);
-            type = attr.split(":")[0];
-            key = attr.split(":")[1].trim();
+            type = cog.parseSet(attr)[0];
+            key = cog.parseSet(attr)[1].trim();
             for (bindType in cog.bindTypes) {
                 if (cog.bindTypes[bindType][cog.bindKeySet] != null && type == bindType) {
                     cog.bindTypes[bindType][cog.bindKeySet](elem, key);
