@@ -1,22 +1,22 @@
 //CognitiveJS
 
-//mergeDeep()
 if (!Object.assign) { Object.defineProperty(Object, 'assign', { enumerable: false, configurable: true, writable: true, value: function(target) { 'use strict'; if (target === undefined || target === null) { throw new TypeError('Cannot convert first argument to object'); } var to = Object(target); for (var i = 1; i < arguments.length; i++) { var nextSource = arguments[i]; if (nextSource === undefined || nextSource === null) { continue; } nextSource = Object(nextSource); var keysArray = Object.keys(Object(nextSource)); for (var nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex++) { var nextKey = keysArray[nextIndex]; var desc = Object.getOwnPropertyDescriptor(nextSource, nextKey); if (desc !== undefined && desc.enumerable) { to[nextKey] = nextSource[nextKey]; } } } return to; } }); }
-//DOMLoad()
 if (typeof window.CustomEvent !== 'function') { window.CustomEvent = function (event, params) { params = params || {bubbles: false, cancelable: false, detail: null}; var evt = document.createEvent('CustomEvent'); evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail); return evt; }; }
 
 var cog = {};
 cog.cacheRender = false;
-cog.after = undefined;
-cog.before = undefined;
 cog.tokenDelimiter = "%";
 cog.labelSet = "data-set";
 cog.labelBind = "data-bind";
 cog.labelProp = "data-prop";
 cog.labelSource = "data-src";
 cog.labelSourceAsync = "async";
-cog.labelSourceObj= "data-obj";
-cog.labelSourceMet= "data-met";
+cog.labelSourceObj = "data-obj";
+cog.labelSourceMet = "data-met";
+cog.eventBeforeData = "COGBeforeData";
+cog.eventAfterData = "COGAfterData";
+cog.eventBeforeRender = "COGBeforeRender";
+cog.eventAfterRender = "COGAfterRender";
 cog.bindKeySet = "set";
 cog.bindKeyBindCondition = "bindCondition";
 cog.bindKeyBind = "bind";
@@ -31,23 +31,6 @@ cog.regexHead = new RegExp("<head[^>]*>((.|[\\n\\r])*)<\\/head>", "im");
 cog.regexBody = new RegExp("<body[^>]*>((.|[\\n\\r])*)<\\/body>", "im");
 cog.regexScripts = new RegExp("<script[^>]*>([\\s\\S]*?)<\\/script>", "gim");
 
-cog.set = function (callback) {
-    var elem, attr, type, key, bindType;
-    while (elem = document.querySelector("["+cog.labelSet+"]")) {
-        attr = elem.getAttribute(cog.labelSet);
-        type = attr.split(":")[0];
-        key = attr.split(":")[1].trim();
-        for (bindType in cog.bindTypes) {
-            if (cog.bindTypes[bindType][cog.bindKeySet] != null && type == bindType) {
-                cog.bindTypes[bindType][cog.bindKeySet](elem, key);
-            }
-        }
-        elem.parentNode.removeChild(elem);
-    }
-    if (typeof callback !== 'undefined') {
-        callback();
-    }
-};
 cog.get = function (key, val, callback) {
     if (key == null) {return;}
     var result, old, changed = [];
@@ -55,10 +38,10 @@ cog.get = function (key, val, callback) {
         result = val;
         if (eval("cog.data."+key) != val) {
             old = eval("cog.data."+key);
-            document.dispatchEvent(new CustomEvent('onBeforeDataChange', {detail:{key:key, old:old, new:val}}));
+            document.dispatchEvent(new CustomEvent(cog.eventBeforeData, {detail:{key:key, old:old, new:val}}));
             eval("cog.data."+key+" = val");
             rebind(key);
-            document.dispatchEvent(new CustomEvent('onAfterDataChange', {detail:{elems:changed, key:key, old:old, new:val}}));
+            document.dispatchEvent(new CustomEvent(cog.eventAfterData, {detail:{elems:changed, key:key, old:old, new:val}}));
         }
     } else {
         result = eval("cog.data."+key);
@@ -124,9 +107,9 @@ cog.bind = function (node, nodeParam1, nodeParam2) {
             nodeProp = cog.isValidJSON(nodePropData);
             if (!nodeProp) {
                 if (nodePropData.trim().indexOf("{") === 0) {
-                    nodeProp = eval("(["+nodePropData.trim()+"])");
+                    nodeProp = eval("(["+nodePropData+"])");
                 } else {
-                    nodeProp = eval("({"+nodePropData.trim()+"})");
+                    nodeProp = eval("({"+nodePropData+"})");
                 }
             }
         }
@@ -285,7 +268,9 @@ cog.init = function () {
             var propData;
             if (prop.current != null && (prop.if == null || !cog.checkIf(prop.if))) {
                 prop.current.split(" ").forEach(function (str) {
-                    elem.classList.remove(str);
+                    if (str != "") {
+                        elem.classList.remove(str);
+                    }
                 });
                 if (props != null) {
                     delete props[propIndex].current;
@@ -305,7 +290,9 @@ cog.init = function () {
                     elem.setAttribute(cog.labelProp, JSON.stringify(prop));
                 }
                 propData.split(" ").forEach(function (str) {
-                    elem.classList.add(str);
+                    if (str != "") {
+                        elem.classList.add(str);
+                    }
                 });
             }
         }
@@ -407,7 +394,7 @@ cog.render = function (layoutSrc) {
         if (node != document.body.innerHTML || i == 1) {
             node = document.body.innerHTML;
             step_ext(function () {
-                cog.set(function () {
+                step_set(function () {
                     i++;
                     recursive_parse(i, node);
                 });
@@ -421,6 +408,23 @@ cog.render = function (layoutSrc) {
             callback();
         });
     }
+    function step_set(callback) {
+        var elem, attr, type, key, bindType;
+        while (elem = document.querySelector("["+cog.labelSet+"]")) {
+            attr = elem.getAttribute(cog.labelSet);
+            type = attr.split(":")[0];
+            key = attr.split(":")[1].trim();
+            for (bindType in cog.bindTypes) {
+                if (cog.bindTypes[bindType][cog.bindKeySet] != null && type == bindType) {
+                    cog.bindTypes[bindType][cog.bindKeySet](elem, key);
+                }
+            }
+            elem.parentNode.removeChild(elem);
+        }
+        if (typeof callback !== 'undefined') {
+            callback();
+        }
+    }
     function step_styles() {
         var i, links = document.getElementsByTagName("link"), link;
         for (i = 0; i < links.length;i++) {
@@ -433,12 +437,12 @@ cog.render = function (layoutSrc) {
         }, 0);
     }
     function step_bind() {
-        if (typeof cog.before !== 'undefined') {
-            cog.before();
-        }
-        cog.bindAll(function () {
-            step_scripts();
-        });
+        document.dispatchEvent(new CustomEvent(cog.eventBeforeRender));
+        setTimeout(function () {
+            cog.bindAll(function () {
+                step_scripts();
+            });
+        }, 0);
     }
     function step_scripts() {
         cog.loadScriptsNS(document.getElementsByTagName("script"), function () {
@@ -450,9 +454,9 @@ cog.render = function (layoutSrc) {
             document.getElementById(window.location.hash.slice(1)).scrollIntoView();
         }
         cog.DOMLoad();
-        if (typeof cog.after !== 'undefined') {
-            cog.after();
-        }
+        setTimeout(function () {
+            document.dispatchEvent(new CustomEvent(cog.eventAfterRender));
+        }, 0);
     }
 };
 cog.isValidJSON = function (str) {
