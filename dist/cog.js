@@ -36,15 +36,15 @@ cog.get = function (key, val, callback) {
     var result, old, changed = [];
     if (val != null) {
         result = val;
-        if (eval("cog.data."+key) != val) {
-            old = eval("cog.data."+key);
+        if (cog.eval("cog.data."+key) != val) {
+            old = cog.eval("cog.data."+key);
             document.dispatchEvent(new CustomEvent(cog.eventBeforeData, {detail:{key:key, old:old, new:val}}));
             eval("cog.data."+key+" = val");
             rebind(key);
             document.dispatchEvent(new CustomEvent(cog.eventAfterData, {detail:{elems:changed, key:key, old:old, new:val}}));
         }
     } else {
-        result = eval("cog.data."+key);
+        result = cog.eval("cog.data."+key);
     }
     if (typeof callback !== 'undefined') {
         callback({elems:changed, key:key, old:old, new:val});
@@ -102,9 +102,9 @@ cog.parseProp = function (str) {
     var result = cog.isValidJSON(str);
     if (!result) {
         if (str.trim().indexOf("{") === 0) {
-            result = eval("(["+str+"])");
+            result = cog.eval("(["+str+"])");
         } else {
-            result = eval("({"+str+"})");
+            result = cog.eval("({"+str+"})");
         }
     }
     return result;
@@ -125,7 +125,7 @@ cog.newBind = function (arg) {
 };
 cog.bind = function (node, arg) {
     var nodeProp, nodePropData, nodeAttr;
-    if (!arg) {arg = {};}
+    if (arg == null) {arg = {};}
     if (typeof node === 'string') {
         cog.get(node, arg.value, arg.callback);
         return function (val, callback) {
@@ -197,16 +197,18 @@ cog.bind = function (node, arg) {
         }
     }
 };
-cog.bindAll = function (callback, i) {
-    if (i == null) {i = 0;}
+cog.bindAll = function (arg) {
+    if (arg == null) {arg = {};}
+    if (arg.i == null) {arg.i = 0;}
+    if (arg.i == 0 && arg.data != null) {cog.data = arg.data;}
     var elems = document.querySelectorAll("["+cog.labelProp+"]");
-    if (i < elems.length) {
-        cog.bind(elems[i]);
-        i++;
-        cog.bindAll(callback, i);
+    if (arg.i < elems.length) {
+        cog.bind(elems[arg.i]);
+        arg.i++;
+        cog.bindAll(arg);
     } else {
-        if (typeof callback !== 'undefined') {
-            callback();
+        if (typeof arg.callback !== 'undefined') {
+            arg.callback();
         }
     }
 };
@@ -259,11 +261,14 @@ cog.replaceToken = function (node, replace) {
     }
 };
 cog.checkIf = function (str) {
-    if (str != null && eval(cog.replaceToken(str, function (pure) {return "cog.data."+pure;}))) {
+    if (str != null && cog.eval(cog.replaceToken(str, function (pure) {return "cog.data."+pure;}))) {
         return true;
     } else {
         return false;
     }
+};
+cog.eval = function (str) {
+    try {return eval(str);} catch (e) {}
 };
 cog.init = function () {
     cog.newBind({
@@ -277,8 +282,8 @@ cog.init = function () {
         bindCondition: "prop.text != null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
             var propData;
-            propData = eval("cog.data."+prop.text.trim());
-            if (propData) {
+            propData = cog.eval("cog.data."+prop.text.trim());
+            if (propData != null) {
                 elem.innerText = propData;
             }
         },
@@ -291,8 +296,8 @@ cog.init = function () {
         bindCondition: "prop.html != null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
             var propData;
-            propData = eval("cog.data."+prop.html.trim());
-            if (propData) {
+            propData = cog.eval("cog.data."+prop.html.trim());
+            if (propData != null) {
                 elem.innerHTML = propData;
             }
         },
@@ -331,19 +336,21 @@ cog.init = function () {
                 }
             }
             if (prop.if == null || cog.checkIf(prop.if)) {
-                propData = cog.replaceToken(prop.class.trim(), function (pure) {return eval("cog.data."+pure);});
-                if (props != null) {
-                    props[propIndex].current = propData;
-                    elem.setAttribute(cog.labelProp, JSON.stringify(props));
-                } else {
-                    prop.current = propData;
-                    elem.setAttribute(cog.labelProp, JSON.stringify(prop));
-                }
-                propData.split(" ").forEach(function (str) {
-                    if (str != "") {
-                        elem.classList.add(str);
+                propData = cog.replaceToken(prop.class.trim(), function (pure) {return cog.eval("cog.data."+pure);});
+                if (propData != null) {
+                    if (props != null) {
+                        props[propIndex].current = propData;
+                        elem.setAttribute(cog.labelProp, JSON.stringify(props));
+                    } else {
+                        prop.current = propData;
+                        elem.setAttribute(cog.labelProp, JSON.stringify(prop));
                     }
-                });
+                    propData.split(" ").forEach(function (str) {
+                        if (str != "") {
+                            elem.classList.add(str);
+                        }
+                    });
+                }
             }
         }
     });
@@ -353,9 +360,11 @@ cog.init = function () {
         bind: function (elem, prop, props, propIndex) {
             var propData;
             propData = cog.replaceToken(prop.data, function (pure) {
-                return eval("cog.data."+pure);
+                return cog.eval("cog.data."+pure);
             });
-            elem.setAttribute(prop.attr, propData);
+            if (propData != null) {
+                elem.setAttribute(prop.attr, propData);
+            }
         }
     });
     cog.newBind({
@@ -384,32 +393,34 @@ cog.init = function () {
         bindCondition: "prop.repeat != null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
             var propData, template, repeatVal, parent = prop.repeat.split(" ")[0], alias = prop.repeat.split(" ")[2];
-            propData = eval("cog.data."+parent);
-            if (!cog.templates[prop.temp]) {
-                cog.templates[prop.temp] = elem.cloneNode(true);
-            }
-            repeatVal = "";
-            propData.forEach(function (arr, i) {
-                template = cog.templates[prop.temp].cloneNode(true);
-                cog.replaceToken(template, function (pure) {
-                    var result = null;
-                    if (pure == alias) {
-                        result = parent+"["+i+"]";
-                    }
-                    cog.repeatKeywords.forEach(function (self) {
-                        if (eval(self.if)) {
-                            result = eval(self.val);
+            propData = cog.eval("cog.data."+parent);
+            if (propData != null) {
+                if (!cog.templates[prop.temp]) {
+                    cog.templates[prop.temp] = elem.cloneNode(true);
+                }
+                repeatVal = "";
+                propData.forEach(function (arr, i) {
+                    template = cog.templates[prop.temp].cloneNode(true);
+                    cog.replaceToken(template, function (pure) {
+                        var result = null;
+                        if (pure == alias) {
+                            result = parent+"["+i+"]";
                         }
+                        cog.repeatKeywords.forEach(function (self) {
+                            if (eval(self.if)) {
+                                result = eval(self.val);
+                            }
+                        });
+                        return result;
                     });
-                    return result;
+                    repeatVal += template.innerHTML;
                 });
-                repeatVal += template.innerHTML;
-            });
-            elem.innerHTML = repeatVal;
+                elem.innerHTML = repeatVal; 
+            }
         }
     });
 };
-cog.render = function (layoutSrc) {
+cog.render = function (layoutSrc, data) {
     var layout;
     step_start();
     function step_start() {
@@ -489,8 +500,9 @@ cog.render = function (layoutSrc) {
     function step_bind() {
         document.dispatchEvent(new CustomEvent(cog.eventBeforeRender));
         setTimeout(function () {
-            cog.bindAll(function () {
-                step_scripts();
+            cog.bindAll({
+                data: data,
+                callback: function () {step_scripts();}
             });
         }, 0);
     }
@@ -569,7 +581,7 @@ cog.loadContents = function (el, callback) {
         data = node.getAttribute(cog.labelSourceObj);
         if (src != "") {
             if (data) {
-                data = eval("("+data+")");
+                data = cog.eval("("+data+")");
             }
             node.removeAttribute(cog.labelSource);
             if (async == null || !el.querySelector("["+cog.labelSource+"]")) {
