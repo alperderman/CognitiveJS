@@ -282,7 +282,9 @@ cog.init = function () {
         bindCondition: "prop.text != null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
             var propData;
-            propData = cog.eval("cog.data."+prop.text.trim());
+            propData = cog.replaceToken(prop.text, function (pure) {
+                return cog.eval("cog.data."+pure);
+            });
             if (propData != null) {
                 elem.innerText = propData;
             }
@@ -296,7 +298,9 @@ cog.init = function () {
         bindCondition: "prop.html != null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
             var propData;
-            propData = cog.eval("cog.data."+prop.html.trim());
+            propData = cog.replaceToken(prop.html, function (pure) {
+                return cog.eval("cog.data."+pure);
+            });
             if (propData != null) {
                 elem.innerHTML = propData;
             }
@@ -336,7 +340,9 @@ cog.init = function () {
                 }
             }
             if (prop.if == null || cog.checkIf(prop.if)) {
-                propData = cog.replaceToken(prop.class.trim(), function (pure) {return cog.eval("cog.data."+pure);});
+                propData = cog.replaceToken(prop.class.trim(), function (pure) {
+                    return cog.eval("cog.data."+pure);
+                });
                 if (propData != null) {
                     if (props != null) {
                         props[propIndex].current = propData;
@@ -591,7 +597,9 @@ cog.loadContents = function (el, callback) {
                             node.outerHTML = xhr.responseText;
                         }
                     }
-                    cog.loadContents(el, callback);
+                    setTimeout(function () {
+                        cog.loadContents(el, callback);
+                    }, 0);
                 }, node, method, data);
             } else {
                 cog.xhr(src, function (xhr, node) {
@@ -601,7 +609,9 @@ cog.loadContents = function (el, callback) {
                         }
                     }
                 }, node, method, data);
-                cog.loadContents(el, callback);
+                setTimeout(function () {
+                    cog.loadContents(el, callback);
+                }, 0);
             }
         }
     } else {
@@ -731,7 +741,7 @@ cog.getScript = function (url, callback) {
             }
             if (typeof callback !== 'undefined') {
                 setTimeout(function () {
-                    callback(xhr)
+                    callback(xhr);
                 }, 0);
             }
         }
