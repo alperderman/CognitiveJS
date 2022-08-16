@@ -264,7 +264,7 @@ cog.replaceToken = function (node, replace) {
         return result;
     }
 };
-cog.loadTemplate = function (arg) {
+cog.loadTemplate = function (arg, bind) {
     var template;
     if (arg.id == null) {return;}
     if (cog.templates[arg.id] == null && arg.el != null) {
@@ -281,6 +281,8 @@ cog.loadTemplate = function (arg) {
                 return null;
             }
         });
+    }
+    if (bind) {
         cog.bindAll({node:template});
     }
     return template;
@@ -402,17 +404,13 @@ cog.init = function () {
         name: "temp",
         if: "prop.temp != null && prop.repeat == null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
-            var template = cog.loadTemplate({id:prop.temp});
+            var template;
+            if (prop.data != null) {
+                template = cog.loadTemplate({id:prop.temp, data:prop.data});
+            } else {
+                template = cog.loadTemplate({id:prop.temp});
+            }
             if (template != null) {
-                if (prop.data != null) {
-                    cog.replaceToken(template, function (pure) {
-                        if (pure == prop.data.split(" ")[2]) {
-                            return prop.data.split(" ")[0];
-                        } else {
-                            return null;
-                        }
-                    });
-                }
                 elem.innerHTML = template.innerHTML;
             }
         },
