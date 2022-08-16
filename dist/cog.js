@@ -10,7 +10,7 @@ cog.labelSet = "data-set";
 cog.labelBind = "data-bind";
 cog.labelProp = "data-prop";
 cog.labelSource = "data-src";
-cog.labelSourceAsync = "async";
+cog.labelSourceAwait = "await";
 cog.labelSourceObj = "data-obj";
 cog.labelSourceMet = "data-met";
 cog.eventBeforeData = "COGBeforeData";
@@ -453,22 +453,11 @@ cog.render = function (layoutSrc, data) {
         if (!(/\<\/head\>/).test(layout) && !(/\<\/body\>/).test(layout)) {
             document.body.innerHTML += layout;
         }
-        recursive_parse();
-    }
-    function recursive_parse(i, node) {
-        if (i == null) {i = 1;}
-        if (node == null) {node = "";}
-        if (node != document.body.innerHTML || i == 1) {
-            node = document.body.innerHTML;
-            step_ext(function () {
-                step_set(function () {
-                    i++;
-                    recursive_parse(i, node);
-                });
+        step_ext(function () {
+            step_set(function () {
+                step_styles();
             });
-        } else {
-            step_styles();
-        }
+        });
     }
     function step_ext(callback) {
         cog.loadContents(document.body, function () {
@@ -579,44 +568,34 @@ cog.mergeDeep = function (target, source) {
 };
 cog.loadContents = function (el, callback) {
     var node, src, async, method, data;
-    node = el.querySelector("["+cog.labelSource+"]");
+    node = el.querySelector("["+cog.labelSource+"]:not(["+cog.labelSourceAwait+"])");
     if (node) {
         src = node.getAttribute(cog.labelSource);
-        async = node.getAttribute(cog.labelSourceAsync);
         method = node.getAttribute(cog.labelSourceMet);
         data = node.getAttribute(cog.labelSourceObj);
         if (src != "") {
             if (data) {
                 data = cog.eval("("+data+")");
             }
-            node.removeAttribute(cog.labelSource);
-            if (async == null || !el.querySelector("["+cog.labelSource+"]")) {
-                cog.xhr(src, function (xhr, node) {
-                    if (xhr.readyState == 4) {
-                        if (xhr.status == 200) {
-                            node.outerHTML = xhr.responseText;
-                        }
+            node.setAttribute(cog.labelSourceAwait, "");
+            cog.xhr(src, function (xhr, node) {
+                if (xhr.readyState == 4) {
+                    if (xhr.status == 200) {
+                        node.outerHTML = xhr.responseText;
                     }
-                    setTimeout(function () {
-                        cog.loadContents(el, callback);
-                    }, 0);
-                }, node, method, data);
-            } else {
-                cog.xhr(src, function (xhr, node) {
-                    if (xhr.readyState == 4) {
-                        if (xhr.status == 200) {
-                            node.outerHTML = xhr.responseText;
-                        }
-                    }
-                }, node, method, data);
-                setTimeout(function () {
-                    cog.loadContents(el, callback);
-                }, 0);
-            }
+                }
+            }, node, method, data);
+            cog.loadContents(el, callback);
         }
     } else {
         if (typeof callback !== 'undefined') {
-            callback();
+            if (!el.querySelector("["+cog.labelSourceAwait+"]")) {
+                callback();
+            } else {
+                setTimeout(function () {
+                    cog.loadContents(el, callback);
+                }, 10);
+            }
         }
     }
 };
