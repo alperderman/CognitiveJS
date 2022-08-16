@@ -9,9 +9,9 @@ cog.tokenDelimiter = "%";
 cog.labelSet = "data-set";
 cog.labelBind = "data-bind";
 cog.labelProp = "data-prop";
-cog.labelSource = "data-src";
 cog.labelHead = "head";
 cog.labelSkip = "skip";
+cog.labelSource = "data-src";
 cog.labelSourceAwait = "await";
 cog.labelSourceObj = "data-obj";
 cog.labelSourceMet = "data-met";
@@ -20,7 +20,7 @@ cog.eventAfterData = "COGAfterData";
 cog.eventBeforeRender = "COGBeforeRender";
 cog.eventAfterRender = "COGAfterRender";
 cog.bindKeySet = "set";
-cog.bindKeyBindCondition = "bindCondition";
+cog.bindKeyIf = "if";
 cog.bindKeyBind = "bind";
 cog.data = {};
 cog.templates = {};
@@ -116,8 +116,8 @@ cog.newBind = function (arg) {
     if (cog.bindTypes[arg.name] == null) {
         cog.bindTypes[arg.name] = {};
     }
-    if (arg.bindCondition != null) {
-        cog.bindTypes[arg.name][cog.bindKeyBindCondition] = arg.bindCondition;
+    if (arg.if != null) {
+        cog.bindTypes[arg.name][cog.bindKeyIf] = arg.if;
     }
     if (arg.bind != null) {
         cog.bindTypes[arg.name][cog.bindKeyBind] = function (elem, prop, props, propIndex) {arg.bind(elem, prop, props, propIndex);};
@@ -192,8 +192,8 @@ cog.bind = function (node, arg) {
     function bind_prop(node, prop, props, propIndex) {
         var bindType;
         for (bindType in cog.bindTypes) {
-            if (cog.bindTypes[bindType][cog.bindKeyBindCondition] != null && cog.bindTypes[bindType][cog.bindKeyBind] != null) {
-                if (eval(cog.bindTypes[bindType][cog.bindKeyBindCondition])) {
+            if (cog.bindTypes[bindType][cog.bindKeyIf] != null && cog.bindTypes[bindType][cog.bindKeyBind] != null) {
+                if (eval(cog.bindTypes[bindType][cog.bindKeyIf])) {
                     cog.bindTypes[bindType][cog.bindKeyBind](node, prop, props, propIndex);
                 }
             }
@@ -282,7 +282,7 @@ cog.init = function () {
     });
     cog.newBind({
         name: "text",
-        bindCondition: "prop.text != null && (prop.if == null || cog.checkIf(prop.if))",
+        if: "prop.text != null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
             var propData;
             propData = cog.replaceToken(prop.text, function (pure) {
@@ -298,7 +298,7 @@ cog.init = function () {
     });
     cog.newBind({
         name: "html",
-        bindCondition: "prop.html != null && (prop.if == null || cog.checkIf(prop.if))",
+        if: "prop.html != null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
             var propData;
             propData = cog.replaceToken(prop.html, function (pure) {
@@ -314,7 +314,7 @@ cog.init = function () {
     });
     cog.newBind({
         name: "if",
-        bindCondition: "prop.if != null && Object.keys(prop).length == 1",
+        if: "prop.if != null && Object.keys(prop).length == 1",
         bind: function (elem, prop, props, propIndex) {
             if (!cog.checkIf(prop.if)) {
                 elem.style.display = 'none';
@@ -325,7 +325,7 @@ cog.init = function () {
     });
     cog.newBind({
         name: "class",
-        bindCondition: "prop.class != null",
+        if: "prop.class != null",
         bind: function (elem, prop, props, propIndex) {
             var propData;
             if (prop.current != null && (prop.if == null || !cog.checkIf(prop.if))) {
@@ -365,7 +365,7 @@ cog.init = function () {
     });
     cog.newBind({
         name: "attr",
-        bindCondition: "prop.attr != null && (prop.if == null || cog.checkIf(prop.if))",
+        if: "prop.attr != null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
             var propData;
             propData = cog.replaceToken(prop.data, function (pure) {
@@ -378,7 +378,7 @@ cog.init = function () {
     });
     cog.newBind({
         name: "temp",
-        bindCondition: "prop.temp != null && prop.repeat == null && (prop.if == null || cog.checkIf(prop.if))",
+        if: "prop.temp != null && prop.repeat == null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
             var template;
             template = cog.templates[prop.temp].cloneNode(true);
@@ -399,7 +399,7 @@ cog.init = function () {
     });
     cog.newBind({
         name: "repeat",
-        bindCondition: "prop.repeat != null && (prop.if == null || cog.checkIf(prop.if))",
+        if: "prop.repeat != null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
             var propDatas, propData, propDatasIterate, template, repeatVal, i, key, parent = prop.repeat.split(" ")[0], alias = prop.repeat.split(" ")[2];
             propDatas = cog.eval("cog.data."+parent);
@@ -426,7 +426,7 @@ cog.init = function () {
                         var result = null;
                         if (pure == alias) {
                             if (typeof propDatas === 'object' && !Array.isArray(propDatas)) {
-                                result = parent+"[\""+key+"\"]";
+                                result = parent+"[\\'"+key+"\\']";
                             } else {
                                 result = parent+"["+i+"]";
                             }
