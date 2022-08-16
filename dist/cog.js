@@ -10,6 +10,8 @@ cog.labelSet = "data-set";
 cog.labelBind = "data-bind";
 cog.labelProp = "data-prop";
 cog.labelSource = "data-src";
+cog.labelHead = "head";
+cog.labelSkip = "skip";
 cog.labelSourceAwait = "await";
 cog.labelSourceObj = "data-obj";
 cog.labelSourceMet = "data-met";
@@ -25,6 +27,7 @@ cog.templates = {};
 cog.bindTypes = {};
 cog.repeatKeywords = [
     {key: "_this", if: "pure == self.key", val:"parent"},
+    {key: "_key", if: "pure == alias+'.'+self.key", val:"key"},
     {key: "_index", if: "pure == alias+'.'+self.key", val:"i"}
 ];
 cog.regexHead = new RegExp("<head[^>]*>((.|[\\n\\r])*)<\\/head>", "im");
@@ -52,7 +55,7 @@ cog.get = function (key, val, callback) {
     function rebind(key, i) {
         if (i == null) {i = 0;}
         var elems, elem, elemBind, elemBindSplit, bound = false, ii;
-        elems = document.querySelectorAll("["+cog.labelBind+"]");
+        elems = document.querySelectorAll("["+cog.labelBind+"]:not(["+cog.labelSkip+"])");
         if (i < elems.length) {
             elem = elems[i];
             elemBind = elem.getAttribute(cog.labelBind);
@@ -201,7 +204,7 @@ cog.bindAll = function (arg) {
     if (arg == null) {arg = {};}
     if (arg.i == null) {arg.i = 0;}
     if (arg.i == 0 && arg.data != null) {cog.data = arg.data;}
-    var elems = document.querySelectorAll("["+cog.labelProp+"]");
+    var elems = document.querySelectorAll("["+cog.labelProp+"]:not(["+cog.labelSkip+"])");
     if (arg.i < elems.length) {
         cog.bind(elems[arg.i]);
         arg.i++;
@@ -398,19 +401,35 @@ cog.init = function () {
         name: "repeat",
         bindCondition: "prop.repeat != null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
-            var propData, template, repeatVal, parent = prop.repeat.split(" ")[0], alias = prop.repeat.split(" ")[2];
-            propData = cog.eval("cog.data."+parent);
-            if (propData != null) {
+            var propDatas, propData, propDatasIterate, template, repeatVal, i, key, parent = prop.repeat.split(" ")[0], alias = prop.repeat.split(" ")[2];
+            propDatas = cog.eval("cog.data."+parent);
+            if (propDatas != null) {
                 if (!cog.templates[prop.temp]) {
                     cog.templates[prop.temp] = elem.cloneNode(true);
                 }
+                if (typeof propDatas === 'object' && !Array.isArray(propDatas)) {
+                    propDatasIterate = Object.keys(propDatas);
+                } else {
+                    propDatasIterate = propDatas;
+                }
                 repeatVal = "";
-                propData.forEach(function (arr, i) {
+                for (i = 0;i < propDatasIterate.length;i++) {
+                    if (typeof propDatas === 'object' && !Array.isArray(propDatas)) {
+                        propData = propDatas[Object.keys(propDatas)[i]];
+                        key = Object.keys(propDatas)[i];
+                    } else {
+                        propData = propDatas[i];
+                        key = i;
+                    }
                     template = cog.templates[prop.temp].cloneNode(true);
                     cog.replaceToken(template, function (pure) {
                         var result = null;
                         if (pure == alias) {
-                            result = parent+"["+i+"]";
+                            if (typeof propDatas === 'object' && !Array.isArray(propDatas)) {
+                                result = parent+"[\""+key+"\"]";
+                            } else {
+                                result = parent+"["+i+"]";
+                            }
                         }
                         cog.repeatKeywords.forEach(function (self) {
                             if (eval(self.if)) {
@@ -420,7 +439,7 @@ cog.init = function () {
                         return result;
                     });
                     repeatVal += template.innerHTML;
-                });
+                }
                 elem.innerHTML = repeatVal; 
             }
         }
@@ -453,20 +472,17 @@ cog.render = function (layoutSrc, data) {
         if (!(/\<\/head\>/).test(layout) && !(/\<\/body\>/).test(layout)) {
             document.body.innerHTML += layout;
         }
-        step_ext(function () {
-            step_set(function () {
-                step_styles();
+        setTimeout(function () {
+            cog.loadContents(function () {
+                step_set(function () {
+                    step_detail();
+                });
             });
-        });
-    }
-    function step_ext(callback) {
-        cog.loadContents(document.body, function () {
-            callback();
-        });
+        }, 0);
     }
     function step_set(callback) {
         var elem, attr, type, key, bindType;
-        while (elem = document.querySelector("["+cog.labelSet+"]")) {
+        while (elem = document.querySelector("["+cog.labelSet+"]:not(["+cog.labelSkip+"])")) {
             attr = elem.getAttribute(cog.labelSet);
             type = cog.parseSet(attr)[0];
             key = cog.parseSet(attr)[1].trim();
@@ -481,12 +497,17 @@ cog.render = function (layoutSrc, data) {
             callback();
         }
     }
-    function step_styles() {
-        var i, links = document.getElementsByTagName("link"), link;
+    function step_detail() {
+        var i, links = document.getElementsByTagName("link"), link, heads = document.querySelectorAll("["+cog.labelHead+"]"), head;
         for (i = 0; i < links.length;i++) {
             link = links[i];
             document.head.appendChild(link);
             link.href = link.href;
+        }
+        for (i = 0; i < heads.length;i++) {
+            head = heads[i];
+            head.removeAttribute("head");
+            document.head.appendChild(head);
         }
         setTimeout(function () {
             step_bind();
@@ -502,15 +523,15 @@ cog.render = function (layoutSrc, data) {
         }, 0);
     }
     function step_scripts() {
-        cog.loadScriptsNS(document.getElementsByTagName("script"), function () {
+        cog.loadScriptsNS(document.querySelectorAll("script:not(["+cog.labelSkip+"])"), function () {
             step_finish();
         });
     }
     function step_finish() {
+        cog.DOMLoad();
         if (window.location.hash.slice(1) && document.getElementById(window.location.hash.slice(1))) {
             document.getElementById(window.location.hash.slice(1)).scrollIntoView();
         }
-        cog.DOMLoad();
         setTimeout(function () {
             document.dispatchEvent(new CustomEvent(cog.eventAfterRender));
         }, 0);
@@ -566,9 +587,9 @@ cog.mergeDeep = function (target, source) {
     function define_property(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
     return output;
 };
-cog.loadContents = function (el, callback) {
-    var node, src, async, method, data;
-    node = el.querySelector("["+cog.labelSource+"]:not(["+cog.labelSourceAwait+"])");
+cog.loadContents = function (callback) {
+    var node, src, method, data;
+    node = document.querySelector("["+cog.labelSource+"]:not(["+cog.labelSourceAwait+"]):not(["+cog.labelSkip+"])");
     if (node) {
         src = node.getAttribute(cog.labelSource);
         method = node.getAttribute(cog.labelSourceMet);
@@ -585,15 +606,15 @@ cog.loadContents = function (el, callback) {
                     }
                 }
             }, node, method, data);
-            cog.loadContents(el, callback);
+            cog.loadContents(callback);
         }
     } else {
         if (typeof callback !== 'undefined') {
-            if (!el.querySelector("["+cog.labelSourceAwait+"]")) {
+            if (!document.querySelector("["+cog.labelSourceAwait+"]:not(["+cog.labelSkip+"])")) {
                 callback();
             } else {
                 setTimeout(function () {
-                    cog.loadContents(el, callback);
+                    cog.loadContents(callback);
                 }, 10);
             }
         }
