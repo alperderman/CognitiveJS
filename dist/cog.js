@@ -202,9 +202,10 @@ cog.bind = function (node, arg) {
 };
 cog.bindAll = function (arg) {
     if (arg == null) {arg = {};}
+    if (arg.node == null) {arg.node = document;}
     if (arg.i == null) {arg.i = 0;}
     if (arg.i == 0 && arg.data != null) {cog.data = arg.data;}
-    var elems = document.querySelectorAll("["+cog.labelProp+"]:not(["+cog.labelSkip+"])");
+    var elems = arg.node.querySelectorAll("["+cog.labelProp+"]:not(["+cog.labelSkip+"])");
     if (arg.i < elems.length) {
         cog.bind(elems[arg.i]);
         arg.i++;
@@ -262,6 +263,27 @@ cog.replaceToken = function (node, replace) {
         });
         return result;
     }
+};
+cog.loadTemplate = function (arg) {
+    var template;
+    if (arg.id == null) {return;}
+    if (cog.templates[arg.id] == null && arg.el != null) {
+        cog.templates[arg.id] = arg.el.cloneNode(true);
+    }
+    if (cog.templates[arg.id] != null) {
+        template = cog.templates[arg.id].cloneNode(true);
+    }
+    if (arg.data != null && template != null) {
+        cog.replaceToken(template, function (pure) {
+            if (pure == arg.data.split(" ")[2]) {
+                return arg.data.split(" ")[0];
+            } else {
+                return null;
+            }
+        });
+        cog.bindAll({node:template});
+    }
+    return template;
 };
 cog.checkIf = function (str) {
     if (str != null && cog.eval(cog.replaceToken(str, function (pure) {return "cog.data."+pure;}))) {
@@ -380,21 +402,22 @@ cog.init = function () {
         name: "temp",
         if: "prop.temp != null && prop.repeat == null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
-            var template;
-            template = cog.templates[prop.temp].cloneNode(true);
-            if (prop.data) {
-                cog.replaceToken(template, function (pure) {
-                    if (pure == prop.data.split(" ")[2]) {
-                        return prop.data.split(" ")[0];
-                    } else {
-                        return null;
-                    }
-                });
+            var template = cog.loadTemplate({id:prop.temp});
+            if (template != null) {
+                if (prop.data != null) {
+                    cog.replaceToken(template, function (pure) {
+                        if (pure == prop.data.split(" ")[2]) {
+                            return prop.data.split(" ")[0];
+                        } else {
+                            return null;
+                        }
+                    });
+                }
+                elem.innerHTML = template.innerHTML;
             }
-            elem.innerHTML = template.innerHTML;
         },
         set: function (elem, key) {
-            cog.templates[key] = elem.cloneNode(true);
+            cog.loadTemplate({id:key, el:elem});
         }
     });
     cog.newBind({
@@ -404,9 +427,7 @@ cog.init = function () {
             var propDatas, propData, propDatasIterate, template, repeatVal, i, key, parent = prop.repeat.split(" ")[0], alias = prop.repeat.split(" ")[2];
             propDatas = cog.eval("cog.data."+parent);
             if (propDatas != null) {
-                if (!cog.templates[prop.temp]) {
-                    cog.templates[prop.temp] = elem.cloneNode(true);
-                }
+                cog.loadTemplate({id:prop.temp, el:elem});
                 if (typeof propDatas === 'object' && !Array.isArray(propDatas)) {
                     propDatasIterate = Object.keys(propDatas);
                 } else {
@@ -421,7 +442,7 @@ cog.init = function () {
                         propData = propDatas[i];
                         key = i;
                     }
-                    template = cog.templates[prop.temp].cloneNode(true);
+                    template = cog.loadTemplate({id:prop.temp});
                     cog.replaceToken(template, function (pure) {
                         var result = null;
                         if (pure == alias) {
