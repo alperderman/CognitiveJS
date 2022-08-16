@@ -1,6 +1,6 @@
 //CognitiveJS
 
-if (!Object.assign) { Object.defineProperty(Object, 'assign', { enumerable: false, configurable: true, writable: true, value: function(target) { 'use strict'; if (target === undefined || target === null) { throw new TypeError('Cannot convert first argument to object'); } var to = Object(target); for (var i = 1; i < arguments.length; i++) { var nextSource = arguments[i]; if (nextSource === undefined || nextSource === null) { continue; } nextSource = Object(nextSource); var keysArray = Object.keys(Object(nextSource)); for (var nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex++) { var nextKey = keysArray[nextIndex]; var desc = Object.getOwnPropertyDescriptor(nextSource, nextKey); if (desc !== undefined && desc.enumerable) { to[nextKey] = nextSource[nextKey]; } } } return to; } }); }
+if (!Object.assign) { Object.defineProperty(Object, 'assign', { enumerable: false, configurable: true, writable: true, value: function(target) { 'use strict'; if (target === undefined || target === null) { throw new TypeError('Cannot convert first argument to object'); } var to = Object(target); for (var i = 1;i < arguments.length;i++) { var nextSource = arguments[i]; if (nextSource === undefined || nextSource === null) { continue; } nextSource = Object(nextSource); var keysArray = Object.keys(Object(nextSource)); for (var nextIndex = 0, len = keysArray.length;nextIndex < len;nextIndex++) { var nextKey = keysArray[nextIndex]; var desc = Object.getOwnPropertyDescriptor(nextSource, nextKey); if (desc !== undefined && desc.enumerable) { to[nextKey] = nextSource[nextKey]; } } } return to; } }); }
 if (typeof window.CustomEvent !== 'function') { window.CustomEvent = function (event, params) { params = params || {bubbles: false, cancelable: false, detail: null}; var evt = document.createEvent('CustomEvent'); evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail); return evt; }; }
 
 var cog = {};
@@ -499,12 +499,12 @@ cog.render = function (layoutSrc, data) {
     }
     function step_detail() {
         var i, links = document.getElementsByTagName("link"), link, heads = document.querySelectorAll("["+cog.labelHead+"]"), head;
-        for (i = 0; i < links.length;i++) {
+        for (i = 0;i < links.length;i++) {
             link = links[i];
             document.head.appendChild(link);
             link.href = link.href;
         }
-        for (i = 0; i < heads.length;i++) {
+        for (i = 0;i < heads.length;i++) {
             head = heads[i];
             head.removeAttribute("head");
             document.head.appendChild(head);
@@ -538,8 +538,9 @@ cog.render = function (layoutSrc, data) {
     }
 };
 cog.isValidJSON = function (str) {
+    var o;
     try {
-        var o = JSON.parse(str);
+        o = JSON.parse(str);
         if (o && typeof o === "object") {
             return o;
         }
@@ -555,10 +556,10 @@ cog.replaceAll = function (str, find, replace, options) {
     return str.replace(new RegExp(escape_regex(find), options), replace);
 };
 cog.removeDuplicatesFromArray = function (arr) {
-    var m = {}, newArr = [];
+    var m = {}, newArr = [], i, v;
     if (arr) {
-        for (var i=0;i < arr.length;i++) {
-            var v = arr[i];
+        for (i = 0;i < arr.length;i++) {
+            v = arr[i];
             if (!m[v] && v != "") {
                 newArr.push(v);
                 m[v]=true;
@@ -651,7 +652,7 @@ cog.getUrlParams = function (url) {
     queryString = query_string();
     if (queryString) {
         keyValuePairs = queryString.split('&');
-        for (i = 0; i < keyValuePairs.length; i++) {
+        for (i = 0;i < keyValuePairs.length;i++) {
             keyValuePair = keyValuePairs[i].split('=');
             paramName = keyValuePair[0];
             if (keyValuePair[1]) {
