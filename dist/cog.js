@@ -261,6 +261,9 @@ cog.replaceToken = function (node, replace) {
                 result = cog.replaceAll(result, token, tokenData, 'gim');
             }
         });
+        if (str != result) {
+            result = replace_string(result);
+        }
         return result;
     }
 };
