@@ -26,7 +26,7 @@ cog.data = {};
 cog.templates = {};
 cog.bindTypes = {};
 cog.repeatKeywords = [
-    {key: "_this", if: "pure == self.key", val:"parent"},
+    {key: "_this", if: "pure == alias+'.'+self.key", val:"parent"},
     {key: "_key", if: "pure == alias+'.'+self.key", val:"key"},
     {key: "_index", if: "pure == alias+'.'+self.key", val:"i"}
 ];
