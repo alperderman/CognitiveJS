@@ -268,10 +268,16 @@ cog.replaceToken = function (node, replace) {
     }
 };
 cog.loadTemplate = function (arg, bind) {
-    var template;
+    var template, createEl;
     if (arg.id == null) {return;}
     if (cog.templates[arg.id] == null && arg.el != null) {
-        cog.templates[arg.id] = arg.el.cloneNode(true);
+        if (typeof arg.el === 'string') {
+            createEl = document.createElement("div");
+            createEl.innerHTML = arg.el;
+            cog.templates[arg.id] = createEl.cloneNode(true);
+        } else {
+            cog.templates[arg.id] = arg.el.cloneNode(true);
+        }
     }
     if (cog.templates[arg.id] != null) {
         template = cog.templates[arg.id].cloneNode(true);
