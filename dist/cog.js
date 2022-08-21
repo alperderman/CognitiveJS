@@ -433,7 +433,7 @@ cog.init = function () {
         bind: function (elem, prop, props, propIndex) {
             var propDatas, propData, propDatasIterate, template, repeatVal, i, key, parent = prop.repeat.split(" ")[0], alias = prop.repeat.split(" ")[2];
             propDatas = cog.eval("cog.data."+parent);
-            parent = cog.replaceAll(parent, "'", "\\\'");
+            parent = cog.replaceAll(cog.replaceAll(parent, "'", "\\\'"), '"', "\\\'");
             if (propDatas != null) {
                 cog.loadTemplate({id:prop.temp, el:elem});
                 if (typeof propDatas === 'object' && !Array.isArray(propDatas)) {
