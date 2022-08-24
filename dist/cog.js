@@ -25,11 +25,11 @@ cog.bindKeyBind = "bind";
 cog.data = {};
 cog.templates = {};
 cog.bindTypes = {};
-cog.repeatKeywords = [
-    {key: "_this", if: "pure == alias+'.'+self.key", val:"parent"},
-    {key: "_key", if: "pure == alias+'.'+self.key", val:"key"},
-    {key: "_index", if: "pure == alias+'.'+self.key", val:"i"}
-];
+cog.tokenKeywords = {
+    parent: "_parent",
+    key: "_key",
+    index: "_index"
+};
 cog.regexHead = new RegExp("<head[^>]*>((.|[\\n\\r])*)<\\/head>", "im");
 cog.regexBody = new RegExp("<body[^>]*>((.|[\\n\\r])*)<\\/body>", "im");
 cog.regexScripts = new RegExp("<script[^>]*>([\\s\\S]*?)<\\/script>", "gim");
@@ -107,13 +107,13 @@ cog.getRecursiveValue = function (str, val, index) {
         if (refData[key] !== undefined && typeof refData[key] === 'object' && i != strSplit.length-1 && i != index) {
             refData = refData[key];
         } else {
-            if (key == '_parent') {
+            if (key == cog.tokenKeywords.parent) {
                 strSplit.splice(i,1);
                 strSplit.splice(i-1,1);
                 i = i-2;
                 refData = cog.getRecursiveValue(strSplit, val, i);
                 result = refData;
-            } else if (key == '_key') {
+            } else if (key == cog.tokenKeywords.key) {
                 result = strSplit[i-1];
             } else {
                 if (val !== undefined && refData[key] !== val) {
@@ -510,6 +510,7 @@ cog.init = function () {
                     template = cog.loadTemplate({id:prop.temp});
                     cog.replaceToken(template, function (pure) {
                         var result = null;
+                        pure = cog.normalizeKeys(pure);
                         if (pure == alias) {
                             if (typeof propDatas === 'object' && !Array.isArray(propDatas)) {
                                 result = parent+"."+key;
@@ -517,11 +518,9 @@ cog.init = function () {
                                 result = parent+"."+i;
                             }
                         }
-                        cog.repeatKeywords.forEach(function (self) {
-                            if (eval(self.if)) {
-                                result = eval(self.val);
-                            }
-                        });
+                        if (pure == alias+'.'+cog.tokenKeywords.index) {
+                            result = i;
+                        }
                         return result;
                     });
                     repeatVal += template.innerHTML;
