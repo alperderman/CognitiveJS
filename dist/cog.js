@@ -4,7 +4,7 @@ if (!Object.assign) { Object.defineProperty(Object, 'assign', { enumerable: fals
 if (typeof window.CustomEvent !== 'function') { window.CustomEvent = function (event, params) { params = params || {bubbles: false, cancelable: false, detail: null}; var evt = document.createEvent('CustomEvent'); evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail); return evt; }; }
 
 var cog = {};
-cog.cacheRender = false;
+cog.cacheRender = true;
 cog.tokenDelimiter = "%";
 cog.labelSet = "data-set";
 cog.labelBind = "data-bind";
@@ -263,8 +263,9 @@ cog.bindAll = function (arg) {
         }
     }
 };
-cog.replaceToken = function (node, replace) {
+cog.replaceToken = function (node, replace, recursive) {
     var attrBind, attrProp, child, childs, i;
+    if (recursive == null) {recursive = true;}
     if (typeof node === 'string') {
         return replace_string(node);
     } else {
@@ -308,7 +309,7 @@ cog.replaceToken = function (node, replace) {
                 result = cog.replaceAll(result, token, tokenData, 'gim');
             }
         });
-        if (str != result) {
+        if (str != result && recursive) {
             result = replace_string(result);
         }
         return result;
@@ -394,7 +395,7 @@ cog.init = function () {
             var propData;
             propData = cog.replaceToken(prop.html, function (pure) {
                 return cog.getRecursiveValue(pure);
-            });
+            }, false);
             if (propData != null) {
                 elem.innerHTML = propData;
             }
@@ -490,6 +491,7 @@ cog.init = function () {
         if: "prop.repeat != null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
             var propDatas, propData, propDatasIterate, template, repeatVal, i, key, parent = prop.repeat.split(" ")[0], alias = prop.repeat.split(" ")[2];
+            parent = cog.normalizeKeys(parent);
             propDatas = cog.getRecursiveValue(parent);
             cog.loadTemplate({id:prop.temp, el:elem});
             if (typeof propDatas === 'object' && !Array.isArray(propDatas)) {
