@@ -235,6 +235,9 @@ cog.bind = function (node, arg) {
                 bind_prop(node, nodeProp);
             }
         }
+        if (typeof arg.callback !== 'undefined') {
+            arg.callback();
+        }
     }
     function bind_prop(node, prop, props, propIndex) {
         var bindType;
@@ -358,7 +361,10 @@ cog.init = function () {
     cog.newBind({
         name: "json",
         set: function (elem, key) {
-            cog.getRecursiveValue(key, JSON.parse(elem.innerText));
+            var propData = cog.isValidJSON(elem.innerText);
+            if (propData) {
+                cog.getRecursiveValue(key, propData);
+            }
         }
     });
     cog.newBind({
