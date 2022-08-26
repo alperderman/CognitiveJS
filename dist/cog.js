@@ -33,6 +33,7 @@ cog.tokenKeywords = {
 cog.regexHead = new RegExp("<head[^>]*>((.|[\\n\\r])*)<\\/head>", "im");
 cog.regexBody = new RegExp("<body[^>]*>((.|[\\n\\r])*)<\\/body>", "im");
 cog.regexScripts = new RegExp("<script[^>]*>([\\s\\S]*?)<\\/script>", "gim");
+cog.encapVar = null;
 
 cog.get = function (key, val, callback) {
     if (key == null) {return;}
@@ -318,7 +319,7 @@ cog.replaceToken = function (node, replace, recursive) {
         return result;
     }
 };
-cog.loadTemplate = function (arg, bind) {
+cog.template = function (arg, bind) {
     var template, createEl;
     if (arg.id == null) {return;}
     if (cog.templates[arg.id] == null && arg.el != null) {
@@ -347,12 +348,16 @@ cog.loadTemplate = function (arg, bind) {
     }
     return template;
 };
-cog.checkIf = function (str) {
-    if (str != null && eval(cog.replaceToken(str, function (pure) {pure = cog.replaceAll(cog.replaceAll(pure, "'", "\\\'"), '"', "\\\'");return "cog.getRecursiveValue('"+pure+"')";}))) {
+cog.encapIf = function () {
+    if (cog.encapVar != null && eval(cog.encapVar)) {
         return true;
     } else {
         return false;
     }
+};
+cog.checkIf = function (str) {
+    cog.encapVar = cog.replaceToken(str, function (pure) {pure = cog.replaceAll(cog.replaceAll(pure, "'", "\\\'"), '"', "\\\'");return "cog.getRecursiveValue('"+pure+"')";});
+    return cog.encapIf();
 };
 cog.eval = function (str) {
     try {return eval(str);} catch (e) {}
@@ -475,21 +480,34 @@ cog.init = function () {
         }
     });
     cog.newBind({
+        name: "style",
+        if: "prop.style != null && (prop.if == null || cog.checkIf(prop.if))",
+        bind: function (elem, prop, props, propIndex) {
+            var propData;
+            propData = cog.replaceToken(prop.style, function (pure) {
+                return cog.getRecursiveValue(pure);
+            });
+            if (propData != null) {
+                elem.setAttribute("style", propData);
+            }
+        }
+    });
+    cog.newBind({
         name: "temp",
         if: "prop.temp != null && prop.repeat == null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
             var template;
             if (prop.data != null) {
-                template = cog.loadTemplate({id:prop.temp, data:prop.data});
+                template = cog.template({id:prop.temp, data:prop.data});
             } else {
-                template = cog.loadTemplate({id:prop.temp});
+                template = cog.template({id:prop.temp});
             }
             if (template != null) {
                 elem.innerHTML = template.innerHTML;
             }
         },
         set: function (elem, key) {
-            cog.loadTemplate({id:key, el:elem});
+            cog.template({id:key, el:elem});
         }
     });
     cog.newBind({
@@ -499,7 +517,7 @@ cog.init = function () {
             var propDatas, propData, propDatasIterate, template, repeatVal, i, key, parent = prop.repeat.split(" ")[0], alias = prop.repeat.split(" ")[2];
             parent = cog.normalizeKeys(parent);
             propDatas = cog.getRecursiveValue(parent);
-            cog.loadTemplate({id:prop.temp, el:elem});
+            cog.template({id:prop.temp, el:elem});
             if (typeof propDatas === 'object' && !Array.isArray(propDatas)) {
                 propDatasIterate = Object.keys(propDatas);
             } else {
@@ -515,7 +533,7 @@ cog.init = function () {
                         propData = propDatas[i];
                         key = i;
                     }
-                    template = cog.loadTemplate({id:prop.temp});
+                    template = cog.template({id:prop.temp});
                     cog.replaceToken(template, function (pure) {
                         var result = null;
                         pure = cog.normalizeKeys(pure);
