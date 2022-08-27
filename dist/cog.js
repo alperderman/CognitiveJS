@@ -284,7 +284,6 @@ cog.replaceToken = function (node, replace, recursive) {
                 attrProp = replace_string(child.getAttribute(cog.labelProp));
                 child.setAttribute(cog.labelProp, attrProp);
             }
-            
         }
     }
     function parse_token(str) {
@@ -356,8 +355,12 @@ cog.encapIf = function () {
     }
 };
 cog.checkIf = function (str) {
-    cog.encapVar = cog.replaceToken(str, function (pure) {pure = cog.replaceAll(cog.replaceAll(pure, "'", "\\\'"), '"', "\\\'");return "cog.getRecursiveValue('"+pure+"')";});
-    return cog.encapIf();
+    if (typeof str === 'string') {
+        cog.encapVar = cog.replaceToken(str, function (pure) {pure = cog.replaceAll(cog.replaceAll(pure, "'", "\\\'"), '"', "\\\'");return "cog.getRecursiveValue('"+pure+"')";});
+        return cog.encapIf();
+    } else {
+        return str;
+    }
 };
 cog.eval = function (str) {
     try {return eval(str);} catch (e) {}
@@ -403,10 +406,11 @@ cog.init = function () {
         name: "html",
         if: "prop.html != null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
-            var propData;
+            var propData, propRecursive;
+            if (prop.recursive == null) {prop.recursive = false;}
             propData = cog.replaceToken(prop.html, function (pure) {
                 return cog.getRecursiveValue(pure);
-            }, false);
+            }, cog.checkIf(prop.recursive));
             if (propData != null) {
                 elem.innerHTML = propData;
             }
@@ -470,12 +474,15 @@ cog.init = function () {
         name: "attr",
         if: "prop.attr != null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
-            var propData;
+            var propData, propAttr;
             propData = cog.replaceToken(prop.data, function (pure) {
                 return cog.getRecursiveValue(pure);
             });
-            if (propData != null) {
-                elem.setAttribute(prop.attr, propData);
+            propAttr = cog.replaceToken(prop.attr, function (pure) {
+                return cog.getRecursiveValue(pure);
+            });
+            if (propAttr != null) {
+                elem.setAttribute(propAttr, propData);
             }
         }
     });
