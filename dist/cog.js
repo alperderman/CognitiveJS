@@ -406,7 +406,7 @@ cog.init = function () {
         name: "html",
         if: "prop.html != null && (prop.if == null || cog.checkIf(prop.if))",
         bind: function (elem, prop, props, propIndex) {
-            var propData, propRecursive;
+            var propData;
             if (prop.recursive == null) {prop.recursive = false;}
             propData = cog.replaceToken(prop.html, function (pure) {
                 return cog.getRecursiveValue(pure);
