@@ -38,7 +38,7 @@ cog.encapVar = null;
 cog.get = function (key, val, callback) {
     if (key == null) {return;}
     var result, old, changed = [];
-    if (val != undefined) {
+    if (val !== undefined) {
         old = cog.getRecursiveValue(key);
         if (old !== val) {
             document.dispatchEvent(new CustomEvent(cog.eventBeforeData, {detail:{key:key, old:old, new:val}}));
@@ -363,8 +363,12 @@ cog.encapEval = function () {
 cog.if = function (str) {
     if (typeof str === 'string') {
         cog.encapVar = cog.replaceToken(str, function (pure) {
-            pure = cog.replaceAll(cog.replaceAll(pure, "'", "\\\'"), '"', "\\\'");
-            return "cog.getRecursiveValue('"+pure+"')";
+            pure = cog.normalizeKeys(pure);
+            if (!(/[^a-zA-Z0-9\_\-\.]/g.test(pure))) {
+                return "cog.getRecursiveValue('"+pure+"')";
+            } else {
+                return undefined;
+            }
         });
         return cog.encapIf();
     } else {
