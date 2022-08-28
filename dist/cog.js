@@ -530,15 +530,12 @@ cog.init = function () {
     });
     cog.newBind({
         name: "style",
-        if: "prop.style != null && (prop.if == null || cog.if(prop.if))",
+        if: "prop.style != null",
         bind: function (elem, prop, props, propIndex) {
-            var propData;
-            propData = cog.replaceToken(prop.style, function (pure) {
-                return cog.getRecursiveValue(pure);
-            });
-            if (propData != null) {
-                elem.setAttribute("style", propData);
-            }
+            prop.attr = "style";
+            prop.data = prop.style;
+            delete prop.style;
+            cog.bindTypes["attr"].bind(elem, prop, props, propIndex);
         }
     });
     cog.newBind({
