@@ -258,7 +258,6 @@ cog.bindAll = function (arg) {
     if (arg == null) {arg = {};}
     if (arg.node == null) {arg.node = document;}
     if (arg.i == null) {arg.i = 0;}
-    if (arg.i == 0 && arg.data != null) {cog.data = arg.data;}
     var elems = arg.node.querySelectorAll("["+cog.labelProp+"]:not(["+cog.labelSkip+"])");
     if (arg.i < elems.length) {
         cog.bind(elems[arg.i]);
@@ -602,7 +601,7 @@ cog.init = function () {
         }
     });
 };
-cog.render = function (layoutSrc, data) {
+cog.render = function (layoutSrc) {
     var layout;
     step_start();
     function step_start() {
@@ -674,7 +673,6 @@ cog.render = function (layoutSrc, data) {
         document.dispatchEvent(new CustomEvent(cog.eventBeforeRender));
         setTimeout(function () {
             cog.bindAll({
-                data: data,
                 callback: function () {step_scripts();}
             });
         }, 0);
