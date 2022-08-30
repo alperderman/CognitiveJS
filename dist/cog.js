@@ -323,13 +323,13 @@ cog.replaceToken = function (node, replace, recursive) {
 cog.template = function (arg, bind) {
     var template, createEl;
     if (arg.id == null) {return;}
-    if (cog.templates[arg.id] == null && arg.el != null) {
-        if (typeof arg.el === 'string') {
+    if (cog.templates[arg.id] == null && arg.elem != null) {
+        if (typeof arg.elem === 'string') {
             createEl = document.createElement("div");
-            createEl.innerHTML = arg.el;
+            createEl.innerHTML = arg.elem;
             cog.templates[arg.id] = createEl.cloneNode(true);
         } else {
-            cog.templates[arg.id] = arg.el.cloneNode(true);
+            cog.templates[arg.id] = arg.elem.cloneNode(true);
         }
     }
     if (cog.templates[arg.id] != null) {
@@ -552,7 +552,7 @@ cog.init = function () {
             }
         },
         set: function (elem, key) {
-            cog.template({id:key, el:elem});
+            cog.template({id:key, elem:elem});
         }
     });
     cog.newBind({
@@ -562,7 +562,7 @@ cog.init = function () {
             var propDatas, propData, propDatasIterate, template, repeatVal, i, key, parent = prop.repeat.split(" ")[0], alias = prop.repeat.split(" ")[2];
             parent = cog.normalizeKeys(parent);
             propDatas = cog.getRecursiveValue(parent);
-            cog.template({id:prop.temp, el:elem});
+            cog.template({id:prop.temp, elem:elem});
             if (typeof propDatas === 'object' && !Array.isArray(propDatas)) {
                 propDatasIterate = Object.keys(propDatas);
             } else {
