@@ -1,0 +1,95 @@
+<h1>Binding</h1>
+<p>Binding is the most common and useful feature of every JavaScript framework, almost every framework implements binding differently, some of them use getter and setters, others use more advanced Object.observe feature and Cognitive on the other hand uses native function.</p>
+<p>Bindings on CognitiveJS is one-way (can be made it two-way with modifications). First let's talk about, how to bind elements with specified data. To bind an element, you have to define a <code>data-bind</code> attribute with the key of the data you want to bind.</p>
+<pre>
+    <code class="html">
+        &lt;p data-bind="foo" data-prop="text:'%foo%'">&lt;/p>
+
+        &lt;script src="cog.js">&lt;/script>
+        &lt;script>
+            cog.data = {
+                foo:"bar"
+            };
+        &lt;/script>
+    </code>
+</pre>
+<p>There are 2 ways of changing the bound data: first way is using the <code>cog.get()</code> function to directly change the data, second way is binding a variable with the <code>cog.bind()</code> function.</p>
+<pre>
+    <code class="html">
+        &lt;p data-bind="foo" data-prop="text:'%foo%'">&lt;/p>
+
+        &lt;script src="cog.js">&lt;/script>
+        &lt;script>
+            cog.data = {
+                foo:"bar"
+            };
+            cog.bindAll();
+        &lt;/script>
+        &lt;script>
+            cog.get("foo", "changed!");
+            // OR
+            var foo = cog.bind("foo");
+            foo("changed!");
+        &lt;/script>
+    </code>
+</pre>
+<hr>
+<h3 data-prop="{text:'%sidebar.bind.sub.bind_data-bind%'},{attr:'id', data:'%sidebar.bind.sub.bind_data-bind._key%'}"></h3>
+<p><code>data-bind</code> is the HTML attribute for binding elements. What it actually does under the hood is, it just labels elements to be refreshed when specified value has been altered. If you don't set this attribute to the element, properties will not refresh.</p>
+<p>Apart from the example above, you can also bind two or more values to an element, any change to the either of those values will trigger a refresh for that element.</p>
+<pre>
+    <code class="html">
+        &lt;p data-bind="foo, brands['ford'].title" data-prop="text:'%foo%'">&lt;/p>
+    </code>
+</pre>
+<hr>
+<h3 data-prop="{text:'%sidebar.bind.sub.bind_bind%'},{attr:'id', data:'%sidebar.bind.sub.bind_bind._key%'}"></h3>
+<p>One function to rule them all. <code>cog.bind()</code> is the powerhouse of the <span style="text-decoration: line-through;">cell</span> CognitiveJS.</p>
+<p>With <code>cog.bind()</code> you can: bind elements, bind variables, change the bindings and properties of the elements. Pretty much every feature related to binding condensed into this function.</p>
+<p><code>cog.bind()</code> takes two parameters: first parameter takes a string key of the data or an element to bind. second parameter is an object with set of preset arguments.</p>
+<p>In order to bind or change the properties of an element:</p>
+<pre>
+    <code class="js">
+        cog.bind(document.getElementById("demo"), {
+            bind: ["foo", "customers.0"],
+            prop: [{text:"customer.0.name"}, {class:"customer.0.active"}]
+        });
+    </code>
+</pre>
+<p class="alert alert-info">If you bind a parent object, any changes to the child values, will also trigger other child values that are bind to the other elements.</p>
+<p class="alert alert-info">There are also additional functions to get bindings and properties of an element, check out the <a class="font-weight-bold" data-prop="{text:'%sidebar.utility.title%'},{attr:'href', data:'#%sidebar.utility._key%'}"></a> section for more information.</p>
+<p>To bind a variable to a value. set the first parameter as the string key of the value just like the first example on the above. Additionally you can set the new value of the data while binding with the second parameter.</p>
+<pre>
+    <code class="js">
+        var customerName = cog.bind("customer.0.name", {
+            value: "John"
+        });
+    </code>
+</pre>
+<hr>
+<h3 data-prop="{text:'%sidebar.bind.sub.bind_get%'},{attr:'id', data:'%sidebar.bind.sub.bind_get._key%'}"></h3>
+<p><code>cog.get()</code> is a wrapper for <code>cog.bind()</code>. Its purpose is to get and set values and refresh properties of the elements that are bound to that values.</p>
+<p><code>cog.get()</code> takes 3 parameters: first one is for string key, second is for setting new value to the specified value, and lastly third one is for callback function.</p>
+<pre>
+    <code class="js">
+        var getValue = cog.get("customer[0].debt");
+        cog.get("customer[0].debt", 1000, function () {console.log("changed!");});
+    </code>
+</pre>
+<hr>
+<h3 data-prop="{text:'%sidebar.bind.sub.bind_bindall%'},{attr:'id', data:'%sidebar.bind.sub.bind_bindall._key%'}"></h3>
+<p><code>cog.bindAll()</code> is another wrapper for <code>cog.bind()</code>. Its used for binding every element inside another element, mostly used for initiating the CognitiveJS.</p>
+<p><code>cog.bindAll()</code> takes a single object as a parameter and here is a table of all the parameters that can be used:</p>
+<table class="table table-bordered">
+    <tr><td><b>Name</b></td><td><b>Description</b></td></tr>
+    <tr><td><b>node</b></td><td>element that its child elements will be bound (default value is <code>document</code>)</td></tr>
+    <tr><td><b>callback</b></td><td>callback function for executing code after all the elements are bound</td></tr>
+</table>
+<pre>
+    <code class="js">
+        cog.bindAll({
+            node: document.getElementById('element'),
+            callback: function(){console.log("bound!");}
+        });
+    </code>
+</pre>

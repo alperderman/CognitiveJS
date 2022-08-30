@@ -1,0 +1,124 @@
+<h1>Pre-processing</h1>
+<p>As we have mentioned on the above, pre-processing way is the originally intended way of using CognitiveJS. This way changes the structure of your project considerably.</p>
+<p>In this way, instead of binding props directly on the current document, we are going to render a whole another page, and only then we'll bind them with the props that we have gathered from the main page.</p>
+<p>This way solves couple of problems that happen regardless of the framework that you are using.</p>
+<p>First problem is normally when you render a page to be usable on web, you would have to use back-end to compile it first, but with CognitiveJS this process is completely done on the front-end. No overhead, no package dependencies or any other things that makes web development a spaghetti swamp.</p>
+<p>Second advantage is content management, since contents are on a single page, seperated from layout, Cognitive makes management a lot easier. Even if you are not making a static website (like this documentation for example), its still usable with a few modifications. Just construct the main page with contents on the back-end and ship it as it is, Cognitive will handle the rest.</p>
+<p>Now that we have briefly explained what is pre-processing and what are the advatages are, we can discuss about how do we use it.</p>
+<p>In pre-processing, first we are going to set values and templates directly as an element inside the main page with <code>data-set</code> attribute, then we'll render the second page that has the layout with bindings, styles, scripts and so on with <code>cog.render()</code> function.</p>
+<p>Additionally we can use <code>data-src</code> attribute for getting external contents.</p>
+<div class="row">
+    <div class="col-sm-12 col-md-6">
+        <pre>
+            <code class="html">
+                &lt;html>
+                &lt;head>
+                    &lt;title>Main&lt;/title>
+                &lt;/head>
+                &lt;body>
+
+                    &lt;div data-set="json:products">
+                        &lt;div data-src="products.json">&lt;/div>
+                    &lt;/div>
+
+                    &lt;div data-set="text:hello">Hello World&lt;/div>
+    
+                    &lt;script src="cog.js">&lt;/script>
+                    &lt;script>
+                        cog.render("path/to/layout.html");
+                    &lt;/script>
+    
+                &lt;/body>
+                &lt;/html>
+            </code>
+        </pre>
+    </div>
+    <div class="col-sm-12 col-md-6">
+        <pre>
+            <code class="html">
+                &lt;html>
+                &lt;head>
+                    &lt;title>Layout&lt;/title>
+                    &lt;link rel="stylesheet" type="text/css" href="your_styles.css" />
+                &lt;/head>
+                &lt;body>
+    
+                    &lt;p data-prop="text:'%hello%'">&lt;/p>
+
+                    &lt;table data-prop="repeat:'products as product', temp:'row'">
+                        &lt;tr>&lt;td data-prop="text:'%%product%.name%'">&lt;/td>&lt;td data-prop="text:'%%product%.price%'">&lt;/td>&lt;/tr>
+                    &lt;/table>
+
+                    &lt;script src="your_scripts.js">&lt;/script>
+
+                &lt;/body>
+                &lt;/html>
+            </code>
+        </pre>
+    </div>
+</div>
+<p class="alert alert-info">You can also use <code>data-set</code> and <code>data-src</code> attributes on the layout page.</p>
+<p class="alert alert-info">Any other script that doesn't effect CognitiveJS (modifying the <code>cog.data</code> etc...) should be placed on the layout page.</p>
+<hr>
+<h3 data-prop="{text:'%sidebar.preprocess.sub.pre_data-set%'},{attr:'id', data:'%sidebar.preprocess.sub.pre_data-set._key%'}"></h3>
+<p>There are 4 different data set types that you can use: json, text, html and temp.</p>
+<pre>
+    <code class="html">
+        &lt;div data-set="json:fruits">
+            [
+                {"name":"pear", "color":"green"},
+                {"name":"kiwi", "color":"brown"}
+            ]
+        &lt;/div>
+
+        &lt;div data-set="text:greeting">Hello There!&lt;/div>
+
+        &lt;div data-set="html:content">
+            &lt;h1>Title&lt;/h1>
+            &lt;p>Lorem ipsum dolor sit amet.&lt;/p>
+        &lt;/div>
+
+        &lt;div data-set="temp:navbar">
+            &lt;ul class="navbar" data-prop="repeat:'alias as menu'">
+                &lt;li>&lt;a data-prop="{text:'%%menu%.title%'},{attr:'href', data:'%%menu%.href%'}">&lt;/a>&lt;/li>
+            &lt;/ul>
+        &lt;/div>
+    </code>
+</pre>
+<p>One thing to consider while you are extending an object with JSON type, you should first declare an empty object like you normally would do with JavaScript.</p>
+<pre>
+    <code class="html">
+        &lt;!--If you want to declare values inside an object seperately then set an empty json object first-->
+        &lt;div data-set="json:card">
+            {}
+        &lt;/div>
+        &lt;div data-set="text:card.title">The title of the card&lt;/div>
+        &lt;div data-set="text:card.desc">the description of the card&lt;/div>
+    </code>
+</pre>
+</div>
+<p class="alert alert-info">Keep in mind template references are stored on a completely different variable, so don't try to extend an object like in the above while defining templates.</p>
+<hr>
+<h3 data-prop="{text:'%sidebar.preprocess.sub.pre_data-src%'},{attr:'id', data:'%sidebar.preprocess.sub.pre_data-src._key%'}"></h3>
+<p>For getting external contents and templates we can use <code>data-src</code> attribute.</p>
+<pre>
+    <code class="html">
+        &lt;div data-set="json:products">
+            &lt;div data-src="products.json">&lt;/div>
+        &lt;/div>
+
+        &lt;div data-set="html:sectionAbout">
+            &lt;div data-src="about.html">&lt;/div>
+        &lt;/div>
+
+        &lt;div data-set="temp:navbar">
+            &lt;div data-src="navbar.html">&lt;/div>
+        &lt;/div>
+    </code>
+</pre>
+<hr>
+<h3 data-prop="{text:'%sidebar.preprocess.sub.pre_render%'},{attr:'id', data:'%sidebar.preprocess.sub.pre_render._key%'}"></h3>
+<p><code>cog.render()</code> function only takes one parameter and its the path of the layout page, there is really nothing to say about usage wise but what it does under the hood can be explained.</p>
+<p>When you execute the <code>cog.render()</code> function, first thing it does is, it gathers the layout page and stitches it with the main document. After that, it gathers the external contents that has defined with <code>data-src</code> and replaces those elements with their corresponding content.</p>
+<p>After getting external contents recursively, it will process elements with <code>data-set</code> attribute and will define them on <code>cog.data</code> recpectively to their keys (templates definitions will be placed in <code>cog.templates</code> instead of <code>cog.data</code>).</p>
+<p>Next, it will execute <code>bindAll()</code> function, binding every element with their properties. Right after that scripts will be executed and load events will be dispatched to imitate page load.</p>

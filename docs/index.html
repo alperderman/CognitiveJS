@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CognitiveJS | Docs</title>
+  </head>
+  <body class="overflow-hidden">
+
+    <div data-set="json:sidebar">
+      {
+        "intro":{"title":"Introduction",
+          "sub":{
+            "intro_download":"Download",
+            "intro_usage":"Usage"
+          }
+        },
+        "prop":{"title":"Properties",
+          "sub":{
+            "prop_data-prop":"data-prop",
+            "prop_text":"Text",
+            "prop_html":"HTML",
+            "prop_class":"Class",
+            "prop_attr":"Attribute",
+            "prop_style":"Style",
+            "prop_if":"Condition",
+            "prop_temp":"Template",
+            "prop_repeat":"Repeat"
+          }
+        },
+        "bind":{"title":"Bindings",
+          "sub":{
+            "bind_data-bind":"data-bind",
+            "bind_bind":"cog.bind()",
+            "bind_get":"cog.get()",
+            "bind_bindall":"cog.bindAll()"
+          }
+        },
+        "preprocess":{"title":"Pre-processing",
+          "sub":{
+            "pre_data-set":"data-set",
+            "pre_data-src":"data-src",
+            "pre_render":"cog.render()"
+          }
+        },
+        "utility":{"title":"Utility Functions",
+          "sub":{
+            "utility_events":"Events",
+            "utility_keywords":"Token Keywords",
+            "utility_cache":"cog.cacheRender",
+            "utility_elementbind":"cog.getElementBind()",
+            "utility_elementprop":"cog.getElementProp()"
+          }
+        }
+      }
+    </div>
+
+    <div data-set="json:docs">{}</div>
+
+    <div data-set="html:docs.intro">
+      <div data-src="sections/intro.html"></div>
+    </div>
+
+    <div data-set="html:docs.prop">
+      <div data-src="sections/prop.html"></div>
+    </div>
+
+    <div data-set="html:docs.bind">
+      <div data-src="sections/bind.html"></div>
+    </div>
+
+    <div data-set="html:docs.preprocess">
+      <div data-src="sections/pre.html"></div>
+    </div>
+
+    <div data-set="html:docs.utility">
+      <div data-src="sections/utility.html"></div>
+    </div>
+
+    <script src="../dist/cog.js"></script>
+    <script>
+      cog.render("layout.html");
+    </script>
+  </body>
+</html>

@@ -1,0 +1,76 @@
+<h1>Introduction</h1>
+<p>CognitiveJS (previously called DCG) is a front-end JavaScript framework/library for rendering dynamically declared contents and templates on DOM. Compared to the other frameworks, Cognitive aims to write minimal amount code as possible.</p>
+<p>Cognitive broadly inspired by <a href="https://knockoutjs.com/" target="_blank">Knockout</a>. As opposed to Knockout however, Cognitive doesn't have a design pattern and it can be used as a pre-processing framework with certain modifications.</p>
+<hr>
+<h3 data-prop="{text:'%sidebar.intro.sub.intro_download%'},{attr:'id', data:'%sidebar.intro.sub.intro_download._key%'}"></h3>
+<a class="btn btn-primary mb-2" target="_blank" href="https://github.com/alperderman/CognitiveJS"><i class="fas fa-external-link-alt mr-1"></i> Download from GitHub</a>
+<hr>
+<h3 data-prop="{text:'%sidebar.intro.sub.intro_usage%'},{attr:'id', data:'%sidebar.intro.sub.intro_usage._key%'}"></h3>
+<p>After downloading the CognitiveJS from GitHub, There are two main ways of using it in your project:</p>
+<p>First way is the traditional way, which is calling a function that initiates the CognitiveJS directly on the current document.</p>
+<pre>
+    <code class="html">
+        &lt;html>
+        &lt;head>
+            &lt;title>CognitiveJS&lt;/title>
+        &lt;/head>
+        &lt;body>
+
+            &lt;p data-prop="text:'%hello%'">&lt;/p>
+
+            &lt;script src="cog.js">&lt;/script>
+            &lt;script>
+                cog.data = {
+                    hello:"Hello World"
+                };
+                cog.bindAll();
+            &lt;/script>
+
+        &lt;/body>
+        &lt;/html>
+    </code>
+</pre>
+<p>Second way is the pre-processing way that renders a document with the specified path. This is the intended way of using Cognitive and it has couple of benefits such as managing contents and layouts seperately with ease. Explained thoroughly on the <strong data-bind="sidebar.preprocess.title" data-prop="text:'%\sidebar.preprocess.title%'"></strong> section.</p>
+
+<div class="row">
+    <div class="col-sm-12 col-md-6">
+        <pre>
+            <code class="html">
+                &lt;html>
+                &lt;head>
+                    &lt;title>Main&lt;/title>
+                &lt;/head>
+                &lt;body>
+    
+                    &lt;div data-set="text:hello">Hello World&lt;/div>
+    
+                    &lt;script src="cog.js">&lt;/script>
+                    &lt;script>
+                        cog.render("path/to/layout.html");
+                    &lt;/script>
+    
+                &lt;/body>
+                &lt;/html>
+            </code>
+        </pre>
+    </div>
+    <div class="col-sm-12 col-md-6">
+        <pre>
+            <code class="html">
+                &lt;html>
+                &lt;head>
+                    &lt;title>Layout&lt;/title>
+                    &lt;link rel="stylesheet" type="text/css" href="your_styles.css" />
+                &lt;/head>
+                &lt;body>
+    
+                    &lt;p data-prop="text:'%hello%'">&lt;/p>
+    
+                    &lt;script src="your_scripts.js">&lt;/script>
+
+                &lt;/body>
+                &lt;/html>
+            </code>
+        </pre>
+    </div>
+</div>
