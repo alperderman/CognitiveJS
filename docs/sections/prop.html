@@ -88,7 +88,7 @@
 
         &lt;script>
             //first load the template
-            cog.template({id:'card', el:document.getElementById('templateCard')});
+            cog.template({id:'card', elem:document.getElementById('templateCard')});
             //optionally you can delete the template definition
             //then initiate the Cognitive
             cog.data.cardData = {title:'This is title', desc:'This is description'};
@@ -99,7 +99,7 @@
 <p>Templates can also be rendered directly with the <code>cog.template()</code>.</p>
 <pre>
     <code class="js">
-        cog.template({id:'card', el:document.getElementById('templateCard')});
+        cog.template({id:'card', elem:document.getElementById('templateCard')});
         var templateElement = cog.template({id:'card', data:'cardData as aliasData'});
     </code>
 </pre>
