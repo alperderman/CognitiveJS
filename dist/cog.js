@@ -153,7 +153,7 @@ cog.parseBind = function (str) {
     return str.split(",");
 };
 cog.parseProp = function (str) {
-    var result = cog.isValidJSON(str);
+    var result = cog.isValidJSON(cog.decodeHTML(str));
     if (!result) {
         if (str.trim().indexOf("{") === 0) {
             result = cog.eval("(["+str+"])");
@@ -162,6 +162,9 @@ cog.parseProp = function (str) {
         }
     }
     return result;
+};
+cog.serializeProp = function (obj) {
+    return cog.encodeHTML(JSON.stringify(obj));
 };
 cog.newBind = function (arg) {
     if (cog.bindTypes[arg.name] == null) {
@@ -197,7 +200,7 @@ cog.bind = function (node, arg) {
                 node.setAttribute(cog.labelProp, arg.prop);
             }
             if (typeof arg.prop !== 'string' && Object.keys(arg.prop).length != 0) {
-                node.setAttribute(cog.labelProp, JSON.stringify(arg.prop));
+                node.setAttribute(cog.labelProp, cog.serializeProp(arg.prop));
             }
         } else {
             nodePropData = node.getAttribute(cog.labelProp);
@@ -465,10 +468,10 @@ cog.init = function () {
                 });
                 if (props != null) {
                     delete props[propIndex].current;
-                    elem.setAttribute(cog.labelProp, JSON.stringify(props));
+                    elem.setAttribute(cog.labelProp, cog.serializeProp(props));
                 } else {
                     delete prop.current;
-                    elem.setAttribute(cog.labelProp, JSON.stringify(prop));
+                    elem.setAttribute(cog.labelProp, cog.serializeProp(prop));
                 }
             }
             if (prop.if == null || cog.if(prop.if)) {
@@ -478,10 +481,10 @@ cog.init = function () {
                 if (propData != null) {
                     if (props != null) {
                         props[propIndex].current = propData;
-                        elem.setAttribute(cog.labelProp, JSON.stringify(props));
+                        elem.setAttribute(cog.labelProp, cog.serializeProp(props));
                     } else {
                         prop.current = propData;
-                        elem.setAttribute(cog.labelProp, JSON.stringify(prop));
+                        elem.setAttribute(cog.labelProp, cog.serializeProp(prop));
                     }
                     propData.split(" ").forEach(function (str) {
                         if (str != "") {
@@ -501,10 +504,10 @@ cog.init = function () {
                 elem.removeAttribute(prop.current);
                 if (props != null) {
                     delete props[propIndex].current;
-                    elem.setAttribute(cog.labelProp, JSON.stringify(props));
+                    elem.setAttribute(cog.labelProp, cog.serializeProp(props));
                 } else {
                     delete prop.current;
-                    elem.setAttribute(cog.labelProp, JSON.stringify(prop));
+                    elem.setAttribute(cog.labelProp, cog.serializeProp(prop));
                 }
             }
             if (prop.if == null || cog.if(prop.if)) {
@@ -517,10 +520,10 @@ cog.init = function () {
                 if (propAttr != null) {
                     if (props != null) {
                         props[propIndex].current = propAttr;
-                        elem.setAttribute(cog.labelProp, JSON.stringify(props));
+                        elem.setAttribute(cog.labelProp, cog.serializeProp(props));
                     } else {
                         prop.current = propAttr;
-                        elem.setAttribute(cog.labelProp, JSON.stringify(prop));
+                        elem.setAttribute(cog.labelProp, cog.serializeProp(prop));
                     }
                     elem.setAttribute(propAttr, propData);
                 }
@@ -692,6 +695,20 @@ cog.render = function (layoutSrc) {
         }, 0);
     }
 };
+cog.encodeHTML = function (str) {
+    var i, buf = [];
+    if (str == null) {return;}
+    for (var i=str.length-1;i>=0;i--) {
+        buf.unshift(['&#', str[i].charCodeAt(), ';'].join(''));
+    }
+    return buf.join('');
+};
+cog.decodeHTML = function (str) {
+    if (str == null) {return;}
+    return str.replace(/&#(\d+);/g, function(match, dec) {
+        return String.fromCharCode(dec);
+    });
+};
 cog.isValidJSON = function (str) {
     var o;
     try {
@@ -704,6 +721,7 @@ cog.isValidJSON = function (str) {
     return false;
 };
 cog.replaceAll = function (str, find, replace, options) {
+    if (str == null) {return;}
     if (options == null) {options = 'gim';}
     function escape_regex(string) {
         return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&');
