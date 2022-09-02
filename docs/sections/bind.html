@@ -42,6 +42,12 @@
         &lt;p data-bind="foo, brands['ford'].title" data-prop="text:'%foo%'">&lt;/p>
     </code>
 </pre>
+<p>To automatically refresh an element regardless of which value has been changed, write <code>_auto</code> to the attribute.</p>
+<pre>
+    <code class="html">
+        &lt;p data-bind="_auto" data-prop="text:'%foo%'">&lt;/p>
+    </code>
+</pre>
 <hr>
 <h3 data-prop="{text:'%sidebar.bind.sub.bind_bind%'},{attr:'id', data:'%sidebar.bind.sub.bind_bind._key%'}"></h3>
 <p>One function to rule them all. <code>cog.bind()</code> is the powerhouse of the <span style="text-decoration: line-through;">cell</span> CognitiveJS.</p>
