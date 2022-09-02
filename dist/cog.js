@@ -61,12 +61,16 @@ cog.get = function (key, val, callback) {
         if (i < elems.length) {
             elem = elems[i];
             elemBind = elem.getAttribute(cog.labelBind);
-            elemBindSplit = cog.parseBind(elemBind);
+            if (elemBind.indexOf(cog.keywords.auto) === 0) {
+                elemBindSplit = cog.parseBindAuto(elem);
+            } else {
+                elemBindSplit = cog.parseBind(elemBind);
+            }
             for (ii = 0;ii < elemBindSplit.length;ii++) {
                 elemBindSplitData = cog.replaceAll(elemBindSplit[ii].trim(), "\\", "");
                 normalizedKey = cog.normalizeKeys(key);
                 normalizedElemBindSplitData = cog.normalizeKeys(elemBindSplitData);
-                if (normalizedElemBindSplitData.indexOf(cog.keywords.auto) === 0 || normalizedElemBindSplitData.indexOf(normalizedKey) === 0 || normalizedKey.indexOf(normalizedElemBindSplitData) === 0) {
+                if (normalizedElemBindSplitData.indexOf(normalizedKey) === 0 || normalizedKey.indexOf(normalizedElemBindSplitData) === 0) {
                     bound = true;
                     break;
                 }
@@ -154,6 +158,16 @@ cog.parseSet = function (str) {
 cog.parseBind = function (str) {
     return str.split(",");
 };
+cog.parseBindAuto = function (elem) {
+    var props = elem.getAttribute(cog.labelProp);
+    var result = cog.parseToken(props, function (token) {
+        var tokenPure = cog.normalizeKeys(cog.replaceAll(cog.purifyToken(token), "\\", ""));
+        if (!(/[^a-zA-Z0-9\_\-\.]/g.test(tokenPure))) {
+            return tokenPure;
+        }
+    });
+    return cog.removeDuplicatesFromArray(result);
+};
 cog.parseProp = function (str) {
     var result = cog.isValidJSON(cog.decodeHTML(str));
     if (!result) {
@@ -164,6 +178,28 @@ cog.parseProp = function (str) {
         }
     }
     return result;
+};
+cog.parseToken = function (str, replace) {
+    var delimiters = [], tokens = [], text, i, tokenReplace;
+    for (i = 0;i < str.length;i++) {
+        if (str[i] === cog.tokenDelimiter) {
+            if (delimiters.length != 0) {
+                text = str.slice(delimiters[delimiters.length-1], i+1);
+                if (cog.purifyToken(text) != "") {
+                    if (typeof replace !== 'undefined') {
+                        tokenReplace = replace(text);
+                    } else {
+                        tokenReplace = text;
+                    }
+                    if (tokenReplace != null) {
+                        tokens.push(tokenReplace);
+                    }
+                }
+            }
+            delimiters.push(i);
+        }
+    }
+    return tokens;
 };
 cog.serializeProp = function (obj) {
     return cog.encodeHTML(JSON.stringify(obj));
@@ -293,28 +329,13 @@ cog.replaceToken = function (node, replace, recursive) {
             }
         }
     }
-    function parse_token(str) {
-        var delimiters = [], tokens = [], text, i;
-        for (i = 0;i < str.length;i++) {
-            if (str[i] === cog.tokenDelimiter) {
-                if (delimiters.length != 0) {
-                    text = str.slice(delimiters[delimiters.length-1], i+1);
-                    if (text.substring(cog.tokenDelimiter.length, text.length-cog.tokenDelimiter.length) != "") {
-                        tokens.push(text);
-                    }
-                }
-                delimiters.push(i);
-            }
-        }
-        return tokens;
-    }
     function replace_string(str) {
         var tokens, result = str;
-        tokens = cog.removeDuplicatesFromArray(parse_token(result));
+        tokens = cog.removeDuplicatesFromArray(cog.parseToken(result));
         tokens.forEach(function (token) {
             var tokenPure, tokenData;
-            tokenPure = token.substring(cog.tokenDelimiter.length, token.length-cog.tokenDelimiter.length);
-            tokenData = replace(tokenPure.trim());
+            tokenPure = cog.purifyToken(token);
+            tokenData = replace(tokenPure);
             if (tokenData != null) {
                 result = cog.replaceAll(result, token, function () {return tokenData;}, 'gim');
             }
@@ -324,6 +345,9 @@ cog.replaceToken = function (node, replace, recursive) {
         }
         return result;
     }
+};
+cog.purifyToken = function (token) {
+    return token.substring(cog.tokenDelimiter.length, token.length-cog.tokenDelimiter.length).trim();
 };
 cog.template = function (arg, bind) {
     var template, createEl;
@@ -343,7 +367,7 @@ cog.template = function (arg, bind) {
     if (arg.data != null && template != null) {
         cog.replaceToken(template, function (pure) {
             if (pure == arg.data.split(" ")[2]) {
-                return arg.data.split(" ")[0];
+                return cog.purifyToken(arg.data.split(" ")[0]);
             } else {
                 return null;
             }
@@ -565,6 +589,7 @@ cog.init = function () {
         if: "prop.repeat != null && (prop.if == null || cog.if(prop.if))",
         bind: function (elem, prop, props, propIndex) {
             var propDatas, propData, propDatasIterate, template, repeatVal, i, key, parent = prop.repeat.split(" ")[0], alias = prop.repeat.split(" ")[2];
+            parent = cog.purifyToken(parent);
             parent = cog.normalizeKeys(parent);
             propDatas = cog.getRecursiveValue(parent);
             cog.template({id:prop.temp, elem:elem});
@@ -705,18 +730,14 @@ cog.render = function (layoutSrc) {
     }
 };
 cog.encodeHTML = function (str) {
-    var i, buf = [];
     if (str == null) {return;}
-    for (i = str.length-1;i >= 0;i--) {
-        buf.unshift(['&#', str[i].charCodeAt(), ';'].join(''));
-    }
-    return buf.join('');
+    str = cog.replaceAll(cog.replaceAll(str, "'", "&#39;"), '"', "&#34;");
+    return str;
 };
 cog.decodeHTML = function (str) {
     if (str == null) {return;}
-    return str.replace(/&#(\d+);/g, function (m1, m2) {
-        return String.fromCharCode(m2);
-    });
+    str = cog.replaceAll(cog.replaceAll(str, "&#39;", "'"), "&#34;", '"');
+    return str;
 };
 cog.isValidJSON = function (str) {
     var o;
