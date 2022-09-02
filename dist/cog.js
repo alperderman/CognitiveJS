@@ -705,14 +705,18 @@ cog.render = function (layoutSrc) {
     }
 };
 cog.encodeHTML = function (str) {
-    var textArea = document.createElement('textarea');
-    textArea.innerText = str;
-    return textArea.innerHTML;
+    var i, buf = [];
+    if (str == null) {return;}
+    for (i = str.length-1;i >= 0;i--) {
+        buf.unshift(['&#', str[i].charCodeAt(), ';'].join(''));
+    }
+    return buf.join('');
 };
 cog.decodeHTML = function (str) {
-    var textArea = document.createElement('textarea');
-    textArea.innerHTML = str;
-    return textArea.value;
+    if (str == null) {return;}
+    return str.replace(/&#(\d+);/g, function (m1, m2) {
+        return String.fromCharCode(m2);
+    });
 };
 cog.isValidJSON = function (str) {
     var o;
