@@ -249,16 +249,13 @@ cog.bind = function (node, arg) {
         }
     }
     function bind_prop(node, prop, props, propIndex) {
-        var bindType, nodeClone = node.cloneNode(true);
+        var bindType;
         for (bindType in cog.bindTypes) {
             if (cog.bindTypes[bindType][cog.bindKeyIf] != null && cog.bindTypes[bindType][cog.bindKeyBind] != null) {
                 if (eval(cog.bindTypes[bindType][cog.bindKeyIf])) {
-                    cog.bindTypes[bindType][cog.bindKeyBind](nodeClone, prop, props, propIndex);
+                    cog.bindTypes[bindType][cog.bindKeyBind](node, prop, props, propIndex);
                 }
             }
-        }
-        if (!node.isEqualNode(nodeClone)) {
-            node.parentNode.replaceChild(nodeClone, node);
         }
     }
 };
@@ -708,18 +705,14 @@ cog.render = function (layoutSrc) {
     }
 };
 cog.encodeHTML = function (str) {
-    var i, buf = [];
-    if (str == null) {return;}
-    for (i = str.length-1;i >= 0;i--) {
-        buf.unshift(['&#', str[i].charCodeAt(), ';'].join(''));
-    }
-    return buf.join('');
+    var textArea = document.createElement('textarea');
+    textArea.innerText = str;
+    return textArea.innerHTML;
 };
 cog.decodeHTML = function (str) {
-    if (str == null) {return;}
-    return str.replace(/&#(\d+);/g, function (m1, m2) {
-        return String.fromCharCode(m2);
-    });
+    var textArea = document.createElement('textarea');
+    textArea.innerHTML = str;
+    return textArea.value;
 };
 cog.isValidJSON = function (str) {
     var o;
