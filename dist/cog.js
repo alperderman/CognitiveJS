@@ -35,7 +35,7 @@ cog.regexHead = new RegExp("<head[^>]*>((.|[\\n\\r])*)<\\/head>", "im");
 cog.regexBody = new RegExp("<body[^>]*>((.|[\\n\\r])*)<\\/body>", "im");
 cog.regexScripts = new RegExp("<script[^>]*>([\\s\\S]*?)<\\/script>", "gim");
 cog.encapVar = null;
-cog.renderReady = true;
+cog.isReady = true;
 
 cog.get = function (key, val, callback) {
     if (key == null) {return;}
@@ -352,7 +352,7 @@ cog.template = function (arg, bind) {
             }
         });
     }
-    if (bind && cog.renderReady) {
+    if (bind && cog.isReady) {
         cog.bindAll({node:template});
     }
     return template;
@@ -423,7 +423,7 @@ cog.init = function () {
             var propData;
             propData = cog.replaceToken(prop.text, function (pure) {
                 return cog.getRecursiveValue(pure);
-            }, false);
+            });
             if (propData != null) {
                 elem.innerText = propData;
             }
@@ -606,7 +606,7 @@ cog.init = function () {
                 }
             }
             elem.innerHTML = repeatVal;
-            if (cog.renderReady) {
+            if (cog.isReady) {
                 cog.bindAll({node:elem});
             }
         }
@@ -616,7 +616,7 @@ cog.render = function (layoutSrc) {
     var layout;
     step_start();
     function step_start() {
-        cog.renderReady = false;
+        cog.isReady = false;
         cog.xhr(layoutSrc, function (xhr) {
             if (xhr.readyState == 4) {
                 if (xhr.status == 200) {
@@ -686,7 +686,7 @@ cog.render = function (layoutSrc) {
         setTimeout(function () {
             cog.bindAll({
                 callback: function () {
-                    cog.renderReady = true;
+                    cog.isReady = true;
                     step_scripts();
                 }
             });
