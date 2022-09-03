@@ -161,7 +161,7 @@ cog.parseBind = function (str) {
 cog.parseBindAuto = function (elem) {
     var props = elem.getAttribute(cog.labelProp);
     var result = cog.parseToken(props, function (token) {
-        var tokenPure = cog.normalizeKeys(cog.replaceAll(cog.purifyToken(token), "\\", ""));
+        var tokenPure = cog.normalizeKeys(cog.purifyToken(token));
         if (!(/[^a-zA-Z0-9\_\-\.]/g.test(tokenPure))) {
             return tokenPure;
         }
@@ -221,6 +221,7 @@ cog.newBind = function (arg) {
 cog.bind = function (node, arg) {
     var nodeProp, nodePropData, nodeAttr;
     if (arg == null) {arg = {};}
+    if (arg.keep == null) {arg.keep = false;}
     if (typeof node === 'string') {
         cog.get(node, arg.value, arg.callback);
         return function (val, callback) {
@@ -228,6 +229,9 @@ cog.bind = function (node, arg) {
         };
     } else {
         if (arg.prop !== undefined) {
+            if (!arg.keep) {
+                remove_current();
+            }
             if (arg.prop == "" || Object.keys(arg.prop).length == 0) {
                 node.removeAttribute(cog.labelProp);
                 nodePropData = null;
@@ -294,6 +298,60 @@ cog.bind = function (node, arg) {
             }
         }
     }
+    function remove_current() {
+        var props = cog.getElementProp(node), prop = props;
+        node.innerHTML = "";
+        if (props != null) {
+            if (typeof props === 'object' && Array.isArray(props)) {
+                props.forEach(function (prop, i) {
+                    if (prop.current != null) {
+                        if (prop.class != null) {
+                            prop.current.split(" ").forEach(function (str) {
+                                if (str != "") {
+                                    node.classList.remove(str);
+                                }
+                            });
+                        }
+                        if (prop.attr != null) {
+                            node.removeAttribute(prop.current);
+                        }
+                        if (prop.style != null) {
+                            Object.keys(prop.current).forEach(function (key) {
+                                node.style[key] = "";
+                            });
+                        }
+                        delete props[i].current;
+                    }
+                    if (eval(cog.bindTypes["if"][cog.bindKeyIf])) {
+                        node.style.display = "";
+                    }
+                });
+            } else {
+                if (prop.current != null) {
+                    if (prop.class != null) {
+                        prop.current.split(" ").forEach(function (str) {
+                            if (str != "") {
+                                node.classList.remove(str);
+                            }
+                        });
+                    }
+                    if (prop.attr != null) {
+                        node.removeAttribute(prop.current);
+                    }
+                    if (prop.style != null) {
+                        Object.keys(prop.current).forEach(function (key) {
+                            node.style[key] = "";
+                        });
+                    }
+                    delete prop[i].current;
+                }
+                if (eval(cog.bindTypes["if"][cog.bindKeyIf])) {
+                    node.style.display = "";
+                }
+            }
+            node.setAttribute(cog.labelProp, cog.serializeProp(prop));
+        }
+    }
 };
 cog.bindAll = function (arg) {
     if (arg == null) {arg = {};}
@@ -347,7 +405,7 @@ cog.replaceToken = function (node, replace, recursive) {
     }
 };
 cog.purifyToken = function (token) {
-    return token.substring(cog.tokenDelimiter.length, token.length-cog.tokenDelimiter.length).trim();
+    return cog.replaceAll(token.substring(cog.tokenDelimiter.length, token.length-cog.tokenDelimiter.length).trim(), "\\", "");
 };
 cog.template = function (arg, bind) {
     var template, createEl;
@@ -475,9 +533,9 @@ cog.init = function () {
         if: "prop.if != null && Object.keys(prop).length == 1",
         bind: function (elem, prop, props, propIndex) {
             if (!cog.if(prop.if)) {
-                elem.style.display = 'none';
+                elem.style.display = "none";
             } else {
-                elem.style.display = null;
+                elem.style.display = "";
             }
         }
     });
@@ -560,10 +618,42 @@ cog.init = function () {
         name: "style",
         if: "prop.style != null",
         bind: function (elem, prop, props, propIndex) {
-            prop.attr = "style";
-            prop.data = prop.style;
-            delete prop.style;
-            cog.bindTypes["attr"].bind(elem, prop, props, propIndex);
+            var propKey, propVal, propCurrent = {};
+            if (prop.current != null && (prop.if == null || !cog.if(prop.if))) {
+                Object.keys(prop.current).forEach(function (key) {
+                    elem.style[key] = "";
+                });
+                if (props != null) {
+                    delete props[propIndex].current;
+                    elem.setAttribute(cog.labelProp, cog.serializeProp(props));
+                } else {
+                    delete prop.current;
+                    elem.setAttribute(cog.labelProp, cog.serializeProp(prop));
+                }
+            }
+            if (prop.if == null || cog.if(prop.if)) {
+                Object.keys(prop.style).forEach(function (key) {
+                    propKey = cog.replaceToken(key, function (pure) {
+                        return cog.getRecursiveValue(pure);
+                    });
+                    propVal = cog.replaceToken(prop.style[key], function (pure) {
+                        return cog.getRecursiveValue(pure);
+                    });
+                    if (propKey != null && propVal != null) {
+                        elem.style[propKey] = propVal;
+                        propCurrent[propKey] = propVal;
+                    }
+                });
+                if (propCurrent != null) {
+                    if (props != null) {
+                        props[propIndex].current = propCurrent;
+                        elem.setAttribute(cog.labelProp, cog.serializeProp(props));
+                    } else {
+                        prop.current = propCurrent;
+                        elem.setAttribute(cog.labelProp, cog.serializeProp(prop));
+                    }
+                }
+            }
         }
     });
     cog.newBind({
