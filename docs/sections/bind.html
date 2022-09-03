@@ -62,6 +62,17 @@
         });
     </code>
 </pre>
+<p>Normally when you change the properties of an element, It will remove their bound properties (For example if you had set a style property, it will remove that style property from the element). In order to keep bound element properties after binding with new properties, set the <code>keep</code> parameter to <code>true</code>.</p>
+<pre>
+    <code class="js">
+        cog.bind(document.getElementById("demo"), {
+            bind: ["foo", "customers.0"],
+            prop: [{text:"customer.0.name"}, {class:"customer.0.active"}],
+            keep: true
+            //now when you change the properties of this element, old properties will not be removed
+        });
+    </code>
+</pre>
 <p class="alert alert-info">If you bind a parent object, any changes to the child values, will also trigger other child values that are bind to the other elements.</p>
 <p class="alert alert-info">There are also additional functions to get bindings and properties of an element, check out the <a class="font-weight-bold" data-prop="{text:'%sidebar.utility.title%'},{attr:'href', data:'#%sidebar.utility._key%'}"></a> section for more information.</p>
 <p>To bind a variable to a value. set the first parameter as the string key of the value just like the first example on the above. Additionally you can set the new value of the data while binding with the second parameter.</p>

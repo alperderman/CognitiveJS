@@ -51,10 +51,10 @@
 </pre>
 <hr>
 <h3 data-prop="{text:'%sidebar.prop.sub.prop_style%'},{attr:'id', data:'%sidebar.prop.sub.prop_style._key%'}"></h3>
-<p>Sets a style attribute to the element, its relatively a shortcut for attribute property.</p>
+<p>Sets the style of the element, this definition uses the native <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style" target="_blank">JavaScript style object</a>.</p>
 <pre>
     <code class="html">
-        &lt;div data-prop="{style:'background-image:url(%img.path%);'}">&lt;/div>
+        &lt;div data-prop="{style:{backgroundImage:'url(%img.url%)', color:'#a5a5a5'}}">&lt;/div>
     </code>
 </pre>
 <hr>
@@ -66,7 +66,7 @@
         &lt;div data-prop="{if:'%card.active% == true'}">&lt;/div>
 
         &lt;!--or with another property-->
-        &lt;div data-prop="{style:'background-image:url(%img.path%);', if:'%img.path% != null'}">&lt;/div>
+        &lt;div data-prop="{style:{backgroundImage:'url(%img.url%)'}, if:'%img.url% != null'}">&lt;/div>
     </code>
 </pre>
 <p class="alert alert-info">If you use conditions with the attribute or class properties, when a refresh triggered on that element, previous classes or attributes will be deleted and rebound with the new values.</p>
@@ -78,7 +78,7 @@
 <pre>
     <code class="html">
         &lt;!--template property-->
-        &lt;div data-prop="{temp:'card', data:'cardData as aliasData'}">&lt;/div>
+        &lt;div data-prop="{temp:'card', data:'%cardData% as aliasData'}">&lt;/div>
 
         &lt;!--template definition (you can also create your templates with JavaScript instead of getting them from the DOM, this is just one of the ways of doing it)-->
         &lt;div id="templateCard">
@@ -110,7 +110,7 @@
 <p>Here is a simple example,</p>
 <pre>
     <code class="html">
-        &lt;table data-prop="repeat:'people as person', temp:'row'">
+        &lt;table data-prop="repeat:'%people% as person', temp:'row'">
             &lt;tr>&lt;td data-prop="text:'%%person%.name%'">&lt;/td>&lt;td data-prop="text:'%%person%.surname%'">&lt;/td>&lt;/tr>
         &lt;/table>
         

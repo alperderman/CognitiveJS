@@ -45,7 +45,7 @@
     
                     &lt;p data-prop="text:'%hello%'">&lt;/p>
 
-                    &lt;table data-prop="repeat:'products as product', temp:'row'">
+                    &lt;table data-prop="repeat:'%products% as product', temp:'row'">
                         &lt;tr>&lt;td data-prop="text:'%%product%.name%'">&lt;/td>&lt;td data-prop="text:'%%product%.price%'">&lt;/td>&lt;/tr>
                     &lt;/table>
 
@@ -79,7 +79,7 @@
         &lt;/div>
 
         &lt;div data-set="temp:navbar">
-            &lt;ul class="navbar" data-prop="repeat:'alias as menu'">
+            &lt;ul class="navbar" data-prop="repeat:'%alias% as menu'">
                 &lt;li>&lt;a data-prop="{text:'%%menu%.title%'},{attr:'href', data:'%%menu%.href%'}">&lt;/a>&lt;/li>
             &lt;/ul>
         &lt;/div>
