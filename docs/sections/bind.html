@@ -26,10 +26,10 @@
             cog.bindAll();
         &lt;/script>
         &lt;script>
-            cog.get("foo", "changed!");
+            cog.get("foo", {value: "changed!"});
             // OR
             var foo = cog.bind("foo");
-            foo("changed!");
+            foo({value: "changed!"});
         &lt;/script>
     </code>
 </pre>
@@ -52,7 +52,7 @@
 <h3 data-prop="{text:'%sidebar.bind.sub.bind_bind%'},{attr:'id', data:'%sidebar.bind.sub.bind_bind._key%'}"></h3>
 <p>One function to rule them all. <code>cog.bind()</code> is the powerhouse of the <span style="text-decoration: line-through;">cell</span> CognitiveJS.</p>
 <p>With <code>cog.bind()</code> you can: bind elements, bind variables, change the bindings and properties of the elements. Pretty much every feature related to binding condensed into this function.</p>
-<p><code>cog.bind()</code> takes two parameters: first parameter takes a string key of the data or an element to bind. second parameter is an object with set of preset arguments.</p>
+<p><code>cog.bind()</code> takes two parameters: first parameter takes a string key of the data or an element to bind. second parameter is an argument object.</p>
 <p>In order to bind or change the properties of an element:</p>
 <pre>
     <code class="js">
@@ -85,23 +85,20 @@
 </pre>
 <hr>
 <h3 data-prop="{text:'%sidebar.bind.sub.bind_get%'},{attr:'id', data:'%sidebar.bind.sub.bind_get._key%'}"></h3>
-<p><code>cog.get()</code> is a wrapper for <code>cog.bind()</code>. Its purpose is to get and set values and refresh properties of the elements that are bound to that values.</p>
-<p><code>cog.get()</code> takes 3 parameters: first one is for string key, second is for setting new value to the specified value, and lastly third one is for callback function.</p>
+<p><code>cog.get()</code> is a wrapper for <code>cog.bind()</code>. Its purpose is to get and set values and refresh properties of the elements that are bound to these values.</p>
+<p><code>cog.get()</code> takes 2 parameters: first one is for string key, second is for argument object.</p>
 <pre>
     <code class="js">
         var getValue = cog.get("customer[0].debt");
-        cog.get("customer[0].debt", 1000, function () {console.log("changed!");});
+        cog.get("customer[0].debt", {
+            value: 1000,
+            callback: function () {console.log("changed!");}
+        });
     </code>
 </pre>
 <hr>
 <h3 data-prop="{text:'%sidebar.bind.sub.bind_bindall%'},{attr:'id', data:'%sidebar.bind.sub.bind_bindall._key%'}"></h3>
 <p><code>cog.bindAll()</code> is another wrapper for <code>cog.bind()</code>. Its used for binding every element inside another element, mostly used for initiating the CognitiveJS.</p>
-<p><code>cog.bindAll()</code> takes a single object as a parameter and here is a table of all the parameters that can be used:</p>
-<table class="table table-bordered">
-    <tr><td><b>Name</b></td><td><b>Description</b></td></tr>
-    <tr><td><b>node</b></td><td>element that its child elements will be bound (default value is <code>document</code>)</td></tr>
-    <tr><td><b>callback</b></td><td>callback function for executing code after all the elements are bound</td></tr>
-</table>
 <pre>
     <code class="js">
         cog.bindAll({
