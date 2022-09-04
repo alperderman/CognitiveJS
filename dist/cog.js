@@ -4,7 +4,7 @@ if (!Object.assign) { Object.defineProperty(Object, 'assign', { enumerable: fals
 if (typeof window.CustomEvent !== 'function') { window.CustomEvent = function (event, params) { params = params || {bubbles: false, cancelable: false, detail: null}; var evt = document.createEvent('CustomEvent'); evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail); return evt; }; }
 
 var cog = {};
-cog.cacheRender = true;
+cog.cache = true;
 cog.tokenDelimiter = "%";
 cog.labelSet = "data-set";
 cog.labelBind = "data-bind";
@@ -12,9 +12,10 @@ cog.labelProp = "data-prop";
 cog.labelHead = "head";
 cog.labelSkip = "skip";
 cog.labelSource = "data-src";
+cog.labelSourceObject = "data-object";
+cog.labelSourceMethod = "data-method";
+cog.labelSourceCache = "data-cache";
 cog.labelSourceAwait = "await";
-cog.labelSourceObj = "data-obj";
-cog.labelSourceMet = "data-met";
 cog.eventBeforeData = "COGBeforeData";
 cog.eventAfterData = "COGAfterData";
 cog.eventBeforeRender = "COGBeforeRender";
@@ -882,12 +883,20 @@ cog.mergeDeep = function (target, source) {
     return output;
 };
 cog.loadContents = function (callback) {
-    var node, src, method, data;
+    var node, src, method, data, cache;
     node = document.querySelector("["+cog.labelSource+"]:not(["+cog.labelSourceAwait+"]):not(["+cog.labelSkip+"])");
     if (node) {
         src = node.getAttribute(cog.labelSource);
-        method = node.getAttribute(cog.labelSourceMet);
-        data = node.getAttribute(cog.labelSourceObj);
+        method = node.getAttribute(cog.labelSourceMethod);
+        data = node.getAttribute(cog.labelSourceObject);
+        cache = node.getAttribute(cog.labelSourceCache);
+        if (cache != null) {
+            if (cache != 'false') {
+                cache = true;
+            } else {
+                cache = false;
+            }
+        }
         if (src != "") {
             if (data) {
                 data = cog.eval("("+data+")");
@@ -899,7 +908,7 @@ cog.loadContents = function (callback) {
                         node.outerHTML = xhr.responseText;
                     }
                 }
-            }, node, method, data);
+            }, node, method, data, cache);
             cog.loadContents(callback);
         }
     } else {
@@ -985,9 +994,15 @@ cog.urlEncode = function (obj) {
     return result;
 };
 cog.xhr = function (url, callback, arg, method, obj, cache, async) {
-    if (method == null) {method = 'GET';}
+    if (cache == null) {cache = cog.cache;}
+    if (method == null) {
+        if (!cache) {
+            method = 'POST';
+        } else {
+            method = 'GET';
+        }
+    }
     if (obj == null) {obj = '';}
-    if (cache == null) {cache = cog.cacheRender;}
     if (async == null) {async = true;}
     var xhr, guid, cacheUrl, hashUrl;
     method = method.toUpperCase();
@@ -997,7 +1012,7 @@ cog.xhr = function (url, callback, arg, method, obj, cache, async) {
             callback(xhr, arg);
         }
     };
-    if (!cache) {
+    if (!cache && method == 'GET') {
         guid = Date.now();
         cacheUrl = url.replace(/#.*$/, "");
         hashUrl = url.slice(cacheUrl.length);
