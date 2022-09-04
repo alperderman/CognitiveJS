@@ -60,10 +60,10 @@
 </pre>
 <hr>
 <h3 data-prop="{text:'%sidebar.utility.sub.utility_cache%'},{attr:'id', data:'%sidebar.utility.sub.utility_cache._key%'}"></h3>
-<p><code>cog.cacheRender</code> option is used for choosing whether the render should be cached or not. Its default value is <code>true</code> which if you are on a development environment you should set it to <code>false</code> before render.</p>
+<p><code>cog.cache</code> option is used for choosing whether the XHR calls should be cached or not. Its default value is <code>true</code> which if you are on a development environment, you should set it to <code>false</code> before render.</p>
 <pre>
     <code class="js">
-        cog.cacheRender = false;
+        cog.cache = false;
         cog.render("layout.html");
     </code>
 </pre>
