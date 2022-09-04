@@ -1,6 +1,5 @@
 //CognitiveJS
 
-if (!Object.assign) { Object.defineProperty(Object, 'assign', { enumerable: false, configurable: true, writable: true, value: function(target) { 'use strict'; if (target === undefined || target === null) { throw new TypeError('Cannot convert first argument to object'); } var to = Object(target); for (var i = 1;i < arguments.length;i++) { var nextSource = arguments[i]; if (nextSource === undefined || nextSource === null) { continue; } nextSource = Object(nextSource); var keysArray = Object.keys(Object(nextSource)); for (var nextIndex = 0, len = keysArray.length;nextIndex < len;nextIndex++) { var nextKey = keysArray[nextIndex]; var desc = Object.getOwnPropertyDescriptor(nextSource, nextKey); if (desc !== undefined && desc.enumerable) { to[nextKey] = nextSource[nextKey]; } } } return to; } }); }
 if (typeof window.CustomEvent !== 'function') { window.CustomEvent = function (event, params) { params = params || {bubbles: false, cancelable: false, detail: null}; var evt = document.createEvent('CustomEvent'); evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail); return evt; }; }
 
 var cog = {};
@@ -133,6 +132,9 @@ cog.getRecursiveValue = function (str, val, index) {
     }
     if (typeof result === 'function') {
         result = result();
+    }
+    if (typeof result === 'object') {
+        result = JSON.parse(JSON.stringify(result));
     }
     return result;
 };
@@ -862,26 +864,6 @@ cog.removeDuplicatesFromArray = function (arr) {
     }
     return newArr;
 };
-cog.mergeDeep = function (target, source) {
-    var output = Object.assign({}, target);
-    if (is_object(target) && is_object(source)) {
-        Object.keys(source).forEach(function (key) {
-            if (is_object(source[key])) {
-                if (!(key in target)) {
-                    Object.assign(output, define_property({}, key, source[key]));
-                } else {
-                    output[key] = cog.mergeDeep(target[key], source[key]);
-                }
-            } else {
-                Object.assign(output, define_property({}, key, source[key]));
-            }
-        });
-    }
-    function is_object(item) { return item && type_of(item) === 'object' && !Array.isArray(item); }
-    function type_of(obj) { if (typeof Symbol === 'function' && typeof Symbol.iterator === "symbol") { type_of = function type_of(obj) { return typeof obj; }; } else { type_of = function type_of(obj) { return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return type_of(obj); }
-    function define_property(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-    return output;
-};
 cog.loadContents = function (callback) {
     var node, src, method, data, cache;
     node = document.querySelector("["+cog.labelSource+"]:not(["+cog.labelSourceAwait+"]):not(["+cog.labelSkip+"])");
@@ -1004,7 +986,7 @@ cog.xhr = function (url, callback, arg, method, obj, cache, async) {
     }
     if (obj == null) {obj = '';}
     if (async == null) {async = true;}
-    var xhr, guid, cacheUrl, hashUrl;
+    var xhr, guid, cacheUrl, hashUrl, key, mergedObj, urlObj;
     method = method.toUpperCase();
     xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
@@ -1021,7 +1003,11 @@ cog.xhr = function (url, callback, arg, method, obj, cache, async) {
         url = cacheUrl + hashUrl;
     }
     if (method == 'GET' && obj != '') {
-        url = url.split(/[?#]/)[0]+'?'+cog.urlEncode(cog.mergeDeep(cog.getUrlParams(url), obj));
+        mergedObj = {};
+        urlObj = cog.getUrlParams(url);
+        for (key in urlObj) {mergedObj[key] = urlObj[key];}
+        for (key in obj) {mergedObj[key] = obj[key];}
+        url = url.split(/[?#]/)[0]+'?'+cog.urlEncode(mergedObj);
     }
     xhr.open(method, url, async);
     if (method == 'GET') {
