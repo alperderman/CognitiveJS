@@ -13,7 +13,7 @@
         &lt;/script>
     </code>
 </pre>
-<p>There are 2 ways of changing the bound data: first way is using the <code>cog.get()</code> function to directly change the data, second way is binding a variable with the <code>cog.bind()</code> function.</p>
+<p>There are 3 ways of changing the value of a bound data: first way is using the <code>cog.get()</code> function to directly change the data, second way is using the shorthand of <code>cog.get()</code> which is <code>cog.set()</code>, and the third way is binding a variable with the <code>cog.bind()</code> function.</p>
 <pre>
     <code class="html">
         &lt;p data-bind="foo" data-prop="text:'%foo%'">&lt;/p>
@@ -26,10 +26,12 @@
             cog.bindAll();
         &lt;/script>
         &lt;script>
-            cog.get("foo", {value: "changed!"});
-            // OR
+            cog.get("foo", {set: "changed!"});
+            //OR
+            cog.set("foo", "changed!");
+            //OR
             var foo = cog.bind("foo");
-            foo({value: "changed!"});
+            foo({set: "changed!"});
         &lt;/script>
     </code>
 </pre>
@@ -79,7 +81,7 @@
 <pre>
     <code class="js">
         var customerName = cog.bind("customer.0.name", {
-            value: "John"
+            set: "John"
         });
     </code>
 </pre>
@@ -91,9 +93,17 @@
     <code class="js">
         var getValue = cog.get("customer[0].debt");
         cog.get("customer[0].debt", {
-            value: 1000,
+            set: 1000,
             callback: function () {console.log("changed!");}
         });
+    </code>
+</pre>
+<hr>
+<h3 data-prop="{text:'%sidebar.bind.sub.bind_set%'},{attr:'id', data:'%sidebar.bind.sub.bind_set._key%'}"></h3>
+<p><code>cog.set()</code> is a wrapper for <code>cog.get()</code> function. It is nothing more than a shorthand for <code>cog.get()</code> to set values with the second parameter and callback function with the third parameter.</p>
+<pre>
+    <code class="js">
+        cog.set("customer[0].debt", 1000, function () {console.log("changed!");});
     </code>
 </pre>
 <hr>
