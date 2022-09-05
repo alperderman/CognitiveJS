@@ -41,17 +41,18 @@ cog.get = function (key, arg) {
     if (key == null) {return;}
     if (arg == null) {arg = {};}
     if (arg.reference == null) {arg.reference = false;}
+    if (arg.execute == null) {arg.execute = false;}
     var result, old, changed = [];
     if (arg.set !== undefined) {
         old = cog.getRecursiveValue(cog.data, key);
         if (old !== arg.set) {
             document.dispatchEvent(new CustomEvent(cog.eventBeforeData, {detail:{key:key, old:old, new:arg.set}}));
-            result = cog.getRecursiveValue(cog.data, key, arg.set, arg.reference);
+            result = cog.getRecursiveValue(cog.data, key, arg.set, arg.reference, arg.execute);
             rebind(key);
             document.dispatchEvent(new CustomEvent(cog.eventAfterData, {detail:{elems:changed, key:key, old:old, new:arg.set}}));
         }
     } else {
-        result = cog.getRecursiveValue(cog.data, key, arg.set, arg.reference);
+        result = cog.getRecursiveValue(cog.data, key, arg.set, arg.reference, arg.execute);
     }
     if (typeof arg.callback === 'function') {
         arg.callback({elems:changed, key:key, old:old, new:arg.set});
@@ -110,9 +111,10 @@ cog.getElementProp = function (elem) {
     }
     return props;
 };
-cog.getRecursiveValue = function (root, str, val, ref, index) {
+cog.getRecursiveValue = function (root, str, val, ref, exec, index) {
     var  refData = root, result, i, key;
     if (ref == null) {ref = true;}
+    if (exec == null) {exec = true;}
     if (typeof str === 'string') {
         strSplit = cog.normalizeKeys(str).split(".");
     } else {
@@ -127,7 +129,7 @@ cog.getRecursiveValue = function (root, str, val, ref, index) {
                 strSplit.splice(i,1);
                 strSplit.splice(i-1,1);
                 i = i-2;
-                refData = cog.getRecursiveValue(root, strSplit, val, ref, i);
+                refData = cog.getRecursiveValue(root, strSplit, val, ref, exec, i);
                 result = refData;
             } else if (key == cog.keywords.key) {
                 result = strSplit[i-1];
@@ -139,7 +141,7 @@ cog.getRecursiveValue = function (root, str, val, ref, index) {
             }
         }
     }
-    if (typeof result === 'function') {
+    if (typeof result === 'function' && exec) {
         result = result();
     }
     if (typeof result === 'object' && !ref) {
@@ -491,7 +493,7 @@ cog.init = function () {
         name: "raw",
         set: function (elem, key) {
             var propData = cog.eval("("+elem.innerText+")");
-            cog.getRecursiveValue(cog.data, key, propData);
+            cog.getRecursiveValue(cog.data, key, propData, true, false);
         }
     });
     cog.newBind({
@@ -622,6 +624,23 @@ cog.init = function () {
                     elem.setAttribute(propAttr, propData);
                 }
             }
+        }
+    });
+    cog.newBind({
+        name: "event",
+        if: "prop.event != null",
+        bind: function (elem, prop, props, propIndex) {
+            prop.attr = "on"+prop.event;
+            prop.data = cog.replaceToken(prop.data, function (pure) {
+                pure = cog.normalizeKeys(pure);
+                if (!(/[^a-zA-Z0-9\_\-\.]/g.test(pure))) {
+                    return "cog.getRecursiveValue(cog.data, '"+pure+"')";
+                } else {
+                    return undefined;
+                }
+            });
+            delete prop.event;
+            cog.bindTypes["attr"].bind(elem, prop, props, propIndex);
         }
     });
     cog.newBind({
