@@ -485,9 +485,7 @@ cog.init = function () {
         name: "raw",
         set: function (elem, key) {
             var propData = cog.eval("("+elem.innerText+")");
-            if (propData) {
-                cog.getRecursiveValue(cog.data, key, propData);
-            }
+            cog.getRecursiveValue(cog.data, key, propData);
         }
     });
     cog.newBind({
