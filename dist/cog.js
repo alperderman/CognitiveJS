@@ -42,19 +42,19 @@ cog.get = function (key, arg) {
     if (arg == null) {arg = {};}
     if (arg.reference == null) {arg.reference = false;}
     var result, old, changed = [];
-    if (arg.value !== undefined) {
+    if (arg.set !== undefined) {
         old = cog.getRecursiveValue(cog.data, key);
-        if (old !== arg.value) {
-            document.dispatchEvent(new CustomEvent(cog.eventBeforeData, {detail:{key:key, old:old, new:arg.value}}));
-            result = cog.getRecursiveValue(cog.data, key, arg.value, arg.reference);
+        if (old !== arg.set) {
+            document.dispatchEvent(new CustomEvent(cog.eventBeforeData, {detail:{key:key, old:old, new:arg.set}}));
+            result = cog.getRecursiveValue(cog.data, key, arg.set, arg.reference);
             rebind(key);
-            document.dispatchEvent(new CustomEvent(cog.eventAfterData, {detail:{elems:changed, key:key, old:old, new:arg.value}}));
+            document.dispatchEvent(new CustomEvent(cog.eventAfterData, {detail:{elems:changed, key:key, old:old, new:arg.set}}));
         }
     } else {
-        result = cog.getRecursiveValue(cog.data, key, arg.value, arg.reference);
+        result = cog.getRecursiveValue(cog.data, key, arg.set, arg.reference);
     }
     if (typeof arg.callback === 'function') {
-        arg.callback({elems:changed, key:key, old:old, new:arg.value});
+        arg.callback({elems:changed, key:key, old:old, new:arg.set});
     }
     function rebind(key, i) {
         if (i == null) {i = 0;}
@@ -86,6 +86,12 @@ cog.get = function (key, arg) {
         }
     }
     return result;
+};
+cog.set = function (key, set, callback) {
+    cog.get(key, {
+        set: set,
+        callback: callback
+    });
 };
 cog.getElementBind = function (elem) {
     var elemBinds = elem.getAttribute(cog.labelBind), binds;
