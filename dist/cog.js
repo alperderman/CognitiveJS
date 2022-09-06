@@ -117,7 +117,7 @@ cog.getRecursiveValue = function (arg) {
     if (arg.root == null) {arg.root = cog.data;}
     if (arg.ref == null) {arg.ref = true;}
     if (arg.exec == null) {arg.exec = true;}
-    var  refData = arg.root, result, i, key;
+    var refData = arg.root, result, i, key;
     if (typeof arg.str === 'string') {
         strSplit = cog.normalizeKeys(arg.str).split(".");
     } else {
