@@ -335,7 +335,9 @@ cog.bind = function (node, arg) {
                             });
                         }
                         if (prop.attr != null || prop.event != null) {
-                            node.removeAttribute(prop.current);
+                            Object.keys(prop.current).forEach(function (key) {
+                                elem.removeAttribute(key);
+                            });
                         }
                         if (prop.style != null) {
                             Object.keys(prop.current).forEach(function (key) {
@@ -358,7 +360,9 @@ cog.bind = function (node, arg) {
                         });
                     }
                     if (prop.attr != null || prop.event != null) {
-                        node.removeAttribute(prop.current);
+                        Object.keys(prop.current).forEach(function (key) {
+                            elem.removeAttribute(key);
+                        });
                     }
                     if (prop.style != null) {
                         Object.keys(prop.current).forEach(function (key) {
@@ -603,9 +607,11 @@ cog.init = function () {
         name: "attr",
         if: "prop.attr != null",
         bind: function (elem, prop, props, propIndex) {
-            var propData, propAttr;
+            var propKey, propVal, propCurrent = {};
             if (prop.current != null && (prop.if == null || !cog.if(prop.if))) {
-                elem.removeAttribute(prop.current);
+                Object.keys(prop.current).forEach(function (key) {
+                    elem.removeAttribute(key);
+                });
                 if (props != null) {
                     delete props[propIndex].current;
                     elem.setAttribute(cog.labelProp, cog.serializeProp(props));
@@ -615,21 +621,26 @@ cog.init = function () {
                 }
             }
             if (prop.if == null || cog.if(prop.if)) {
-                propData = cog.replaceToken(prop.data, function (pure) {
-                    return cog.getRecursiveValue({str:pure});
+                Object.keys(prop.attr).forEach(function (key) {
+                    propKey = cog.replaceToken(key, function (pure) {
+                        return cog.getRecursiveValue({str:pure});
+                    });
+                    propVal = cog.replaceToken(prop.attr[key], function (pure) {
+                        return cog.getRecursiveValue({str:pure});
+                    });
+                    if (propKey != null && propVal != null) {
+                        elem.setAttribute(propKey, propVal);
+                        propCurrent[propKey] = propVal;
+                    }
                 });
-                propAttr = cog.replaceToken(prop.attr, function (pure) {
-                    return cog.getRecursiveValue({str:pure});
-                });
-                if (propAttr != null) {
+                if (propCurrent != null) {
                     if (props != null) {
-                        props[propIndex].current = propAttr;
+                        props[propIndex].current = propCurrent;
                         elem.setAttribute(cog.labelProp, cog.serializeProp(props));
                     } else {
-                        prop.current = propAttr;
+                        prop.current = propCurrent;
                         elem.setAttribute(cog.labelProp, cog.serializeProp(prop));
                     }
-                    elem.setAttribute(propAttr, propData);
                 }
             }
         }
@@ -638,9 +649,11 @@ cog.init = function () {
         name: "event",
         if: "prop.event != null",
         bind: function (elem, prop, props, propIndex) {
-            var propData, propEvent;
+            var propKey, propVal, propCurrent = {};
             if (prop.current != null && (prop.if == null || !cog.if(prop.if))) {
-                elem.removeAttribute(prop.current);
+                Object.keys(prop.current).forEach(function (key) {
+                    elem.removeAttribute(key);
+                });
                 if (props != null) {
                     delete props[propIndex].current;
                     elem.setAttribute(cog.labelProp, cog.serializeProp(props));
@@ -650,29 +663,34 @@ cog.init = function () {
                 }
             }
             if (prop.if == null || cog.if(prop.if)) {
-                propData = cog.replaceToken(prop.data, function (pure) {
-                    pure = cog.normalizeKeys(pure);
-                    if (!(/[^a-zA-Z0-9\_\-\.]/g.test(pure))) {
-                        return "cog.getRecursiveValue({str:'"+pure+"'})";
-                    } else {
-                        return undefined;
+                Object.keys(prop.event).forEach(function (key) {
+                    propKey = cog.replaceToken(key, function (pure) {
+                        return cog.getRecursiveValue({str:pure});
+                    });
+                    propVal = cog.replaceToken(prop.event[key], function (pure) {
+                        pure = cog.normalizeKeys(pure);
+                        if (!(/[^a-zA-Z0-9\_\-\.]/g.test(pure))) {
+                            return "cog.getRecursiveValue({str:'"+pure+"'})";
+                        } else {
+                            return undefined;
+                        }
+                    });
+                    if (propKey.indexOf("on") !== 0) {
+                        propKey = "on"+propKey;
+                    }
+                    if (propKey != null && propVal != null) {
+                        elem.setAttribute(propKey, propVal);
+                        propCurrent[propKey] = propVal;
                     }
                 });
-                propEvent = cog.replaceToken(prop.event, function (pure) {
-                    return cog.getRecursiveValue({str:pure});
-                });
-                if (propEvent.indexOf("on") !== 0) {
-                    propEvent = "on"+propEvent;
-                }
-                if (propEvent != null) {
+                if (propCurrent != null) {
                     if (props != null) {
-                        props[propIndex].current = propEvent;
+                        props[propIndex].current = propCurrent;
                         elem.setAttribute(cog.labelProp, cog.serializeProp(props));
                     } else {
-                        prop.current = propEvent;
+                        prop.current = propCurrent;
                         elem.setAttribute(cog.labelProp, cog.serializeProp(prop));
                     }
-                    elem.setAttribute(propEvent, propData);
                 }
             }
         }
