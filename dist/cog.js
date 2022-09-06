@@ -29,6 +29,7 @@ cog.keywords = {
     parent: "_parent",
     key: "_key",
     index: "_index",
+    token: "_token",
     auto: "_auto"
 };
 cog.regexHead = new RegExp("<head[^>]*>((.|[\\n\\r])*)<\\/head>", "im");
@@ -44,15 +45,15 @@ cog.get = function (key, arg) {
     if (arg.execute == null) {arg.execute = false;}
     var result, old, changed = [];
     if (arg.set !== undefined) {
-        old = cog.getRecursiveValue(cog.data, key);
+        old = cog.getRecursiveValue({str:key, exec:false});
         if (old !== arg.set) {
             document.dispatchEvent(new CustomEvent(cog.eventBeforeData, {detail:{key:key, old:old, new:arg.set}}));
-            result = cog.getRecursiveValue(cog.data, key, arg.set, arg.reference, arg.execute);
+            result = cog.getRecursiveValue({str:key, val:arg.set, ref:arg.reference, exec:arg.execute});
             rebind(key);
             document.dispatchEvent(new CustomEvent(cog.eventAfterData, {detail:{elems:changed, key:key, old:old, new:arg.set}}));
         }
     } else {
-        result = cog.getRecursiveValue(cog.data, key, arg.set, arg.reference, arg.execute);
+        result = cog.getRecursiveValue({str:key, val:arg.set, ref:arg.reference, exec:arg.execute});
     }
     if (typeof arg.callback === 'function') {
         arg.callback({elems:changed, key:key, old:old, new:arg.set});
@@ -111,40 +112,47 @@ cog.getElementProp = function (elem) {
     }
     return props;
 };
-cog.getRecursiveValue = function (root, str, val, ref, exec, index) {
-    var  refData = root, result, i, key;
-    if (ref == null) {ref = true;}
-    if (exec == null) {exec = true;}
-    if (typeof str === 'string') {
-        strSplit = cog.normalizeKeys(str).split(".");
+cog.getRecursiveValue = function (arg) {
+    if (arg == null) {arg = {};}
+    if (arg.root == null) {arg.root = cog.data;}
+    if (arg.ref == null) {arg.ref = true;}
+    if (arg.exec == null) {arg.exec = true;}
+    var  refData = arg.root, result, i, key;
+    if (typeof arg.str === 'string') {
+        strSplit = cog.normalizeKeys(arg.str).split(".");
     } else {
-        strSplit = str;
+        strSplit = arg.str;
     }
     for (i = 0;i < strSplit.length;i++) {
         key = strSplit[i];
-        if (refData[key] !== undefined && typeof refData[key] === 'object' && i != strSplit.length-1 && i != index) {
+        if (refData[key] !== undefined && typeof refData[key] === 'object' && i != strSplit.length-1 && i != arg.index) {
             refData = refData[key];
         } else {
             if (key == cog.keywords.parent) {
                 strSplit.splice(i,1);
                 strSplit.splice(i-1,1);
                 i = i-2;
-                refData = cog.getRecursiveValue(root, strSplit, val, ref, exec, i);
+                arg.index = i;
+                arg.str = strSplit;
+                refData = cog.getRecursiveValue(arg);
                 result = refData;
             } else if (key == cog.keywords.key) {
                 result = strSplit[i-1];
+            } else if (key == cog.keywords.token) {
+                strSplit.splice(i,1);
+                result = cog.normalizeKeys(strSplit);
             } else {
-                if (val !== undefined && refData[key] !== val) {
-                    refData[key] = val;
+                if (arg.val !== undefined && refData[key] !== arg.val) {
+                    refData[key] = arg.val;
                 }
                 result = refData[key];
             }
         }
     }
-    if (typeof result === 'function' && exec) {
+    if (typeof result === 'function' && arg.exec) {
         result = result();
     }
-    if (typeof result === 'object' && !ref) {
+    if (typeof result === 'object' && !arg.ref) {
         result = JSON.parse(JSON.stringify(result));
     }
     return result;
@@ -326,7 +334,7 @@ cog.bind = function (node, arg) {
                                 }
                             });
                         }
-                        if (prop.attr != null) {
+                        if (prop.attr != null || prop.event != null) {
                             node.removeAttribute(prop.current);
                         }
                         if (prop.style != null) {
@@ -349,7 +357,7 @@ cog.bind = function (node, arg) {
                             }
                         });
                     }
-                    if (prop.attr != null) {
+                    if (prop.attr != null || prop.event != null) {
                         node.removeAttribute(prop.current);
                     }
                     if (prop.style != null) {
@@ -465,7 +473,7 @@ cog.if = function (str) {
         cog.encapVar = cog.replaceToken(str, function (pure) {
             pure = cog.normalizeKeys(pure);
             if (!(/[^a-zA-Z0-9\_\-\.]/g.test(pure))) {
-                return "cog.getRecursiveValue(cog.data, '"+pure+"')";
+                return "cog.getRecursiveValue({str:'"+pure+"'})";
             } else {
                 return undefined;
             }
@@ -485,7 +493,7 @@ cog.init = function () {
         set: function (elem, key) {
             var propData = cog.isValidJSON(elem.innerText);
             if (propData) {
-                cog.getRecursiveValue(cog.data, key, propData);
+                cog.getRecursiveValue({str:key, val:propData});
             }
         }
     });
@@ -493,7 +501,7 @@ cog.init = function () {
         name: "raw",
         set: function (elem, key) {
             var propData = cog.eval("("+elem.innerText+")");
-            cog.getRecursiveValue(cog.data, key, propData, true, false);
+            cog.getRecursiveValue({str:key, val:propData, exec:false});
         }
     });
     cog.newBind({
@@ -502,7 +510,7 @@ cog.init = function () {
         bind: function (elem, prop, props, propIndex) {
             var propData;
             propData = cog.replaceToken(prop.debug, function (pure) {
-                return cog.getRecursiveValue(cog.data, pure);
+                return cog.getRecursiveValue({str:pure});
             });
             console.log(propData);
         }
@@ -513,14 +521,14 @@ cog.init = function () {
         bind: function (elem, prop, props, propIndex) {
             var propData;
             propData = cog.replaceToken(prop.text, function (pure) {
-                return cog.getRecursiveValue(cog.data, pure);
+                return cog.getRecursiveValue({str:pure});
             });
             if (propData != null) {
                 elem.innerText = propData;
             }
         },
         set: function (elem, key) {
-            cog.getRecursiveValue(cog.data, key, elem.innerText);
+            cog.getRecursiveValue({str:key, val:elem.innerText});
         }
     });
     cog.newBind({
@@ -530,14 +538,14 @@ cog.init = function () {
             var propData;
             if (prop.recursive == null) {prop.recursive = false;}
             propData = cog.replaceToken(prop.html, function (pure) {
-                return cog.getRecursiveValue(cog.data, pure);
+                return cog.getRecursiveValue({str:pure});
             }, cog.if(prop.recursive));
             if (propData != null) {
                 elem.innerHTML = propData;
             }
         },
         set: function (elem, key) {
-            cog.getRecursiveValue(cog.data, key, elem.innerHTML);
+            cog.getRecursiveValue({str:key, val:elem.innerHTML});
         }
     });
     cog.newBind({
@@ -572,7 +580,7 @@ cog.init = function () {
             }
             if (prop.if == null || cog.if(prop.if)) {
                 propData = cog.replaceToken(prop.class.trim(), function (pure) {
-                    return cog.getRecursiveValue(cog.data, pure);
+                    return cog.getRecursiveValue({str:pure});
                 });
                 if (propData != null) {
                     if (props != null) {
@@ -608,10 +616,10 @@ cog.init = function () {
             }
             if (prop.if == null || cog.if(prop.if)) {
                 propData = cog.replaceToken(prop.data, function (pure) {
-                    return cog.getRecursiveValue(cog.data, pure);
+                    return cog.getRecursiveValue({str:pure});
                 });
                 propAttr = cog.replaceToken(prop.attr, function (pure) {
-                    return cog.getRecursiveValue(cog.data, pure);
+                    return cog.getRecursiveValue({str:pure});
                 });
                 if (propAttr != null) {
                     if (props != null) {
@@ -630,17 +638,43 @@ cog.init = function () {
         name: "event",
         if: "prop.event != null",
         bind: function (elem, prop, props, propIndex) {
-            prop.attr = "on"+prop.event;
-            prop.data = cog.replaceToken(prop.data, function (pure) {
-                pure = cog.normalizeKeys(pure);
-                if (!(/[^a-zA-Z0-9\_\-\.]/g.test(pure))) {
-                    return "cog.getRecursiveValue(cog.data, '"+pure+"')";
+            var propData, propEvent;
+            if (prop.current != null && (prop.if == null || !cog.if(prop.if))) {
+                elem.removeAttribute(prop.current);
+                if (props != null) {
+                    delete props[propIndex].current;
+                    elem.setAttribute(cog.labelProp, cog.serializeProp(props));
                 } else {
-                    return undefined;
+                    delete prop.current;
+                    elem.setAttribute(cog.labelProp, cog.serializeProp(prop));
                 }
-            });
-            delete prop.event;
-            cog.bindTypes["attr"].bind(elem, prop, props, propIndex);
+            }
+            if (prop.if == null || cog.if(prop.if)) {
+                propData = cog.replaceToken(prop.data, function (pure) {
+                    pure = cog.normalizeKeys(pure);
+                    if (!(/[^a-zA-Z0-9\_\-\.]/g.test(pure))) {
+                        return "cog.getRecursiveValue({str:'"+pure+"'})";
+                    } else {
+                        return undefined;
+                    }
+                });
+                propEvent = cog.replaceToken(prop.event, function (pure) {
+                    return cog.getRecursiveValue({str:pure});
+                });
+                if (propEvent.indexOf("on") !== 0) {
+                    propEvent = "on"+propEvent;
+                }
+                if (propEvent != null) {
+                    if (props != null) {
+                        props[propIndex].current = propEvent;
+                        elem.setAttribute(cog.labelProp, cog.serializeProp(props));
+                    } else {
+                        prop.current = propEvent;
+                        elem.setAttribute(cog.labelProp, cog.serializeProp(prop));
+                    }
+                    elem.setAttribute(propEvent, propData);
+                }
+            }
         }
     });
     cog.newBind({
@@ -663,10 +697,10 @@ cog.init = function () {
             if (prop.if == null || cog.if(prop.if)) {
                 Object.keys(prop.style).forEach(function (key) {
                     propKey = cog.replaceToken(key, function (pure) {
-                        return cog.getRecursiveValue(cog.data, pure);
+                        return cog.getRecursiveValue({str:pure});
                     });
                     propVal = cog.replaceToken(prop.style[key], function (pure) {
-                        return cog.getRecursiveValue(cog.data, pure);
+                        return cog.getRecursiveValue({str:pure});
                     });
                     if (propKey != null && propVal != null) {
                         elem.style[propKey] = propVal;
@@ -710,7 +744,7 @@ cog.init = function () {
             var propDatas, propData, propDatasIterate, template, repeatVal, i, key, parent = prop.repeat.split(" ")[0], alias = prop.repeat.split(" ")[2];
             parent = cog.purifyToken(parent);
             parent = cog.normalizeKeys(parent);
-            propDatas = cog.getRecursiveValue(cog.data, parent);
+            propDatas = cog.getRecursiveValue({str:parent});
             cog.template({id:prop.temp, elem:elem});
             if (typeof propDatas === 'object' && !Array.isArray(propDatas)) {
                 propDatasIterate = Object.keys(propDatas);
