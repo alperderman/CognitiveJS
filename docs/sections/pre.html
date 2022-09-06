@@ -60,7 +60,7 @@
 <p class="alert alert-info">You can also use <code>data-set</code> and <code>data-src</code> attributes on the layout page.</p>
 <p class="alert alert-info">Any other script that doesn't effect CognitiveJS (modifying the <code>cog.data</code> etc...) should be placed on the layout page.</p>
 <hr>
-<h3 data-prop="{text:'%sidebar.preprocess.sub.pre_data-set%'},{attr:'id', data:'%sidebar.preprocess.sub.pre_data-set._key%'}"></h3>
+<h3 data-prop="{text:'%sidebar.preprocess.sub.pre_data-set%'},{attr:{id:'%sidebar.preprocess.sub.pre_data-set._key%'}}"></h3>
 <p>There are 4 different data set types that you can use: json, text, html and temp.</p>
 <pre>
     <code class="html">
@@ -80,7 +80,7 @@
 
         &lt;div data-set="temp:navbar">
             &lt;ul class="navbar" data-prop="repeat:'%alias% as menu'">
-                &lt;li>&lt;a data-prop="{text:'%%menu%.title%'},{attr:'href', data:'%%menu%.href%'}">&lt;/a>&lt;/li>
+                &lt;li>&lt;a data-prop="{text:'%%menu%.title%'},{attr:{href:'%%menu%.href%'}}">&lt;/a>&lt;/li>
             &lt;/ul>
         &lt;/div>
     </code>
@@ -99,7 +99,7 @@
 </div>
 <p class="alert alert-info">Keep in mind template references are stored on a completely different variable, so don't try to extend an object like in the above while defining templates.</p>
 <hr>
-<h3 data-prop="{text:'%sidebar.preprocess.sub.pre_data-src%'},{attr:'id', data:'%sidebar.preprocess.sub.pre_data-src._key%'}"></h3>
+<h3 data-prop="{text:'%sidebar.preprocess.sub.pre_data-src%'},{attr:{id:'%sidebar.preprocess.sub.pre_data-src._key%'}}"></h3>
 <p>For getting external contents and templates we can use <code>data-src</code> attribute.</p>
 <pre>
     <code class="html">
@@ -117,7 +117,7 @@
     </code>
 </pre>
 <hr>
-<h3 data-prop="{text:'%sidebar.preprocess.sub.pre_render%'},{attr:'id', data:'%sidebar.preprocess.sub.pre_render._key%'}"></h3>
+<h3 data-prop="{text:'%sidebar.preprocess.sub.pre_render%'},{attr:{id:'%sidebar.preprocess.sub.pre_render._key%'}}"></h3>
 <p><code>cog.render()</code> function only takes one parameter and its the path of the layout page, there is really nothing to say about usage wise but what it does under the hood can be explained.</p>
 <p>When you execute the <code>cog.render()</code> function, first thing it does is, it gathers the layout page and stitches it with the main document. After that, it gathers the external contents that has defined with <code>data-src</code> and replaces those elements with their corresponding content.</p>
 <p>After getting external contents recursively, it will process elements with <code>data-set</code> attribute and will define them on <code>cog.data</code> recpectively to their keys (templates definitions will be placed in <code>cog.templates</code> instead of <code>cog.data</code>).</p>

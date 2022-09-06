@@ -36,7 +36,7 @@
     </code>
 </pre>
 <hr>
-<h3 data-prop="{text:'%sidebar.bind.sub.bind_data-bind%'},{attr:'id', data:'%sidebar.bind.sub.bind_data-bind._key%'}"></h3>
+<h3 data-prop="{text:'%sidebar.bind.sub.bind_data-bind%'},{attr:{id:'%sidebar.bind.sub.bind_data-bind._key%'}}"></h3>
 <p><code>data-bind</code> is the HTML attribute for binding elements. What it actually does under the hood is, it just labels elements to be refreshed when specified value has been altered. If you don't set this attribute to the element, properties will not refresh.</p>
 <p>Apart from the example above, you can also bind two or more values to an element, any change to the either of those values will trigger a refresh for that element.</p>
 <pre>
@@ -51,7 +51,7 @@
     </code>
 </pre>
 <hr>
-<h3 data-prop="{text:'%sidebar.bind.sub.bind_bind%'},{attr:'id', data:'%sidebar.bind.sub.bind_bind._key%'}"></h3>
+<h3 data-prop="{text:'%sidebar.bind.sub.bind_bind%'},{attr:{id:'%sidebar.bind.sub.bind_bind._key%'}}"></h3>
 <p>One function to rule them all. <code>cog.bind()</code> is the powerhouse of the <span style="text-decoration: line-through;">cell</span> CognitiveJS.</p>
 <p>With <code>cog.bind()</code> you can: bind elements, bind variables, change the bindings and properties of the elements. Pretty much every feature related to binding condensed into this function.</p>
 <p><code>cog.bind()</code> takes two parameters: first parameter takes a string key of the data or an element to bind. second parameter is an argument object.</p>
@@ -76,7 +76,7 @@
     </code>
 </pre>
 <p class="alert alert-info">If you bind a parent object, any changes to the child values, will also trigger other child values that are bind to the other elements.</p>
-<p class="alert alert-info">There are also additional functions to get bindings and properties of an element, check out the <a class="font-weight-bold" data-prop="{text:'%sidebar.utility.title%'},{attr:'href', data:'#%sidebar.utility._key%'}"></a> section for more information.</p>
+<p class="alert alert-info">There are also additional functions to get bindings and properties of an element, check out the <a class="font-weight-bold" data-prop="{text:'%sidebar.utility.title%'},{attr:{href:'#%sidebar.utility._key%'}}"></a> section for more information.</p>
 <p>To bind a variable to a value. set the first parameter as the string key of the value just like the first example on the above. Additionally you can set the new value of the data while binding with the second parameter.</p>
 <pre>
     <code class="js">
@@ -86,7 +86,7 @@
     </code>
 </pre>
 <hr>
-<h3 data-prop="{text:'%sidebar.bind.sub.bind_get%'},{attr:'id', data:'%sidebar.bind.sub.bind_get._key%'}"></h3>
+<h3 data-prop="{text:'%sidebar.bind.sub.bind_get%'},{attr:{id:'%sidebar.bind.sub.bind_get._key%'}}"></h3>
 <p><code>cog.get()</code> is a wrapper for <code>cog.bind()</code>. Its purpose is to get and set values and refresh properties of the elements that are bound to these values.</p>
 <p><code>cog.get()</code> takes 2 parameters: first one is for string key, second is for argument object.</p>
 <pre>
@@ -99,7 +99,7 @@
     </code>
 </pre>
 <hr>
-<h3 data-prop="{text:'%sidebar.bind.sub.bind_set%'},{attr:'id', data:'%sidebar.bind.sub.bind_set._key%'}"></h3>
+<h3 data-prop="{text:'%sidebar.bind.sub.bind_set%'},{attr:{id:'%sidebar.bind.sub.bind_set._key%'}}"></h3>
 <p><code>cog.set()</code> is a wrapper for <code>cog.get()</code> function. It is nothing more than a shorthand for <code>cog.get()</code> to set values with the second parameter and callback function with the third parameter.</p>
 <pre>
     <code class="js">
@@ -107,7 +107,7 @@
     </code>
 </pre>
 <hr>
-<h3 data-prop="{text:'%sidebar.bind.sub.bind_bindall%'},{attr:'id', data:'%sidebar.bind.sub.bind_bindall._key%'}"></h3>
+<h3 data-prop="{text:'%sidebar.bind.sub.bind_bindall%'},{attr:{id:'%sidebar.bind.sub.bind_bindall._key%'}}"></h3>
 <p><code>cog.bindAll()</code> is another wrapper for <code>cog.bind()</code>. Its used for binding every element inside another element, mostly used for initiating the CognitiveJS.</p>
 <pre>
     <code class="js">

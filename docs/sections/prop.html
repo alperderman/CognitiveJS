@@ -1,6 +1,6 @@
 <h1>Properties</h1>
 <p>Properties allows us to dynamically modify the DOM elements as we please. There are currently 8 different properties (including conditions, templates and repeaters) that can change pretty much every aspect of an element.</p>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_data-prop%'},{attr:'id', data:'%sidebar.prop.sub.prop_data-prop._key%'}"></h3>
+<h3 data-prop="{text:'%sidebar.prop.sub.prop_data-prop%'},{attr:{id:'%sidebar.prop.sub.prop_data-prop._key%'}}"></h3>
 <p><code>data-prop</code> is the HTML attribute for defining properties that will modify the elements with the declared values. Properties are defined as pure JavaScript objects inside the attribute and values from the <code>cog.data</code>, can be used but they have to be encapsulated with percentage sign (%) in order to differ them from normal text.</p>
 <pre>
     <code class="html">
@@ -18,7 +18,7 @@
 </pre>
 <p>Just like on the example above, you are free to use whichever declaration you want to use, CognitiveJS will recognize it.</p>
 <hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_text%'},{attr:'id', data:'%sidebar.prop.sub.prop_text._key%'}"></h3>
+<h3 data-prop="{text:'%sidebar.prop.sub.prop_text%'},{attr:{id:'%sidebar.prop.sub.prop_text._key%'}}"></h3>
 <p>Text property is self explanatory, it modifies innerText of the element.</p>
 <pre>
     <code class="html">
@@ -26,7 +26,7 @@
     </code>
 </pre>
 <hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_html%'},{attr:'id', data:'%sidebar.prop.sub.prop_html._key%'}"></h3>
+<h3 data-prop="{text:'%sidebar.prop.sub.prop_html%'},{attr:{id:'%sidebar.prop.sub.prop_html._key%'}}"></h3>
 <p>HTML property modifies the innerHTML of the element.</p>
 <pre>
     <code class="html">
@@ -34,7 +34,7 @@
     </code>
 </pre>
 <hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_class%'},{attr:'id', data:'%sidebar.prop.sub.prop_class._key%'}"></h3>
+<h3 data-prop="{text:'%sidebar.prop.sub.prop_class%'},{attr:{id:'%sidebar.prop.sub.prop_class._key%'}}"></h3>
 <p>Modifies the classes of the element.</p>
 <pre>
     <code class="html">
@@ -42,15 +42,15 @@
     </code>
 </pre>
 <hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_attr%'},{attr:'id', data:'%sidebar.prop.sub.prop_attr._key%'}"></h3>
+<h3 data-prop="{text:'%sidebar.prop.sub.prop_attr%'},{attr:{id:'%sidebar.prop.sub.prop_attr._key%'}}"></h3>
 <p>Sets an attribute to the element.</p>
 <pre>
     <code class="html">
-        &lt;a data-prop="{attr:'id', data:'%section.4.id%'}, {attr:'href', data:'%section.4.href%'}">&lt;/a>
+        &lt;a data-prop="{attr:{id:'%section.4.id%', href:'%section.4.href%'}}}">&lt;/a>
     </code>
 </pre>
 <hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_style%'},{attr:'id', data:'%sidebar.prop.sub.prop_style._key%'}"></h3>
+<h3 data-prop="{text:'%sidebar.prop.sub.prop_style%'},{attr:{id:'%sidebar.prop.sub.prop_style._key%'}}"></h3>
 <p>Sets the style of the element, this definition uses the native <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style" target="_blank">JavaScript style object</a>.</p>
 <pre>
     <code class="html">
@@ -58,7 +58,20 @@
     </code>
 </pre>
 <hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_if%'},{attr:'id', data:'%sidebar.prop.sub.prop_if._key%'}"></h3>
+<h3 data-prop="{text:'%sidebar.prop.sub.prop_event%'},{attr:{id:'%sidebar.prop.sub.prop_event._key%'}}"></h3>
+<p>Defines an event to the element, it uses <a href="https://www.w3schools.com/tags/ref_eventattributes.asp" target="_blank">HTML event attributes</a> to accomplish this.</p>
+<pre>
+    <code class="html">
+        &lt;div data-prop="{event:{click:'%clickFunc%'}}">&lt;/div>
+        &lt;script>
+            cog.set("clickFunc", function () {
+                console.log("event triggered!");
+            });
+        &lt;/script>
+    </code>
+</pre>
+<hr>
+<h3 data-prop="{text:'%sidebar.prop.sub.prop_if%'},{attr:{id:'%sidebar.prop.sub.prop_if._key%'}}"></h3>
 <p>Condition property has two use cases, first one is standalone definition for rendering the element based on condition, second use case is for applying conditions to other properties.</p>
 <pre>
     <code class="html">
@@ -71,7 +84,7 @@
 </pre>
 <p class="alert alert-info">If you use conditions with the attribute or class properties, when a refresh triggered on that element, previous classes or attributes will be deleted and rebound with the new values.</p>
 <hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_temp%'},{attr:'id', data:'%sidebar.prop.sub.prop_temp._key%'}"></h3>
+<h3 data-prop="{text:'%sidebar.prop.sub.prop_temp%'},{attr:{id:'%sidebar.prop.sub.prop_temp._key%'}}"></h3>
 <p>Templating is one of the most crucial features, and fortunately in CognitiveJS its very easy to use and manage.</p>
 <p>In order to use templates, first you need to load them to the <code>cog.templates</code> object with the key you desire, <code>cog.template()</code> function can handle this process.</p>
 <p>After you load them, using them is a breeze. Just assign the corresponding property. To pass an object or a value, you have to use an alias inside the template to avoid intersecting values, and since its just an alias we have to encapsulate the alias seperately.</p>
@@ -104,7 +117,7 @@
     </code>
 </pre>
 <hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_repeat%'},{attr:'id', data:'%sidebar.prop.sub.prop_repeat._key%'}"></h3>
+<h3 data-prop="{text:'%sidebar.prop.sub.prop_repeat%'},{attr:{id:'%sidebar.prop.sub.prop_repeat._key%'}}"></h3>
 <p>Repeaters, iterate through an array or an object and parse them into specified template. if there is no corresponding template in the <code>cog.templates</code> object. Then it creates a new template with the specified name and the children elements.</p>
 <p>Repeaters are a bit complex especially when you have multi-dimensional repeaters but once you understand the templates and alias structure, they are a piece of cake.</p>
 <p>Here is a simple example,</p>

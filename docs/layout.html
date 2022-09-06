@@ -70,10 +70,10 @@
 	============================ -->
     <div class="idocs-navigation bg-light">
       <ul class="nav flex-column" data-prop="{repeat:'%sidebar% as _menu', temp:'_sidebar'}">
-        <li class="nav-item" data-prop="if:'%%_menu%[\'sub\']% == null'"><a class="nav-link" data-bind="%_menu%" data-prop="{attr:'href', data:'#%%_menu%._key%'},{text:'%%_menu%%', if:'typeof %%_menu%% === \'string\''},{text:'%%_menu%.title%', if:'typeof %%_menu%% !== \'string\''}">FAQ</a></li>
-        <li class="nav-item" data-prop="if:'%%_menu%[\'sub\']% != null'"><a class="nav-link" data-bind="%_menu%" data-prop="{attr:'href', data:'#%%_menu%._key%'},{text:'%%_menu%%', if:'typeof %%_menu%% === \'string\''},{text:'%%_menu%.title%', if:'typeof %%_menu%% !== \'string\''}">FAQ</a>
+        <li class="nav-item" data-prop="if:'%%_menu%[\'sub\']% == null'"><a class="nav-link" data-bind="%_menu%" data-prop="{attr:{href:'#%%_menu%._key%'}},{text:'%%_menu%%', if:'typeof %%_menu%% === \'string\''},{text:'%%_menu%.title%', if:'typeof %%_menu%% !== \'string\''}">FAQ</a></li>
+        <li class="nav-item" data-prop="if:'%%_menu%[\'sub\']% != null'"><a class="nav-link" data-bind="%_menu%" data-prop="{attr:{href:'#%%_menu%._key%'}},{text:'%%_menu%%', if:'typeof %%_menu%% === \'string\''},{text:'%%_menu%.title%', if:'typeof %%_menu%% !== \'string\''}">FAQ</a>
           <ul class="nav flex-column" data-prop="{repeat:'%%_menu%[\'sub\']% as _sub', temp:'_sub'}">
-            <li class="nav-item"><a class="nav-link" data-prop="{attr:'href', data:'#%%_sub%._key%'},{text:'%%_sub%%', if:'typeof %%_sub%% === \'string\''},{text:'%%_sub%.title%', if:'typeof %%_sub%% !== \'string\''}">FAQ</a></li>
+            <li class="nav-item"><a class="nav-link" data-prop="{attr:{href:'#%%_sub%._key%'}},{text:'%%_sub%%', if:'typeof %%_sub%% === \'string\''},{text:'%%_sub%.title%', if:'typeof %%_sub%% !== \'string\''}">FAQ</a></li>
           </ul>
         </li>
       </ul>
@@ -84,7 +84,7 @@
     <div class="idocs-content">
       <div class="container" data-prop="repeat:'%docs% as _docs', temp:'_docs'">
 
-        <section data-prop="{attr:'id', data:'%%_docs%._key%'},{html:'%%_docs%%'}"></section>
+        <section data-prop="{attr:{id:'%%_docs%._key%'}},{html:'%%_docs%%'}"></section>
         <hr class="divider">
 
       </div>
