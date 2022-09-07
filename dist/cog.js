@@ -568,7 +568,7 @@ cog.init = function () {
         if: "prop.class != null",
         bind: function (elem, prop, props, propIndex) {
             var propData;
-            if (prop.current != null && (prop.if == null || !cog.if(prop.if))) {
+            if (prop.current != null) {
                 prop.current.split(" ").forEach(function (str) {
                     if (str != "") {
                         elem.classList.remove(str);
@@ -608,7 +608,7 @@ cog.init = function () {
         if: "prop.attr != null",
         bind: function (elem, prop, props, propIndex) {
             var propKey, propVal, propCurrent = {};
-            if (prop.current != null && (prop.if == null || !cog.if(prop.if))) {
+            if (prop.current != null) {
                 Object.keys(prop.current).forEach(function (key) {
                     elem.removeAttribute(key);
                 });
@@ -650,7 +650,7 @@ cog.init = function () {
         if: "prop.event != null",
         bind: function (elem, prop, props, propIndex) {
             var propKey, propVal, propCurrent = {};
-            if (prop.current != null && (prop.if == null || !cog.if(prop.if))) {
+            if (prop.current != null) {
                 Object.keys(prop.current).forEach(function (key) {
                     elem.removeAttribute(key);
                 });
@@ -700,7 +700,7 @@ cog.init = function () {
         if: "prop.style != null",
         bind: function (elem, prop, props, propIndex) {
             var propKey, propVal, propCurrent = {};
-            if (prop.current != null && (prop.if == null || !cog.if(prop.if))) {
+            if (prop.current != null) {
                 Object.keys(prop.current).forEach(function (key) {
                     elem.style[key] = "";
                 });
