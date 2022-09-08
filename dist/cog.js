@@ -112,16 +112,19 @@ cog.getElementProp = function (elem) {
     }
     return props;
 };
-cog.getElementEvent = function (elem) {
-    var elemEvents = [], elemProps = cog.getElementProp(elem);
+cog.getElementAllEvents = function (elem) {
+    var elemLives = [], elemEvents = [], elemProps = cog.getElementProp(elem);
     if (elemProps != null) {
         elemProps.forEach(function (prop) {
-            if ((eval(cog.bindTypes["event"].if) || eval(cog.bindTypes["live"].if)) && prop.current != null) {
+            if (eval(cog.bindTypes["live"].if) && prop.current != null) {
+                elemLives.push(prop.current);
+            }
+            if (eval(cog.bindTypes["event"].if) && prop.current != null) {
                 elemEvents.push(prop.current);
             }
         });
     }
-    return elemEvents;
+    return elemLives.concat(elemEvents);
 };
 cog.getRecursiveValue = function (arg) {
     if (arg == null) {arg = {};}
@@ -474,9 +477,9 @@ cog.eval = function (str) {
 };
 cog.executeEvents = function (event) {
     if (!cog.isElement(event.target)) {return;}
-    var elemEvents = cog.getElementEvent(event.target);
-    if (elemEvents != null) {
-        elemEvents.forEach(function (current) {
+    var elemAllEvents = cog.getElementAllEvents(event.target);
+    if (elemAllEvents != null) {
+        elemAllEvents.forEach(function (current) {
             if (!Array.isArray(current)) {
                 current = [current];
             }
