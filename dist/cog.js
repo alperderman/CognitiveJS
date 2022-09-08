@@ -477,22 +477,16 @@ cog.executeEvents = function (event) {
     var elemEvents = cog.getElementEvent(event.target);
     if (elemEvents != null) {
         elemEvents.forEach(function (current) {
-            if (typeof current === 'object' && Array.isArray(current)) {
-                current.forEach(function (obj) {
-                    Object.keys(obj).forEach(function (key) {
-                        if (event.type === key) {
-                            cog.eval(obj[key]);
-                        }
-                    });
-                });
-            } else {
-                Object.keys(current).forEach(function (key) {
+            if (!Array.isArray(current)) {
+                current = [current];
+            }
+            current.forEach(function (obj) {
+                Object.keys(obj).forEach(function (key) {
                     if (event.type === key) {
-                        cog.eval(current[key]);
+                        cog.eval(obj[key]);
                     }
                 });
-            }
-            
+            });
         });
     }
 };
