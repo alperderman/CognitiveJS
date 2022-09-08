@@ -59,7 +59,7 @@
 </pre>
 <hr>
 <h3 data-prop="{text:'%sidebar.prop.sub.prop_event%'},{attr:{id:'%sidebar.prop.sub.prop_event._key%'}}"></h3>
-<p>Defines an event to the element, it uses <a href="https://www.w3schools.com/tags/ref_eventattributes.asp" target="_blank">HTML event attributes</a> to accomplish this.</p>
+<p>Defines an event to the element.</p>
 <pre>
     <code class="html">
         &lt;div data-prop="{event:{click:'%clickFunc%'}}">&lt;/div>
@@ -68,6 +68,22 @@
                 console.log("event triggered!");
             });
         &lt;/script>
+    </code>
+</pre>
+<hr>
+<h3 data-prop="{text:'%sidebar.prop.sub.prop_live%'},{attr:{id:'%sidebar.prop.sub.prop_live._key%'}}"></h3>
+<p>Live property makes two-way binding possible within Cognitive.</p>
+<pre>
+    <code class="html">
+        &lt;input type="text" data-prop="{live:'name'}">
+        &lt;span data-bind="_auto" data-prop="text:'Welcome back %name%!'">&lt;/span>
+    </code>
+</pre>
+<p>Default event of live bindings is <code>change</code>. In order to trigger it on a different event, set the live binding as an object.</p>
+<pre>
+    <code class="html">
+        &lt;input type="text" data-prop="{live:{'name':{event:'input'}}}">
+        &lt;span data-bind="_auto" data-prop="text:'Welcome back %name%!'">&lt;/span>
     </code>
 </pre>
 <hr>
