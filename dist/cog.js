@@ -702,6 +702,7 @@ cog.init = function () {
                             }
                         });
                     }
+                    liveToken = cog.normalizeKeys(liveToken);
                     liveObj[liveEvent] = "cog.set('"+liveToken+"', "+liveData+")";
                     propCurrent.push(liveObj);
                 });
