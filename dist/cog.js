@@ -8,7 +8,6 @@ cog.tokenDelimiter = "%";
 cog.labelSet = "data-set";
 cog.labelBind = "data-bind";
 cog.labelProp = "data-prop";
-cog.labelEvent = "data-event";
 cog.labelHead = "head";
 cog.labelSkip = "skip";
 cog.labelSource = "data-src";
@@ -114,11 +113,15 @@ cog.getElementProp = function (elem) {
     return props;
 };
 cog.getElementEvent = function (elem) {
-    var elemEvents = elem.getAttribute(cog.labelEvent), events;
-    if (elemEvents != null) {
-        events = cog.parseEvent(elemEvents);
+    var elemEvents = [], elemProps = cog.getElementProp(elem);
+    if (elemProps != null) {
+        elemProps.forEach(function (prop) {
+            if ((eval(cog.bindTypes["event"].if) || eval(cog.bindTypes["live"].if)) && prop.current != null) {
+                elemEvents.push(prop.current);
+            }
+        });
     }
-    return events;
+    return elemEvents;
 };
 cog.getRecursiveValue = function (arg) {
     if (arg == null) {arg = {};}
@@ -199,23 +202,12 @@ cog.parseBindAuto = function (elem) {
     return cog.removeDuplicatesFromArray(result);
 };
 cog.parseProp = function (str) {
-    var result = cog.isValidJSON(cog.decodeHTML(str));
+    var result = cog.isJSON(cog.decodeHTML(str));
     if (!result) {
         if (str.trim().indexOf("{") === 0) {
             result = cog.eval("(["+str+"])");
         } else {
-            result = cog.eval("({"+str+"})");
-        }
-    }
-    return result;
-};
-cog.parseEvent = function (str) {
-    var result = cog.isValidJSON(cog.decodeHTML(str));
-    if (!result) {
-        if (str.trim().indexOf("{") === 0) {
-            result = cog.eval("("+str+")");
-        } else {
-            result = cog.eval("({"+str+"})");
+            result = cog.eval("([{"+str+"}])");
         }
     }
     return result;
@@ -317,13 +309,9 @@ cog.bind = function (node, arg) {
             }
         }
         if (nodeProp != null) {
-            if (Array.isArray(nodeProp)) {
-                nodeProp.forEach(function (prop, i) {
-                    bind_prop(node, prop, nodeProp, i);
-                });
-            } else {
-                bind_prop(node, nodeProp);
-            }
+            nodeProp.forEach(function (prop, i) {
+                bind_prop(node, prop, nodeProp, i);
+            });
         }
         if (typeof arg.callback === 'function') {
             arg.callback();
@@ -343,36 +331,7 @@ cog.bind = function (node, arg) {
         var props = cog.getElementProp(node), prop = props;
         node.innerHTML = "";
         if (props != null) {
-            if (typeof props === 'object' && Array.isArray(props)) {
-                props.forEach(function (prop, i) {
-                    if (prop.current != null) {
-                        if (prop.class != null) {
-                            prop.current.split(" ").forEach(function (str) {
-                                if (str != "") {
-                                    node.classList.remove(str);
-                                }
-                            });
-                        }
-                        if (prop.attr != null) {
-                            Object.keys(prop.current).forEach(function (key) {
-                                elem.removeAttribute(key);
-                            });
-                        }
-                        if (prop.event != null) {
-                            elem.removeAttribute(cog.labelEvent);
-                        }
-                        if (prop.style != null) {
-                            Object.keys(prop.current).forEach(function (key) {
-                                node.style[key] = "";
-                            });
-                        }
-                        delete props[i].current;
-                    }
-                    if (eval(cog.bindTypes["if"][cog.bindKeyIf])) {
-                        node.style.display = "";
-                    }
-                });
-            } else {
+            props.forEach(function (prop, i) {
                 if (prop.current != null) {
                     if (prop.class != null) {
                         prop.current.split(" ").forEach(function (str) {
@@ -386,20 +345,17 @@ cog.bind = function (node, arg) {
                             elem.removeAttribute(key);
                         });
                     }
-                    if (prop.event != null) {
-                        elem.removeAttribute(cog.labelEvent);
-                    }
                     if (prop.style != null) {
                         Object.keys(prop.current).forEach(function (key) {
                             node.style[key] = "";
                         });
                     }
-                    delete prop[i].current;
+                    delete props[i].current;
                 }
                 if (eval(cog.bindTypes["if"][cog.bindKeyIf])) {
                     node.style.display = "";
                 }
-            }
+            });
             node.setAttribute(cog.labelProp, cog.serialize(prop));
         }
     }
@@ -517,12 +473,26 @@ cog.eval = function (str) {
     return cog.encapEval();
 };
 cog.executeEvents = function (event) {
+    if (!cog.isElement(event.target)) {return;}
     var elemEvents = cog.getElementEvent(event.target);
     if (elemEvents != null) {
-        Object.keys(elemEvents).forEach(function (key) {
-            if (event.type === key) {
-                cog.eval(elemEvents[key]);
+        elemEvents.forEach(function (current) {
+            if (typeof current === 'object' && Array.isArray(current)) {
+                current.forEach(function (obj) {
+                    Object.keys(obj).forEach(function (key) {
+                        if (event.type === key) {
+                            cog.eval(obj[key]);
+                        }
+                    });
+                });
+            } else {
+                Object.keys(current).forEach(function (key) {
+                    if (event.type === key) {
+                        cog.eval(current[key]);
+                    }
+                });
             }
+            
         });
     }
 };
@@ -539,7 +509,7 @@ cog.init = function () {
     cog.newBind({
         name: "json",
         set: function (elem, key) {
-            var propData = cog.isValidJSON(elem.innerText);
+            var propData = cog.isJSON(elem.innerText);
             if (propData) {
                 cog.getRecursiveValue({str:key, val:propData});
             }
@@ -618,26 +588,16 @@ cog.init = function () {
                         elem.classList.remove(str);
                     }
                 });
-                if (props != null) {
-                    delete props[propIndex].current;
-                    elem.setAttribute(cog.labelProp, cog.serialize(props));
-                } else {
-                    delete prop.current;
-                    elem.setAttribute(cog.labelProp, cog.serialize(prop));
-                }
+                delete props[propIndex].current;
+                elem.setAttribute(cog.labelProp, cog.serialize(props));
             }
             if (prop.if == null || cog.if(prop.if)) {
                 propData = cog.replaceToken(prop.class.trim(), function (pure) {
                     return cog.getRecursiveValue({str:pure});
                 });
                 if (propData != null) {
-                    if (props != null) {
-                        props[propIndex].current = propData;
-                        elem.setAttribute(cog.labelProp, cog.serialize(props));
-                    } else {
-                        prop.current = propData;
-                        elem.setAttribute(cog.labelProp, cog.serialize(prop));
-                    }
+                    props[propIndex].current = propCurrent;
+                    elem.setAttribute(cog.labelProp, cog.serialize(props));
                     propData.split(" ").forEach(function (str) {
                         if (str != "") {
                             elem.classList.add(str);
@@ -656,13 +616,8 @@ cog.init = function () {
                 Object.keys(prop.current).forEach(function (key) {
                     elem.removeAttribute(key);
                 });
-                if (props != null) {
-                    delete props[propIndex].current;
-                    elem.setAttribute(cog.labelProp, cog.serialize(props));
-                } else {
-                    delete prop.current;
-                    elem.setAttribute(cog.labelProp, cog.serialize(prop));
-                }
+                delete props[propIndex].current;
+                elem.setAttribute(cog.labelProp, cog.serialize(props));
             }
             if (prop.if == null || cog.if(prop.if)) {
                 Object.keys(prop.attr).forEach(function (key) {
@@ -678,13 +633,8 @@ cog.init = function () {
                     }
                 });
                 if (propCurrent != null) {
-                    if (props != null) {
-                        props[propIndex].current = propCurrent;
-                        elem.setAttribute(cog.labelProp, cog.serialize(props));
-                    } else {
-                        prop.current = propCurrent;
-                        elem.setAttribute(cog.labelProp, cog.serialize(prop));
-                    }
+                    props[propIndex].current = propCurrent;
+                    elem.setAttribute(cog.labelProp, cog.serialize(props));
                 }
             }
         }
@@ -694,7 +644,10 @@ cog.init = function () {
         if: "prop.event != null",
         bind: function (elem, prop, props, propIndex) {
             var propKey, propVal, propCurrent = {};
-            elem.removeAttribute(cog.labelEvent);
+            if (prop.current != null) {
+                delete props[propIndex].current;
+                elem.setAttribute(cog.labelProp, cog.serialize(props));
+            }
             if (prop.if == null || cog.if(prop.if)) {
                 Object.keys(prop.event).forEach(function (key) {
                     propKey = cog.replaceToken(key, function (pure) {
@@ -713,7 +666,54 @@ cog.init = function () {
                     }
                 });
                 if (propCurrent != null) {
-                    elem.setAttribute(cog.labelEvent, cog.serialize(propCurrent));
+                    props[propIndex].current = propCurrent;
+                    elem.setAttribute(cog.labelProp, cog.serialize(props));
+                }
+            }
+        }
+    });
+    cog.newBind({
+        name: "live",
+        if: "prop.live != null",
+        bind: function (elem, prop, props, propIndex) {
+            var propCurrent = [], liveEvent, liveToken, liveData, liveObj;
+            if (prop.current != null) {
+                delete props[propIndex].current;
+                elem.setAttribute(cog.labelProp, cog.serialize(props));
+            }
+            if (prop.if == null || cog.if(prop.if)) {
+                if (!Array.isArray(prop.live)) {
+                    prop.live = [prop.live];
+                }
+                prop.live.forEach(function (live) {
+                    liveObj = {};
+                    liveEvent = "change";
+                    liveData = "event.target.value";
+                    if (typeof live === 'string') {
+                        liveToken = live;
+                    } else {
+                        Object.keys(live).forEach(function (key) {
+                            liveToken = cog.replaceToken(key, function (pure) {
+                                return cog.getRecursiveValue({str:pure});
+                            });
+                            if (live[key].event != null) {
+                                liveEvent = cog.replaceToken(live[key].event, function (pure) {
+                                    return cog.getRecursiveValue({str:pure});
+                                });
+                            }
+                            if (live[key].data != null) {
+                                liveData = cog.replaceToken(live[key].data, function (pure) {
+                                    return cog.getRecursiveValue({str:pure});
+                                });
+                            }
+                        });
+                    }
+                    liveObj[liveEvent] = "cog.set('"+liveToken+"', "+liveData+")";
+                    propCurrent.push(liveObj);
+                });
+                if (propCurrent != null) {
+                    props[propIndex].current = propCurrent;
+                    elem.setAttribute(cog.labelProp, cog.serialize(props));
                 }
             }
         }
@@ -727,13 +727,8 @@ cog.init = function () {
                 Object.keys(prop.current).forEach(function (key) {
                     elem.style[key] = "";
                 });
-                if (props != null) {
-                    delete props[propIndex].current;
-                    elem.setAttribute(cog.labelProp, cog.serialize(props));
-                } else {
-                    delete prop.current;
-                    elem.setAttribute(cog.labelProp, cog.serialize(prop));
-                }
+                delete props[propIndex].current;
+                elem.setAttribute(cog.labelProp, cog.serialize(props));
             }
             if (prop.if == null || cog.if(prop.if)) {
                 Object.keys(prop.style).forEach(function (key) {
@@ -749,13 +744,8 @@ cog.init = function () {
                     }
                 });
                 if (propCurrent != null) {
-                    if (props != null) {
-                        props[propIndex].current = propCurrent;
-                        elem.setAttribute(cog.labelProp, cog.serialize(props));
-                    } else {
-                        prop.current = propCurrent;
-                        elem.setAttribute(cog.labelProp, cog.serialize(prop));
-                    }
+                    props[propIndex].current = propCurrent;
+                    elem.setAttribute(cog.labelProp, cog.serialize(props));
                 }
             }
         }
@@ -933,7 +923,10 @@ cog.decodeHTML = function (str) {
     str = cog.replaceAll(cog.replaceAll(str, "&#39;", "'"), "&#34;", '"');
     return str;
 };
-cog.isValidJSON = function (str) {
+cog.isElement = function (elem) {
+    return elem instanceof Element || elem instanceof HTMLDocument;
+};
+cog.isJSON = function (str) {
     var o;
     try {
         o = JSON.parse(str);
@@ -982,7 +975,7 @@ cog.loadContents = function (callback) {
         }
         if (src != null) {
             if (data != null) {
-                dataJSON = cog.isValidJSON(data);
+                dataJSON = cog.isJSON(data);
                 if (!dataJSON) {
                     if (data.trim().indexOf("{") === 0) {
                         data = cog.eval("("+data+")");
