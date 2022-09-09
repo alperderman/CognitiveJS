@@ -60,14 +60,13 @@ cog.get = function (key, arg) {
     if (arg.set !== undefined || custom) {
         old = cog.getRecursiveValue({str:key, exec:false});
         if ((old !== arg.set && (old === undefined || arg.alter)) || custom) {
-            document.dispatchEvent(new CustomEvent(cog.event.beforeData, {detail:{key:key, old:old, arg:arg}}));
             if (custom) {
                 result = arg.replace({str:key, val:arg.set, ref:arg.reference, exec:arg.execute});
             } else {
                 result = cog.getRecursiveValue({str:key, val:arg.set, ref:arg.reference, exec:arg.execute});
             }
             changedElems = cog.rebind(key);
-            document.dispatchEvent(new CustomEvent(cog.event.afterData, {detail:{elems:changedElems, key:key, old:old, new:result, arg:arg}}));
+            document.dispatchEvent(new CustomEvent(cog.event.afterData, {detail:{elems:changedElems, key:key, old:old, new:result}}));
         } else {
             result = old;
         }
@@ -75,7 +74,7 @@ cog.get = function (key, arg) {
         result = cog.getRecursiveValue({str:key, ref:arg.reference, exec:arg.execute});
     }
     if (typeof arg.callback === 'function') {
-        arg.callback({elems:changedElems, key:key, old:old, new:result, arg:arg});
+        arg.callback({elems:changedElems, key:key, old:old, new:result});
     }
     return result;
 };
@@ -86,10 +85,15 @@ cog.set = function (key, set, arg) {
     if (arg.custom && typeof set === 'function') {
         cog.get(key, {
             set: set,
+            alter: arg.alter,
             callback: arg.callback,
             replace: function (argReplace) {
                 var result = cog.getRecursiveValue({str:argReplace.str, exec:false});
-                result = set(result);
+                var custom = set(result);
+                if (custom !== result) {
+                    argReplace.val = custom;
+                    result = cog.getRecursiveValue(argReplace);
+                }
                 return result;
             }
         });
@@ -195,6 +199,7 @@ cog.getRecursiveValue = function (arg) {
                 result = cog.normalizeKeys(strSplit);
             } else {
                 if (arg.val !== undefined && refData[key] !== arg.val) {
+                    document.dispatchEvent(new CustomEvent(cog.event.beforeData, {detail:{key:arg.str, old:refData[key], new:arg.val}}));
                     refData[key] = arg.val;
                 }
                 result = refData[key];
