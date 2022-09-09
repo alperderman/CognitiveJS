@@ -3,100 +3,156 @@
 if (typeof window.CustomEvent !== 'function') { window.CustomEvent = function (event, params) { params = params || {bubbles: false, cancelable: false, detail: null}; var evt = document.createEvent('CustomEvent'); evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail); return evt; }; }
 
 var cog = {};
-cog.cache = true;
 cog.tokenDelimiter = "%";
-cog.labelSet = "data-set";
-cog.labelBind = "data-bind";
-cog.labelProp = "data-prop";
-cog.labelHead = "head";
-cog.labelSkip = "skip";
-cog.labelSource = "data-src";
-cog.labelSourceObject = "data-object";
-cog.labelSourceMethod = "data-method";
-cog.labelSourceCache = "data-cache";
-cog.labelSourceAwait = "await";
-cog.eventBeforeData = "COGBeforeData";
-cog.eventAfterData = "COGAfterData";
-cog.eventBeforeRender = "COGBeforeRender";
-cog.eventAfterRender = "COGAfterRender";
-cog.bindKeySet = "set";
-cog.bindKeyIf = "if";
-cog.bindKeyBind = "bind";
-cog.data = {};
-cog.templates = {};
-cog.bindTypes = {};
-cog.keywords = {
+cog.label = {
+    set: "data-set",
+    bind: "data-bind",
+    prop: "data-prop",
+    head: "head",
+    skip: "skip",
+    source: "data-src",
+    sourceObject: "data-object",
+    sourceMethod: "data-method",
+    sourceCache: "data-cache",
+    sourceAwait: "await"
+};
+cog.event = {
+    beforeData: "COGBeforeData",
+    afterData: "COGAfterData",
+    beforeRender: "COGBeforeRender",
+    afterRender: "COGAfterRender"
+};
+cog.bindKeyword = {
+    set: "set",
+    if: "if",
+    bind: "bind"
+};
+cog.tokenKeyword = {
     parent: "_parent",
     key: "_key",
     index: "_index",
     token: "_token",
     auto: "_auto"
 };
-cog.regexHead = new RegExp("<head[^>]*>((.|[\\n\\r])*)<\\/head>", "im");
-cog.regexBody = new RegExp("<body[^>]*>((.|[\\n\\r])*)<\\/body>", "im");
-cog.regexScripts = new RegExp("<script[^>]*>([\\s\\S]*?)<\\/script>", "gim");
+cog.regex = {
+    head: new RegExp("<head[^>]*>((.|[\\\n\\\r])*)<\\\/head>", "im"),
+    body: new RegExp("<body[^>]*>((.|[\\\n\\\r])*)<\\\/body>", "im"),
+    normalize: new RegExp("(?:\\\[\\\'|\\\[\\\"|\\\[)(\\\w+)(?:\\\'\\\]|\\\"\\\]|\\\])", "g"),
+    normalizeCheck: new RegExp("[^a-zA-Z0-9\\\_\\\-\\\.]", "g")
+};
+cog.data = {};
+cog.templates = {};
+cog.bindTypes = {};
 cog.encapVar = null;
 cog.isReady = true;
+cog.cache = true;
 
 cog.get = function (key, arg) {
     if (key == null) {return;}
     if (arg == null) {arg = {};}
     if (arg.reference == null) {arg.reference = false;}
     if (arg.execute == null) {arg.execute = false;}
-    var result, old, changed = [];
+    if (arg.alter == null) {arg.alter = true;}
+    var result, old, changedElems = [];
     if (arg.set !== undefined) {
         old = cog.getRecursiveValue({str:key, exec:false});
-        if (old !== arg.set) {
-            document.dispatchEvent(new CustomEvent(cog.eventBeforeData, {detail:{key:key, old:old, new:arg.set}}));
-            result = cog.getRecursiveValue({str:key, val:arg.set, ref:arg.reference, exec:arg.execute});
-            rebind(key);
-            document.dispatchEvent(new CustomEvent(cog.eventAfterData, {detail:{elems:changed, key:key, old:old, new:arg.set}}));
+        if (old !== arg.set && (old === undefined || arg.alter)) {
+            document.dispatchEvent(new CustomEvent(cog.event.beforeData, {detail:{key:key, old:old, new:arg.set}}));
+            if (typeof arg.replace === 'function') {
+                result = arg.replace({str:key, val:arg.set, ref:arg.reference, exec:arg.execute});
+            } else {
+                result = cog.getRecursiveValue({str:key, val:arg.set, ref:arg.reference, exec:arg.execute});
+            }
+            changedElems = cog.rebind(key);
+            document.dispatchEvent(new CustomEvent(cog.event.afterData, {detail:{elems:changedElems, key:key, old:old, new:arg.set}}));
+        } else {
+            result = old;
         }
     } else {
-        result = cog.getRecursiveValue({str:key, val:arg.set, ref:arg.reference, exec:arg.execute});
+        if (typeof arg.replace === 'function') {
+            result = arg.replace({str:key, val:arg.set, ref:arg.reference, exec:arg.execute});
+        } else {
+            result = cog.getRecursiveValue({str:key, val:arg.set, ref:arg.reference, exec:arg.execute});
+        }
     }
     if (typeof arg.callback === 'function') {
-        arg.callback({elems:changed, key:key, old:old, new:arg.set});
-    }
-    function rebind(key, i) {
-        if (i == null) {i = 0;}
-        var elems, elem, elemBind, elemBindSplit, elemBindSplitData, normalizedKey, normalizedElemBindSplitData, bound = false, ii;
-        elems = document.querySelectorAll("["+cog.labelBind+"]:not(["+cog.labelSkip+"])");
-        if (i < elems.length) {
-            elem = elems[i];
-            elemBind = elem.getAttribute(cog.labelBind);
-            if (elemBind.indexOf(cog.keywords.auto) === 0) {
-                elemBindSplit = cog.parseBindAuto(elem);
-            } else {
-                elemBindSplit = cog.parseBind(elemBind);
-            }
-            for (ii = 0;ii < elemBindSplit.length;ii++) {
-                elemBindSplitData = cog.replaceAll(elemBindSplit[ii].trim(), "\\", "");
-                normalizedKey = cog.normalizeKeys(key);
-                normalizedElemBindSplitData = cog.normalizeKeys(elemBindSplitData);
-                if (normalizedElemBindSplitData.indexOf(normalizedKey) === 0 || normalizedKey.indexOf(normalizedElemBindSplitData) === 0) {
-                    bound = true;
-                    break;
-                }
-            }
-            if (bound) {
-                changed.push(elem);
-                cog.bind(elem);
-            }
-            i++;
-            rebind(key, i);
-        }
+        arg.callback({elems:changedElems, key:key, old:old, new:arg.set});
     }
     return result;
 };
-cog.set = function (key, set, callback) {
-    cog.get(key, {
-        set: set,
-        callback: callback
-    });
+cog.set = function (key, set, arg) {
+    if (arg == null) {arg = {};}
+    if (arg.prepend == null) {arg.prepend = false;}
+    if (arg.append == null) {arg.append = false;}
+    if (arg.alter == null) {arg.alter = true;}
+    if (!arg.prepend && !arg.append) {
+        cog.get(key, {
+            set: set,
+            alter: arg.alter,
+            callback: arg.callback
+        });
+    } else {
+        cog.get(key, {
+            set: set,
+            alter: arg.alter,
+            callback: arg.callback,
+            replace : function (argReplace) {
+                var result = cog.getRecursiveValue({str:argReplace.str, exec:false});
+                if (Array.isArray(result)) {
+                    if (arg.prepend) {
+                        result.unshift(argReplace.val);
+                    } else {
+                        result.push(argReplace.val);
+                    }
+                } else {
+                    if (typeof result === 'string' || typeof result === 'number') {
+                        if (arg.prepend) {
+                            argReplace.val = argReplace.val+result;
+                        } else {
+                            argReplace.val = result+argReplace.val;
+                        }
+                    }
+                    result = cog.getRecursiveValue(argReplace);
+                }
+                return result;
+            }
+        });
+    }
+};
+cog.rebind = function (key, changed, i) {
+    if (i == null) {i = 0;}
+    if (changed == null) {changed = [];}
+    var elems, elem, elemBind, elemBindSplit, elemBindSplitData, normalizedKey, normalizedElemBindSplitData, bound = false, ii;
+    elems = document.querySelectorAll("["+cog.label.bind+"]:not(["+cog.label.skip+"])");
+    if (i < elems.length) {
+        elem = elems[i];
+        elemBind = elem.getAttribute(cog.label.bind);
+        if (elemBind.indexOf(cog.tokenKeyword.auto) === 0) {
+            elemBindSplit = cog.parseBindAuto(elem);
+        } else {
+            elemBindSplit = cog.parseBind(elemBind);
+        }
+        for (ii = 0;ii < elemBindSplit.length;ii++) {
+            elemBindSplitData = cog.replaceAll(elemBindSplit[ii].trim(), "\\", "");
+            normalizedKey = cog.normalizeKeys(key);
+            normalizedElemBindSplitData = cog.normalizeKeys(elemBindSplitData);
+            if (normalizedElemBindSplitData.indexOf(normalizedKey) === 0 || normalizedKey.indexOf(normalizedElemBindSplitData) === 0) {
+                bound = true;
+                break;
+            }
+        }
+        if (bound) {
+            changed.push(elem);
+            cog.bind(elem);
+        }
+        i++;
+        cog.rebind(key, changed, i);
+    } else {
+        return changed;
+    }
 };
 cog.getElementBind = function (elem) {
-    var elemBinds = elem.getAttribute(cog.labelBind), binds;
+    var elemBinds = elem.getAttribute(cog.label.bind), binds;
     if (elemBinds != null) {
         binds = [];
         cog.parseBind(elemBinds).forEach(function (bind) {
@@ -106,7 +162,7 @@ cog.getElementBind = function (elem) {
     return binds;
 };
 cog.getElementProp = function (elem) {
-    var elemProps = elem.getAttribute(cog.labelProp), props;
+    var elemProps = elem.getAttribute(cog.label.prop), props;
     if (elemProps != null) {
         props = cog.parseProp(elemProps);
     }
@@ -142,7 +198,7 @@ cog.getRecursiveValue = function (arg) {
         if (refData[key] !== undefined && typeof refData[key] === 'object' && i != strSplit.length-1 && i != arg.index) {
             refData = refData[key];
         } else {
-            if (key == cog.keywords.parent) {
+            if (key == cog.tokenKeyword.parent) {
                 strSplit.splice(i,1);
                 strSplit.splice(i-1,1);
                 i = i-2;
@@ -150,9 +206,9 @@ cog.getRecursiveValue = function (arg) {
                 arg.str = strSplit;
                 refData = cog.getRecursiveValue(arg);
                 result = refData;
-            } else if (key == cog.keywords.key) {
+            } else if (key == cog.tokenKeyword.key) {
                 result = strSplit[i-1];
-            } else if (key == cog.keywords.token) {
+            } else if (key == cog.tokenKeyword.token) {
                 strSplit.splice(i,1);
                 result = cog.normalizeKeys(strSplit);
             } else {
@@ -174,7 +230,7 @@ cog.getRecursiveValue = function (arg) {
 cog.normalizeKeys = function (str) {
     var result;
     if (typeof str === 'string') {
-        result = str.replace(/(?:\[\'|\[\"|\[)(\w+)(?:\'\]|\"\]|\])/g, function (m1, m2) {return "."+m2;});
+        result = str.replace(cog.regex.normalize, function (m1, m2) {return "."+m2;});
         result = result.replace(/^\./, '');
     } else {
         result = "";
@@ -195,10 +251,10 @@ cog.parseBind = function (str) {
     return str.split(",");
 };
 cog.parseBindAuto = function (elem) {
-    var props = elem.getAttribute(cog.labelProp);
+    var props = elem.getAttribute(cog.label.prop);
     var result = cog.parseToken(props, function (token) {
         var tokenPure = cog.normalizeKeys(cog.purifyToken(token));
-        if (!(/[^a-zA-Z0-9\_\-\.]/g.test(tokenPure))) {
+        if (!(cog.regex.normalizeCheck.test(tokenPure))) {
             return tokenPure;
         }
     });
@@ -245,13 +301,13 @@ cog.newBind = function (arg) {
         cog.bindTypes[arg.name] = {};
     }
     if (arg.if != null) {
-        cog.bindTypes[arg.name][cog.bindKeyIf] = arg.if;
+        cog.bindTypes[arg.name][cog.bindKeyword.if] = arg.if;
     }
     if (arg.bind != null) {
-        cog.bindTypes[arg.name][cog.bindKeyBind] = function (elem, prop, props, propIndex) {arg.bind(elem, prop, props, propIndex);};
+        cog.bindTypes[arg.name][cog.bindKeyword.bind] = function (elem, prop, props, propIndex) {arg.bind(elem, prop, props, propIndex);};
     }
     if (arg.set != null) {
-        cog.bindTypes[arg.name][cog.bindKeySet] = function (elem, key) {arg.set(elem, key);};
+        cog.bindTypes[arg.name][cog.bindKeyword.set] = function (elem, key) {arg.set(elem, key);};
     }
 };
 cog.bind = function (node, arg) {
@@ -269,19 +325,19 @@ cog.bind = function (node, arg) {
                 remove_current();
             }
             if (arg.prop == "" || Object.keys(arg.prop).length == 0) {
-                node.removeAttribute(cog.labelProp);
+                node.removeAttribute(cog.label.prop);
                 nodePropData = null;
             } else {
                 nodePropData = arg.prop;
             }
             if (typeof arg.prop === 'string' && arg.prop != "") {
-                node.setAttribute(cog.labelProp, arg.prop);
+                node.setAttribute(cog.label.prop, arg.prop);
             }
             if (typeof arg.prop !== 'string' && Object.keys(arg.prop).length != 0) {
-                node.setAttribute(cog.labelProp, cog.serialize(arg.prop));
+                node.setAttribute(cog.label.prop, cog.serialize(arg.prop));
             }
         } else {
-            nodePropData = node.getAttribute(cog.labelProp);
+            nodePropData = node.getAttribute(cog.label.prop);
         }
         if (typeof nodePropData === 'string' && nodePropData != null) {
             nodeProp = cog.parseProp(nodePropData);
@@ -291,9 +347,9 @@ cog.bind = function (node, arg) {
         if (arg.bind !== undefined) {
             if (typeof arg.bind === 'string') {
                 if (arg.bind != "") {
-                    node.setAttribute(cog.labelBind, arg.bind);
+                    node.setAttribute(cog.label.bind, arg.bind);
                 } else {
-                    node.removeAttribute(cog.labelBind);
+                    node.removeAttribute(cog.label.bind);
                 }
             } else {
                 if (arg.bind.length > 0) {
@@ -305,9 +361,9 @@ cog.bind = function (node, arg) {
                             nodeAttr += bind;
                         }
                     });
-                    node.setAttribute(cog.labelBind, nodeAttr);
+                    node.setAttribute(cog.label.bind, nodeAttr);
                 } else {
-                    node.removeAttribute(cog.labelBind);
+                    node.removeAttribute(cog.label.bind);
                 }
             }
         }
@@ -323,9 +379,9 @@ cog.bind = function (node, arg) {
     function bind_prop(node, prop, props, propIndex) {
         var bindType;
         for (bindType in cog.bindTypes) {
-            if (cog.bindTypes[bindType][cog.bindKeyIf] != null && cog.bindTypes[bindType][cog.bindKeyBind] != null) {
-                if (eval(cog.bindTypes[bindType][cog.bindKeyIf])) {
-                    cog.bindTypes[bindType][cog.bindKeyBind](node, prop, props, propIndex);
+            if (cog.bindTypes[bindType][cog.bindKeyword.if] != null && cog.bindTypes[bindType][cog.bindKeyword.bind] != null) {
+                if (eval(cog.bindTypes[bindType][cog.bindKeyword.if])) {
+                    cog.bindTypes[bindType][cog.bindKeyword.bind](node, prop, props, propIndex);
                 }
             }
         }
@@ -355,11 +411,11 @@ cog.bind = function (node, arg) {
                     }
                     delete props[i].current;
                 }
-                if (eval(cog.bindTypes["if"][cog.bindKeyIf])) {
+                if (eval(cog.bindTypes["if"][cog.bindKeyword.if])) {
                     node.style.display = "";
                 }
             });
-            node.setAttribute(cog.labelProp, cog.serialize(prop));
+            node.setAttribute(cog.label.prop, cog.serialize(prop));
         }
     }
 };
@@ -367,7 +423,7 @@ cog.bindAll = function (arg) {
     if (arg == null) {arg = {};}
     if (arg.node == null) {arg.node = document;}
     if (arg.i == null) {arg.i = 0;}
-    var elems = arg.node.querySelectorAll("["+cog.labelProp+"]:not(["+cog.labelSkip+"])");
+    var elems = arg.node.querySelectorAll("["+cog.label.prop+"]:not(["+cog.label.skip+"])");
     if (arg.i < elems.length) {
         cog.bind(elems[arg.i]);
         arg.i++;
@@ -384,16 +440,16 @@ cog.replaceToken = function (node, replace, recursive) {
     if (typeof node === 'string') {
         return replace_string(node);
     } else {
-        childs = node.querySelectorAll("["+cog.labelBind+"], ["+cog.labelProp+"]");
+        childs = node.querySelectorAll("["+cog.label.bind+"], ["+cog.label.prop+"]");
         for (i = 0;i < childs.length;i++) {
             child = childs[i];
-            if (child.getAttribute(cog.labelBind) != null) {
-                attrBind = replace_string(child.getAttribute(cog.labelBind));
-                child.setAttribute(cog.labelBind, attrBind);
+            if (child.getAttribute(cog.label.bind) != null) {
+                attrBind = replace_string(child.getAttribute(cog.label.bind));
+                child.setAttribute(cog.label.bind, attrBind);
             }
-            if (child.getAttribute(cog.labelProp) != null) {
-                attrProp = replace_string(child.getAttribute(cog.labelProp));
-                child.setAttribute(cog.labelProp, attrProp);
+            if (child.getAttribute(cog.label.prop) != null) {
+                attrProp = replace_string(child.getAttribute(cog.label.prop));
+                child.setAttribute(cog.label.prop, attrProp);
             }
         }
     }
@@ -460,7 +516,7 @@ cog.if = function (str) {
     if (typeof str === 'string') {
         cog.encapVar = cog.replaceToken(str, function (pure) {
             pure = cog.normalizeKeys(pure);
-            if (!(/[^a-zA-Z0-9\_\-\.]/g.test(pure))) {
+            if (!(cog.regex.normalizeCheck.test(pure))) {
                 return "cog.getRecursiveValue({str:'"+pure+"'})";
             } else {
                 return undefined;
@@ -564,6 +620,22 @@ cog.init = function () {
         }
     });
     cog.newBind({
+        name: "context",
+        if: "prop.context != null && (prop.if == null || cog.if(prop.if))",
+        bind: function (elem, prop, props, propIndex) {
+            var propData, propContext;
+            propData = cog.replaceToken(prop.data, function (pure) {
+                return cog.getRecursiveValue({str:pure});
+            });
+            propContext = cog.replaceToken(prop.context, function (pure) {
+                return cog.getRecursiveValue({str:pure});
+            });
+            if (propContext != null) {
+                elem[propContext] = propData;
+            }
+        }
+    });
+    cog.newBind({
         name: "if",
         if: "prop.if != null && Object.keys(prop).length == 1",
         bind: function (elem, prop, props, propIndex) {
@@ -586,7 +658,7 @@ cog.init = function () {
                     }
                 });
                 delete props[propIndex].current;
-                elem.setAttribute(cog.labelProp, cog.serialize(props));
+                elem.setAttribute(cog.label.prop, cog.serialize(props));
             }
             if (prop.if == null || cog.if(prop.if)) {
                 propData = cog.replaceToken(prop.class.trim(), function (pure) {
@@ -594,7 +666,7 @@ cog.init = function () {
                 });
                 if (propData != null) {
                     props[propIndex].current = propCurrent;
-                    elem.setAttribute(cog.labelProp, cog.serialize(props));
+                    elem.setAttribute(cog.label.prop, cog.serialize(props));
                     propData.split(" ").forEach(function (str) {
                         if (str != "") {
                             elem.classList.add(str);
@@ -614,7 +686,7 @@ cog.init = function () {
                     elem.removeAttribute(key);
                 });
                 delete props[propIndex].current;
-                elem.setAttribute(cog.labelProp, cog.serialize(props));
+                elem.setAttribute(cog.label.prop, cog.serialize(props));
             }
             if (prop.if == null || cog.if(prop.if)) {
                 Object.keys(prop.attr).forEach(function (key) {
@@ -631,19 +703,19 @@ cog.init = function () {
                 });
                 if (propCurrent != null) {
                     props[propIndex].current = propCurrent;
-                    elem.setAttribute(cog.labelProp, cog.serialize(props));
+                    elem.setAttribute(cog.label.prop, cog.serialize(props));
                 }
             }
         }
     });
     cog.newBind({
         name: "event",
-        if: "prop.event != null",
+        if: "prop.event != null && prop.live == null",
         bind: function (elem, prop, props, propIndex) {
             var propKey, propVal, propCurrent = {};
             if (prop.current != null) {
                 delete props[propIndex].current;
-                elem.setAttribute(cog.labelProp, cog.serialize(props));
+                elem.setAttribute(cog.label.prop, cog.serialize(props));
             }
             if (prop.if == null || cog.if(prop.if)) {
                 Object.keys(prop.event).forEach(function (key) {
@@ -652,7 +724,7 @@ cog.init = function () {
                     });
                     propVal = cog.replaceToken(prop.event[key], function (pure) {
                         pure = cog.normalizeKeys(pure);
-                        if (!(/[^a-zA-Z0-9\_\-\.]/g.test(pure))) {
+                        if (!(cog.regex.normalizeCheck.test(pure))) {
                             return "cog.getRecursiveValue({str:'"+pure+"'})";
                         } else {
                             return undefined;
@@ -664,7 +736,7 @@ cog.init = function () {
                 });
                 if (propCurrent != null) {
                     props[propIndex].current = propCurrent;
-                    elem.setAttribute(cog.labelProp, cog.serialize(props));
+                    elem.setAttribute(cog.label.prop, cog.serialize(props));
                 }
             }
         }
@@ -676,42 +748,31 @@ cog.init = function () {
             var propCurrent = [], liveEvent, liveToken, liveData, liveObj;
             if (prop.current != null) {
                 delete props[propIndex].current;
-                elem.setAttribute(cog.labelProp, cog.serialize(props));
+                elem.setAttribute(cog.label.prop, cog.serialize(props));
             }
             if (prop.if == null || cog.if(prop.if)) {
-                if (!Array.isArray(prop.live)) {
-                    prop.live = [prop.live];
-                }
-                prop.live.forEach(function (live) {
-                    liveObj = {};
-                    liveEvent = "change";
-                    liveData = "event.target.value";
-                    if (typeof live === 'string') {
-                        liveToken = live;
-                    } else {
-                        Object.keys(live).forEach(function (key) {
-                            liveToken = cog.replaceToken(key, function (pure) {
-                                return cog.getRecursiveValue({str:pure});
-                            });
-                            if (live[key].event != null) {
-                                liveEvent = cog.replaceToken(live[key].event, function (pure) {
-                                    return cog.getRecursiveValue({str:pure});
-                                });
-                            }
-                            if (live[key].data != null) {
-                                liveData = cog.replaceToken(live[key].data, function (pure) {
-                                    return cog.getRecursiveValue({str:pure});
-                                });
-                            }
-                        });
-                    }
-                    liveToken = cog.normalizeKeys(liveToken);
-                    liveObj[liveEvent] = "cog.set('"+liveToken+"', "+liveData+")";
-                    propCurrent.push(liveObj);
+                liveObj = {};
+                liveEvent = "change";
+                liveData = "event.target.value";
+                liveToken = cog.replaceToken(prop.live, function (pure) {
+                    return cog.getRecursiveValue({str:pure});
                 });
+                if (prop.event != null) {
+                    liveEvent = cog.replaceToken(prop.event, function (pure) {
+                        return cog.getRecursiveValue({str:pure});
+                    });
+                }
+                if (prop.data != null) {
+                    liveData = cog.replaceToken(prop.data, function (pure) {
+                        return cog.getRecursiveValue({str:pure});
+                    });
+                }
+                liveToken = cog.normalizeKeys(liveToken);
+                liveObj[liveEvent] = "cog.set('"+liveToken+"', "+liveData+")";
+                propCurrent.push(liveObj);
                 if (propCurrent != null) {
                     props[propIndex].current = propCurrent;
-                    elem.setAttribute(cog.labelProp, cog.serialize(props));
+                    elem.setAttribute(cog.label.prop, cog.serialize(props));
                 }
             }
         }
@@ -726,7 +787,7 @@ cog.init = function () {
                     elem.style[key] = "";
                 });
                 delete props[propIndex].current;
-                elem.setAttribute(cog.labelProp, cog.serialize(props));
+                elem.setAttribute(cog.label.prop, cog.serialize(props));
             }
             if (prop.if == null || cog.if(prop.if)) {
                 Object.keys(prop.style).forEach(function (key) {
@@ -743,7 +804,7 @@ cog.init = function () {
                 });
                 if (propCurrent != null) {
                     props[propIndex].current = propCurrent;
-                    elem.setAttribute(cog.labelProp, cog.serialize(props));
+                    elem.setAttribute(cog.label.prop, cog.serialize(props));
                 }
             }
         }
@@ -801,7 +862,7 @@ cog.init = function () {
                                 result = parent+"."+i;
                             }
                         }
-                        if (pure == alias+'.'+cog.keywords.index) {
+                        if (pure == alias+'.'+cog.tokenKeyword.index) {
                             result = i;
                         }
                         return result;
@@ -835,11 +896,11 @@ cog.render = function (layoutSrc) {
             document.getElementsByTagName('script')[0].parentNode.removeChild(document.getElementsByTagName('script')[0]);
         }
         if ((/\<\/head\>/).test(layout)) {
-            document.head.innerHTML += layout.match(cog.regexHead)[1];
+            document.head.innerHTML += layout.match(cog.regex.head)[1];
         }
         if ((/\<\/body\>/).test(layout)) {
             document.documentElement.innerHTML = document.documentElement.innerHTML.replace("<body", "<body"+layout.match("<body" + "(.*)" + ">")[1]);
-            document.body.innerHTML += layout.match(cog.regexBody)[1];
+            document.body.innerHTML += layout.match(cog.regex.body)[1];
         }
         if (!(/\<\/head\>/).test(layout) && !(/\<\/body\>/).test(layout)) {
             document.body.innerHTML += layout;
@@ -854,13 +915,13 @@ cog.render = function (layoutSrc) {
     }
     function step_set(callback) {
         var elem, attr, type, key, bindType;
-        while (elem = document.querySelector("["+cog.labelSet+"]:not(["+cog.labelSkip+"])")) {
-            attr = elem.getAttribute(cog.labelSet);
+        while (elem = document.querySelector("["+cog.label.set+"]:not(["+cog.label.skip+"])")) {
+            attr = elem.getAttribute(cog.label.set);
             type = cog.parseSet(attr)[0];
             key = cog.parseSet(attr)[1].trim();
             for (bindType in cog.bindTypes) {
-                if (cog.bindTypes[bindType][cog.bindKeySet] != null && type == bindType) {
-                    cog.bindTypes[bindType][cog.bindKeySet](elem, key);
+                if (cog.bindTypes[bindType][cog.bindKeyword.set] != null && type == bindType) {
+                    cog.bindTypes[bindType][cog.bindKeyword.set](elem, key);
                 }
             }
             elem.parentNode.removeChild(elem);
@@ -870,7 +931,7 @@ cog.render = function (layoutSrc) {
         }
     }
     function step_detail() {
-        var i, links = document.getElementsByTagName("link"), link, heads = document.querySelectorAll("["+cog.labelHead+"]"), head;
+        var i, links = document.getElementsByTagName("link"), link, heads = document.querySelectorAll("["+cog.label.head+"]"), head;
         for (i = 0;i < links.length;i++) {
             link = links[i];
             document.head.appendChild(link);
@@ -886,7 +947,7 @@ cog.render = function (layoutSrc) {
         }, 0);
     }
     function step_bind() {
-        document.dispatchEvent(new CustomEvent(cog.eventBeforeRender));
+        document.dispatchEvent(new CustomEvent(cog.event.beforeRender));
         setTimeout(function () {
             cog.bindAll({
                 callback: function () {
@@ -897,7 +958,7 @@ cog.render = function (layoutSrc) {
         }, 0);
     }
     function step_scripts() {
-        cog.loadScriptsNS(document.querySelectorAll("script:not(["+cog.labelSkip+"])"), function () {
+        cog.loadScriptsNS(document.querySelectorAll("script:not(["+cog.label.skip+"])"), function () {
             step_finish();
         });
     }
@@ -907,7 +968,7 @@ cog.render = function (layoutSrc) {
             document.getElementById(window.location.hash.slice(1)).scrollIntoView();
         }
         setTimeout(function () {
-            document.dispatchEvent(new CustomEvent(cog.eventAfterRender));
+            document.dispatchEvent(new CustomEvent(cog.event.afterRender));
         }, 0);
     }
 };
@@ -958,12 +1019,12 @@ cog.removeDuplicatesFromArray = function (arr) {
 };
 cog.loadContents = function (callback) {
     var node, src, method, data, dataJSON, cache;
-    node = document.querySelector("["+cog.labelSource+"]:not(["+cog.labelSourceAwait+"]):not(["+cog.labelSkip+"])");
+    node = document.querySelector("["+cog.label.source+"]:not(["+cog.label.sourceAwait+"]):not(["+cog.label.skip+"])");
     if (node) {
-        src = node.getAttribute(cog.labelSource);
-        method = node.getAttribute(cog.labelSourceMethod);
-        data = node.getAttribute(cog.labelSourceObject);
-        cache = node.getAttribute(cog.labelSourceCache);
+        src = node.getAttribute(cog.label.source);
+        method = node.getAttribute(cog.label.sourceMethod);
+        data = node.getAttribute(cog.label.sourceObject);
+        cache = node.getAttribute(cog.label.sourceCache);
         if (cache != null) {
             if (cache != 'false') {
                 cache = true;
@@ -984,7 +1045,7 @@ cog.loadContents = function (callback) {
                     data = dataJSON;
                 }
             }
-            node.setAttribute(cog.labelSourceAwait, "");
+            node.setAttribute(cog.label.sourceAwait, "");
             cog.xhr(src, function (xhr, node) {
                 if (xhr.readyState == 4) {
                     if (xhr.status == 200) {
@@ -996,7 +1057,7 @@ cog.loadContents = function (callback) {
         }
     } else {
         if (typeof callback === 'function') {
-            if (!document.querySelector("["+cog.labelSourceAwait+"]:not(["+cog.labelSkip+"])")) {
+            if (!document.querySelector("["+cog.label.sourceAwait+"]:not(["+cog.label.skip+"])")) {
                 callback();
             } else {
                 setTimeout(function () {
