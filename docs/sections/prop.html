@@ -79,10 +79,10 @@
         &lt;span data-bind="_auto" data-prop="text:'Welcome back %name%!'">&lt;/span>
     </code>
 </pre>
-<p>Default event of live bindings is <code>change</code>. In order to trigger it on a different event, set the live binding as an object.</p>
+<p>Default event of live bindings is <code>change</code>. Set an event property to change the event.</p>
 <pre>
     <code class="html">
-        &lt;input type="text" data-prop="{live:{'name':{event:'input'}}}">
+        &lt;input type="text" data-prop="{live:'name', event:'input'}">
         &lt;span data-bind="_auto" data-prop="text:'Welcome back %name%!'">&lt;/span>
     </code>
 </pre>

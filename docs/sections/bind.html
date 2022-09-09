@@ -60,7 +60,7 @@
     <code class="js">
         cog.bind(document.getElementById("demo"), {
             bind: ["foo", "customers.0"],
-            prop: [{text:"customer.0.name"}, {class:"customer.0.active"}]
+            prop: [{text:"%customers.0.name%"}, {class:"%customers.0.active%"}]
         });
     </code>
 </pre>
@@ -69,7 +69,7 @@
     <code class="js">
         cog.bind(document.getElementById("demo"), {
             bind: ["foo", "customers.0"],
-            prop: [{text:"customer.0.name"}, {class:"customer.0.active"}],
+            prop: [{text:"%customers.0.name%"}, {class:"%customers.0.active%"}],
             keep: true
             //now when you change the properties of this element, old properties will not be removed
         });
@@ -80,7 +80,7 @@
 <p>To bind a variable to a value. set the first parameter as the string key of the value just like the first example on the above. Additionally you can set the new value of the data while binding with the second parameter.</p>
 <pre>
     <code class="js">
-        var customerName = cog.bind("customer.0.name", {
+        var customerName = cog.bind("customers.0.name", {
             set: "John"
         });
     </code>
@@ -91,8 +91,8 @@
 <p><code>cog.get()</code> takes 2 parameters: first one is for string key, second is for argument object.</p>
 <pre>
     <code class="js">
-        var getValue = cog.get("customer[0].debt");
-        cog.get("customer[0].debt", {
+        var getValue = cog.get("customers[0].debt");
+        cog.get("customers[0].debt", {
             set: 1000,
             callback: function () {console.log("changed!");}
         });
@@ -100,10 +100,22 @@
 </pre>
 <hr>
 <h3 data-prop="{text:'%sidebar.bind.sub.bind_set%'},{attr:{id:'%sidebar.bind.sub.bind_set._key%'}}"></h3>
-<p><code>cog.set()</code> is a wrapper for <code>cog.get()</code> function. It is nothing more than a shorthand for <code>cog.get()</code> to set values with the second parameter and callback function with the third parameter.</p>
+<p><code>cog.set()</code> is a wrapper for <code>cog.get()</code> function to set values directly.</p>
 <pre>
     <code class="js">
-        cog.set("customer[0].debt", 1000, function () {console.log("changed!");});
+        cog.set("customers[0].debt", 1000, {callback: function(){console.log("changed!");}});
+    </code>
+</pre>
+<p>Additionally, instead of just setting a value directly, you can also modify it as a function beforehand, just set the custom parameter to <code>true</code>.</p>
+<pre>
+    <code class="js">
+        cog.set("customers",
+            function(customers) {
+                customers.push({name:'Andrew', debt:0});
+                return customers;
+            },
+            {custom:true}
+        );
     </code>
 </pre>
 <hr>
@@ -115,5 +127,14 @@
             node: document.getElementById('element'),
             callback: function(){console.log("bound!");}
         });
+    </code>
+</pre>
+<hr>
+<h3 data-prop="{text:'%sidebar.bind.sub.bind_rebind%'},{attr:{id:'%sidebar.bind.sub.bind_rebind._key%'}}"></h3>
+<p><code>cog.rebind()</code> is used for manually refreshing the elements that has the specified key, you most likely won't need to use this function because when you change a value with the <code>cog.get()</code> or <code>cog.set()</code> functions, they automatically execute this function anyway.</p>
+<pre>
+    <code class="js">
+        cog.data.greeting = "Howdy!";
+        cog.rebind("greeting");
     </code>
 </pre>
