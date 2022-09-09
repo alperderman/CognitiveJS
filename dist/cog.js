@@ -53,69 +53,52 @@ cog.get = function (key, arg) {
     if (arg.reference == null) {arg.reference = false;}
     if (arg.execute == null) {arg.execute = false;}
     if (arg.alter == null) {arg.alter = true;}
-    var result, old, changedElems = [];
-    if (arg.set !== undefined) {
+    var result, old, changedElems = [], custom = false;
+    if (typeof arg.replace === 'function') {
+        custom = true;
+    }
+    if (arg.set !== undefined || custom) {
         old = cog.getRecursiveValue({str:key, exec:false});
-        if (old !== arg.set && (old === undefined || arg.alter)) {
-            document.dispatchEvent(new CustomEvent(cog.event.beforeData, {detail:{key:key, old:old, new:arg.set}}));
-            if (typeof arg.replace === 'function') {
+        if ((old !== arg.set && (old === undefined || arg.alter)) || custom) {
+            document.dispatchEvent(new CustomEvent(cog.event.beforeData, {detail:{key:key, old:old}}));
+            if (custom) {
                 result = arg.replace({str:key, val:arg.set, ref:arg.reference, exec:arg.execute});
             } else {
                 result = cog.getRecursiveValue({str:key, val:arg.set, ref:arg.reference, exec:arg.execute});
             }
             changedElems = cog.rebind(key);
-            document.dispatchEvent(new CustomEvent(cog.event.afterData, {detail:{elems:changedElems, key:key, old:old, new:arg.set}}));
+            document.dispatchEvent(new CustomEvent(cog.event.afterData, {detail:{elems:changedElems, key:key, old:old, new:result}}));
         } else {
             result = old;
         }
     } else {
-        if (typeof arg.replace === 'function') {
-            result = arg.replace({str:key, val:arg.set, ref:arg.reference, exec:arg.execute});
-        } else {
-            result = cog.getRecursiveValue({str:key, val:arg.set, ref:arg.reference, exec:arg.execute});
-        }
+        result = cog.getRecursiveValue({str:key, ref:arg.reference, exec:arg.execute});
     }
     if (typeof arg.callback === 'function') {
-        arg.callback({elems:changedElems, key:key, old:old, new:arg.set});
+        arg.callback({elems:changedElems, key:key, old:old, new:result});
     }
     return result;
 };
 cog.set = function (key, set, arg) {
     if (arg == null) {arg = {};}
-    if (arg.prepend == null) {arg.prepend = false;}
-    if (arg.append == null) {arg.append = false;}
+    if (arg.custom == null) {arg.custom = false;}
     if (arg.alter == null) {arg.alter = true;}
-    if (!arg.prepend && !arg.append) {
+    if (arg.custom && typeof set === 'function') {
         cog.get(key, {
-            set: set,
+            set: true,
             alter: arg.alter,
-            callback: arg.callback
+            callback: arg.callback,
+            replace: function (argReplace) {
+                var result = cog.getRecursiveValue({str:argReplace.str, exec:false});
+                result = set(result);
+                return result;
+            }
         });
     } else {
         cog.get(key, {
             set: set,
             alter: arg.alter,
-            callback: arg.callback,
-            replace : function (argReplace) {
-                var result = cog.getRecursiveValue({str:argReplace.str, exec:false});
-                if (Array.isArray(result)) {
-                    if (arg.prepend) {
-                        result.unshift(argReplace.val);
-                    } else {
-                        result.push(argReplace.val);
-                    }
-                } else {
-                    if (typeof result === 'string' || typeof result === 'number') {
-                        if (arg.prepend) {
-                            argReplace.val = argReplace.val+result;
-                        } else {
-                            argReplace.val = result+argReplace.val;
-                        }
-                    }
-                    result = cog.getRecursiveValue(argReplace);
-                }
-                return result;
-            }
+            callback: arg.callback
         });
     }
 };
