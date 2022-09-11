@@ -34,6 +34,7 @@
     <li><b>_parent:</b> for getting the parent element.</li>
     <li><b>_key:</b> for getting the key of the value.</li>
     <li><b>_index:</b> for getting the index number of the iteration on repeaters.</li>
+    <li><b>_count:</b> for getting the length of an object, array or a string.</li>
     <li><b>_auto:</b> for automatically refreshing an element regardless of the value.</li>
 </ul>
 <pre>
@@ -53,6 +54,9 @@
             &lt;tr>&lt;td data-prop="text:'%person._index%'">&lt;/td>&lt;td data-prop="text:'%%person%.name%'">&lt;/td>&lt;/tr>
         &lt;/table>
         &lt;!--returns index value (as you can see we didn't encapsulate it two times because _index keyword works differently than the other keywords)-->
+
+        &lt;div data-prop="text:'%fruits._count%'">&lt;/div>
+        &lt;!--returns the length of the fruits object-->
 
         &lt;div data-bind="_auto" data-prop="text:'%fruits.apple.color%'">&lt;/div>
         &lt;!--now this element will refresh that property every time a value has been altered-->
