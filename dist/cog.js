@@ -3,7 +3,13 @@
 if (typeof window.CustomEvent !== 'function') { window.CustomEvent = function (event, params) { params = params || {bubbles: false, cancelable: false, detail: null}; var evt = document.createEvent('CustomEvent'); evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail); return evt; }; }
 
 var cog = {};
-cog.tokenDelimiter = "%";
+cog.data = {};
+cog.templates = {};
+cog.bindTypes = {};
+cog.encapVar = null;
+cog.isReady = true;
+cog.cache = true;
+cog.delimiter = "%";
 cog.label = {
     set: "data-set",
     bind: "data-bind",
@@ -22,15 +28,11 @@ cog.event = {
     beforeRender: "COGBeforeRender",
     afterRender: "COGAfterRender"
 };
-cog.bindKeyword = {
-    set: "set",
-    if: "if",
-    bind: "bind"
-};
-cog.tokenKeyword = {
+cog.keyword = {
     parent: "_parent",
     key: "_key",
     index: "_index",
+    count: "_count",
     token: "_token",
     auto: "_auto"
 };
@@ -40,12 +42,6 @@ cog.regex = {
     normalize: new RegExp("(?:\\\[\\\'|\\\[\\\"|\\\[)(\\\w+)(?:\\\'\\\]|\\\"\\\]|\\\])", "g"),
     normalizeCheck: new RegExp("[^a-zA-Z0-9\\\_\\\-\\\.]", "g")
 };
-cog.data = {};
-cog.templates = {};
-cog.bindTypes = {};
-cog.encapVar = null;
-cog.isReady = true;
-cog.cache = true;
 
 cog.get = function (key, arg) {
     if (key == null) {return;}
@@ -113,7 +109,7 @@ cog.rebind = function (key, changed, i) {
     if (i < elems.length) {
         elem = elems[i];
         elemBind = elem.getAttribute(cog.label.bind);
-        if (elemBind.indexOf(cog.tokenKeyword.auto) === 0) {
+        if (elemBind.indexOf(cog.keyword.auto) === 0) {
             elemBindSplit = cog.parseBindAuto(elem);
         } else {
             elemBindSplit = cog.parseBind(elemBind);
@@ -181,10 +177,10 @@ cog.getRecursiveValue = function (arg) {
     }
     for (i = 0;i < strSplit.length;i++) {
         key = strSplit[i];
-        if (refData[key] !== undefined && typeof refData[key] === 'object' && i != strSplit.length-1 && i != arg.index) {
+        if (refData[key] !== undefined && i != strSplit.length-1 && i != arg.index) {
             refData = refData[key];
         } else {
-            if (key == cog.tokenKeyword.parent) {
+            if (key == cog.keyword.parent) {
                 strSplit.splice(i,1);
                 strSplit.splice(i-1,1);
                 i = i-2;
@@ -192,11 +188,17 @@ cog.getRecursiveValue = function (arg) {
                 arg.str = strSplit;
                 refData = cog.getRecursiveValue(arg);
                 result = refData;
-            } else if (key == cog.tokenKeyword.key) {
+            } else if (key == cog.keyword.key) {
                 result = strSplit[i-1];
-            } else if (key == cog.tokenKeyword.token) {
+            } else if (key == cog.keyword.token) {
                 strSplit.splice(i,1);
                 result = cog.normalizeKeys(strSplit);
+            } else if (key == cog.keyword.count) {
+                if (typeof refData === 'object' && !Array.isArray(refData)) {
+                    result = Object.keys(refData).length;
+                } else {
+                    result = refData.length;
+                }
             } else {
                 if (arg.val !== undefined && refData[key] !== arg.val) {
                     document.dispatchEvent(new CustomEvent(cog.event.beforeData, {detail:{key:arg.str, old:refData[key], new:arg.val}}));
@@ -261,7 +263,7 @@ cog.parseProp = function (str) {
 cog.parseToken = function (str, replace) {
     var delimiters = [], tokens = [], text, i, tokenReplace;
     for (i = 0;i < str.length;i++) {
-        if (str[i] === cog.tokenDelimiter) {
+        if (str[i] === cog.delimiter) {
             if (delimiters.length != 0) {
                 text = str.slice(delimiters[delimiters.length-1], i+1);
                 if (cog.purifyToken(text) != "") {
@@ -288,13 +290,13 @@ cog.newBind = function (arg) {
         cog.bindTypes[arg.name] = {};
     }
     if (arg.if != null) {
-        cog.bindTypes[arg.name][cog.bindKeyword.if] = arg.if;
+        cog.bindTypes[arg.name].if = arg.if;
     }
     if (arg.bind != null) {
-        cog.bindTypes[arg.name][cog.bindKeyword.bind] = function (elem, prop, props, propIndex) {arg.bind(elem, prop, props, propIndex);};
+        cog.bindTypes[arg.name].bind = function (elem, prop, props, propIndex) {arg.bind(elem, prop, props, propIndex);};
     }
     if (arg.set != null) {
-        cog.bindTypes[arg.name][cog.bindKeyword.set] = function (elem, key) {arg.set(elem, key);};
+        cog.bindTypes[arg.name].set = function (elem, key) {arg.set(elem, key);};
     }
 };
 cog.bind = function (node, arg) {
@@ -366,9 +368,9 @@ cog.bind = function (node, arg) {
     function bind_prop(node, prop, props, propIndex) {
         var bindType;
         for (bindType in cog.bindTypes) {
-            if (cog.bindTypes[bindType][cog.bindKeyword.if] != null && cog.bindTypes[bindType][cog.bindKeyword.bind] != null) {
-                if (eval(cog.bindTypes[bindType][cog.bindKeyword.if])) {
-                    cog.bindTypes[bindType][cog.bindKeyword.bind](node, prop, props, propIndex);
+            if (cog.bindTypes[bindType].if != null && cog.bindTypes[bindType].bind != null) {
+                if (eval(cog.bindTypes[bindType].if)) {
+                    cog.bindTypes[bindType].bind(node, prop, props, propIndex);
                 }
             }
         }
@@ -403,7 +405,7 @@ cog.bind = function (node, arg) {
                     }
                     delete props[i].current;
                 }
-                if (eval(cog.bindTypes["if"][cog.bindKeyword.if])) {
+                if (eval(cog.bindTypes["if"].if)) {
                     node.style.display = "";
                 }
             });
@@ -463,7 +465,7 @@ cog.replaceToken = function (node, replace, recursive) {
     }
 };
 cog.purifyToken = function (token) {
-    return cog.replaceAll(token.substring(cog.tokenDelimiter.length, token.length-cog.tokenDelimiter.length).trim(), "\\", "");
+    return cog.replaceAll(token.substring(cog.delimiter.length, token.length-cog.delimiter.length).trim(), "\\", "");
 };
 cog.template = function (arg, bind) {
     var template, createEl;
@@ -763,7 +765,7 @@ cog.init = function () {
             }
             if (prop.if == null || cog.if(prop.if)) {
                 propEvent = "change";
-                propData = "value";
+                propData = "event.target.value";
                 propToken = cog.replaceToken(prop.live, function (pure) {
                     return cog.getRecursiveValue({str:pure});
                 });
@@ -779,7 +781,7 @@ cog.init = function () {
                 }
                 propToken = cog.normalizeKeys(propToken);
                 if (propToken != null) {
-                    propCurrent[propEvent] = "cog.set('"+propToken+"', event.target['"+propData+"'])";
+                    propCurrent[propEvent] = "cog.set('"+propToken+"', "+propData+")";
                 }
                 if (propCurrent != null) {
                     props[propIndex].current = propCurrent;
@@ -873,7 +875,7 @@ cog.init = function () {
                                 result = parent+"."+i;
                             }
                         }
-                        if (pure == alias+'.'+cog.tokenKeyword.index) {
+                        if (pure == alias+'.'+cog.keyword.index) {
                             result = i;
                         }
                         return result;
@@ -931,8 +933,8 @@ cog.render = function (layoutSrc) {
             type = cog.parseSet(attr)[0];
             key = cog.parseSet(attr)[1].trim();
             for (bindType in cog.bindTypes) {
-                if (cog.bindTypes[bindType][cog.bindKeyword.set] != null && type == bindType) {
-                    cog.bindTypes[bindType][cog.bindKeyword.set](elem, key);
+                if (cog.bindTypes[bindType].set != null && type == bindType) {
+                    cog.bindTypes[bindType].set(elem, key);
                 }
             }
             elem.parentNode.removeChild(elem);
