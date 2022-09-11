@@ -781,7 +781,7 @@ cog.init = function () {
                 }
                 propToken = cog.normalizeKeys(propToken);
                 if (propToken != null) {
-                    propCurrent[propEvent] = "cog.set('"+propToken+"', "+propData+")";
+                    propCurrent[propEvent] = "cog.set('"+propToken+"', "+propData+", {custom:true})";
                 }
                 if (propCurrent != null) {
                     props[propIndex].current = propCurrent;
