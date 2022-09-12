@@ -468,7 +468,7 @@ cog.purifyToken = function (token) {
     return cog.replaceAll(token.substring(cog.delimiter.length, token.length-cog.delimiter.length).trim(), "\\", "");
 };
 cog.template = function (arg, bind) {
-    var template, createEl;
+    var template, createEl, parent, alias;
     if (arg.id == null) {return;}
     if (cog.templates[arg.id] == null && arg.elem != null) {
         if (typeof arg.elem === 'string') {
@@ -483,12 +483,18 @@ cog.template = function (arg, bind) {
         template = cog.templates[arg.id].cloneNode(true);
     }
     if (arg.data != null && template != null) {
+        parent = cog.normalizeKeys(cog.purifyToken(arg.data.split(" ")[0]));
+        alias = arg.data.split(" ")[2];
         cog.replaceToken(template, function (pure) {
-            if (pure == arg.data.split(" ")[2]) {
-                return cog.purifyToken(arg.data.split(" ")[0]);
-            } else {
-                return null;
+            var result = null, pureSplit;
+            pure = cog.normalizeKeys(pure);
+            pureSplit = pure.split(".");
+            if (pureSplit[0] == alias) {
+                pureSplit.splice(0, 1);
+                pureSplit.splice(0, 0, parent);
+                result = cog.normalizeKeys(pureSplit);
             }
+            return result;
         });
     }
     if (bind && cog.isReady) {
@@ -844,35 +850,36 @@ cog.init = function () {
         name: "repeat",
         if: "prop.repeat != null && (prop.if == null || cog.if(prop.if))",
         bind: function (elem, prop, props, propIndex) {
-            var propDatas, propData, propDatasIterate, template, repeatVal, i, key, parent = prop.repeat.split(" ")[0], alias = prop.repeat.split(" ")[2];
-            parent = cog.purifyToken(parent);
-            parent = cog.normalizeKeys(parent);
-            propDatas = cog.getRecursiveValue({str:parent});
+            var propData, propDatasIterate, template, repeatVal, i, key, parent = cog.normalizeKeys(cog.purifyToken(prop.repeat.split(" ")[0])), alias = prop.repeat.split(" ")[2];
+            propData = cog.getRecursiveValue({str:parent});
             cog.template({id:prop.temp, elem:elem});
-            if (typeof propDatas === 'object' && !Array.isArray(propDatas)) {
-                propDatasIterate = Object.keys(propDatas);
+            if (typeof propData === 'object' && !Array.isArray(propData)) {
+                propDatasIterate = Object.keys(propData);
             } else {
-                propDatasIterate = propDatas;
+                propDatasIterate = propData;
             }
             repeatVal = "";
-            if (propDatas != null) {
+            if (propData != null) {
                 for (i = 0;i < propDatasIterate.length;i++) {
-                    if (typeof propDatas === 'object' && !Array.isArray(propDatas)) {
-                        propData = propDatas[Object.keys(propDatas)[i]];
-                        key = Object.keys(propDatas)[i];
+                    if (typeof propData === 'object' && !Array.isArray(propData)) {
+                        key = Object.keys(propData)[i];
                     } else {
-                        propData = propDatas[i];
                         key = i;
                     }
                     template = cog.template({id:prop.temp});
                     cog.replaceToken(template, function (pure) {
-                        var result = null;
+                        var result = null, pureSplit;
                         pure = cog.normalizeKeys(pure);
-                        if (pure == alias) {
-                            if (typeof propDatas === 'object' && !Array.isArray(propDatas)) {
-                                result = parent+"."+key;
+                        pureSplit = pure.split(".");
+                        if (pureSplit[0] == alias && pureSplit[1] != cog.keyword.index) {
+                            if (typeof propData === 'object' && !Array.isArray(propData)) {
+                                pureSplit.splice(0, 1);
+                                pureSplit.splice(0, 0, parent, key);
+                                result = cog.normalizeKeys(pureSplit);
                             } else {
-                                result = parent+"."+i;
+                                pureSplit.splice(0, 1);
+                                pureSplit.splice(0, 0, parent, i);
+                                result = cog.normalizeKeys(pureSplit);
                             }
                         }
                         if (pure == alias+'.'+cog.keyword.index) {
