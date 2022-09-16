@@ -640,7 +640,7 @@ cog.init = function () {
     cog.newBind({
         name: "context",
         if: function (prop) {
-            return prop.context != null && (prop.if == null || cog.if(prop.if)) ? true : false;
+            return prop.context != null ? true : false;
         },
         bind: function (elem, prop, props, propIndex) {
             var propData, propContext, propCurrent = {};
