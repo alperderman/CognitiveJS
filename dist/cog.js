@@ -893,7 +893,7 @@ cog.init = function () {
         bind: function (elem, prop, props, propIndex) {
             var propData, propDatasIterate, template, repeatVal, i, key, parent = cog.normalizeKeys(cog.purifyToken(prop.repeat.split(" ")[0])), alias = prop.repeat.split(" ")[2];
             propData = cog.getRecursiveValue({str:parent});
-            template = cog.template({id:prop.temp, elem:elem});
+            cog.template({id:prop.temp, elem:elem});
             if (typeof propData === 'object' && !Array.isArray(propData)) {
                 propDatasIterate = Object.keys(propData);
             } else {
