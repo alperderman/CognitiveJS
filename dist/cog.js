@@ -154,10 +154,10 @@ cog.getElementAllEvents = function (elem) {
     var elemLives = [], elemEvents = [], elemProps = cog.getElementProp(elem);
     if (elemProps != null) {
         elemProps.forEach(function (prop) {
-            if (eval(cog.bindTypes["live"].if) && prop.current != null) {
+            if (cog.bindTypes["live"].if(prop) && prop.current != null) {
                 elemLives.push(prop.current);
             }
-            if (eval(cog.bindTypes["event"].if) && prop.current != null) {
+            if (cog.bindTypes["event"].if(prop) && prop.current != null) {
                 elemEvents.push(prop.current);
             }
         });
@@ -205,6 +205,7 @@ cog.getRecursiveValue = function (arg) {
                     refData[key] = arg.val;
                 }
                 result = refData[key];
+                break;
             }
         }
     }
@@ -293,10 +294,10 @@ cog.newBind = function (arg) {
         cog.bindTypes[arg.name].if = arg.if;
     }
     if (arg.bind != null) {
-        cog.bindTypes[arg.name].bind = function (elem, prop, props, propIndex) {arg.bind(elem, prop, props, propIndex);};
+        cog.bindTypes[arg.name].bind = arg.bind;
     }
     if (arg.set != null) {
-        cog.bindTypes[arg.name].set = function (elem, key) {arg.set(elem, key);};
+        cog.bindTypes[arg.name].set = arg.set;
     }
 };
 cog.bind = function (node, arg) {
@@ -369,7 +370,7 @@ cog.bind = function (node, arg) {
         var bindType;
         for (bindType in cog.bindTypes) {
             if (cog.bindTypes[bindType].if != null && cog.bindTypes[bindType].bind != null) {
-                if (eval(cog.bindTypes[bindType].if)) {
+                if (cog.bindTypes[bindType].if(prop)) {
                     cog.bindTypes[bindType].bind(node, prop, props, propIndex);
                 }
             }
@@ -405,7 +406,7 @@ cog.bind = function (node, arg) {
                     }
                     delete props[i].current;
                 }
-                if (eval(cog.bindTypes["if"].if)) {
+                if (cog.bindTypes["if"].if(prop)) {
                     node.style.display = "";
                 }
             });
@@ -415,9 +416,9 @@ cog.bind = function (node, arg) {
 };
 cog.bindAll = function (arg) {
     if (arg == null) {arg = {};}
-    if (arg.node == null) {arg.node = document;}
+    if (arg.elem == null) {arg.elem = document;}
     if (arg.i == null) {arg.i = 0;}
-    var elems = arg.node.querySelectorAll("["+cog.label.prop+"]:not(["+cog.label.skip+"])");
+    var elems = arg.elem.querySelectorAll("["+cog.label.prop+"]:not(["+cog.label.skip+"])");
     if (arg.i < elems.length) {
         cog.bind(elems[arg.i]);
         arg.i++;
@@ -467,9 +468,11 @@ cog.replaceToken = function (node, replace, recursive) {
 cog.purifyToken = function (token) {
     return cog.replaceAll(token.substring(cog.delimiter.length, token.length-cog.delimiter.length).trim(), "\\", "");
 };
-cog.template = function (arg, bind) {
+cog.template = function (arg) {
     var template, createEl, parent, alias;
     if (arg.id == null) {return;}
+    if (arg.bind == null) {arg.bind = false;}
+    if (arg.fragment == null) {arg.fragment = false;}
     if (cog.templates[arg.id] == null && arg.elem != null) {
         if (typeof arg.elem === 'string') {
             createEl = document.createElement("div");
@@ -482,25 +485,39 @@ cog.template = function (arg, bind) {
     if (cog.templates[arg.id] != null) {
         template = cog.templates[arg.id].cloneNode(true);
     }
-    if (arg.data != null && template != null) {
-        parent = cog.normalizeKeys(cog.purifyToken(arg.data.split(" ")[0]));
-        alias = arg.data.split(" ")[2];
-        cog.replaceToken(template, function (pure) {
-            var result = null, pureSplit;
-            pure = cog.normalizeKeys(pure);
-            pureSplit = pure.split(".");
-            if (pureSplit[0] == alias) {
-                pureSplit.splice(0, 1);
-                pureSplit.splice(0, 0, parent);
-                result = cog.normalizeKeys(pureSplit);
-            }
-            return result;
-        });
+    if ((arg.data != null && template != null) || typeof arg.replace === 'function') {
+        if (typeof arg.replace === 'function') {
+            cog.replaceToken(template, arg.replace);
+        } else {
+            parent = cog.normalizeKeys(cog.purifyToken(arg.data.split(" ")[0]));
+            alias = arg.data.split(" ")[2];
+            cog.replaceToken(template, function (pure) {
+                var result = null, pureSplit;
+                pure = cog.normalizeKeys(pure);
+                pureSplit = pure.split(".");
+                if (pureSplit[0] == alias) {
+                    pureSplit.splice(0, 1);
+                    pureSplit.splice(0, 0, parent);
+                    result = cog.normalizeKeys(pureSplit);
+                }
+                return result;
+            });
+        }
     }
-    if (bind && cog.isReady) {
-        cog.bindAll({node:template});
+    if (arg.bind && cog.isReady) {
+        cog.bindAll({elem:template});
+    }
+    if (arg.fragment) {
+        template = cog.elemFragment(template);
     }
     return template;
+};
+cog.elemFragment = function (elem) {
+    var fragment = document.createDocumentFragment();
+    while (elem.firstChild) {
+        fragment.appendChild(elem.firstChild);
+    }
+    return fragment;
 };
 cog.encapIf = function () {
     if (cog.encapVar != null && cog.encapEval()) {
@@ -572,7 +589,9 @@ cog.init = function () {
     });
     cog.newBind({
         name: "debug",
-        if: "prop.debug != null",
+        if: function (prop) {
+            return prop.debug != null ? true : false;
+        },
         bind: function (elem, prop, props, propIndex) {
             var propData;
             propData = cog.replaceToken(prop.debug, function (pure) {
@@ -583,7 +602,9 @@ cog.init = function () {
     });
     cog.newBind({
         name: "text",
-        if: "prop.text != null && (prop.if == null || cog.if(prop.if))",
+        if: function (prop) {
+            return prop.text != null && (prop.if == null || cog.if(prop.if)) ? true : false;
+        },
         bind: function (elem, prop, props, propIndex) {
             var propData;
             propData = cog.replaceToken(prop.text, function (pure) {
@@ -599,7 +620,9 @@ cog.init = function () {
     });
     cog.newBind({
         name: "html",
-        if: "prop.html != null && (prop.if == null || cog.if(prop.if))",
+        if: function (prop) {
+            return prop.html != null && (prop.if == null || cog.if(prop.if)) ? true : false;
+        },
         bind: function (elem, prop, props, propIndex) {
             var propData;
             if (prop.recursive == null) {prop.recursive = false;}
@@ -616,7 +639,9 @@ cog.init = function () {
     });
     cog.newBind({
         name: "context",
-        if: "prop.context != null",
+        if: function (prop) {
+            return prop.context != null && (prop.if == null || cog.if(prop.if)) ? true : false;
+        },
         bind: function (elem, prop, props, propIndex) {
             var propData, propContext, propCurrent = {};
             if (prop.current != null) {
@@ -653,7 +678,9 @@ cog.init = function () {
     });
     cog.newBind({
         name: "if",
-        if: "prop.if != null && Object.keys(prop).length == 1",
+        if: function (prop) {
+            return prop.if != null && Object.keys(prop).length == 1 ? true : false;
+        },
         bind: function (elem, prop, props, propIndex) {
             if (!cog.if(prop.if)) {
                 elem.style.display = "none";
@@ -664,7 +691,9 @@ cog.init = function () {
     });
     cog.newBind({
         name: "class",
-        if: "prop.class != null",
+        if: function (prop) {
+            return prop.class != null ? true : false;
+        },
         bind: function (elem, prop, props, propIndex) {
             var propData, propCurrent;
             if (prop.current != null) {
@@ -697,7 +726,9 @@ cog.init = function () {
     });
     cog.newBind({
         name: "attr",
-        if: "prop.attr != null",
+        if: function (prop) {
+            return prop.attr != null ? true : false;
+        },
         bind: function (elem, prop, props, propIndex) {
             var propData, propAttr, propCurrent = {};
             if (prop.current != null) {
@@ -729,7 +760,9 @@ cog.init = function () {
     });
     cog.newBind({
         name: "event",
-        if: "prop.event != null && prop.live == null",
+        if: function (prop) {
+            return prop.event != null && prop.live == null ? true : false;
+        },
         bind: function (elem, prop, props, propIndex) {
             var propData, propEvent, propCurrent = {};
             if (prop.current != null) {
@@ -762,7 +795,9 @@ cog.init = function () {
     });
     cog.newBind({
         name: "live",
-        if: "prop.live != null",
+        if: function (prop) {
+            return prop.live != null ? true : false;
+        },
         bind: function (elem, prop, props, propIndex) {
             var propData, propEvent, propToken, propCurrent = {};
             if (prop.current != null) {
@@ -798,7 +833,9 @@ cog.init = function () {
     });
     cog.newBind({
         name: "style",
-        if: "prop.style != null",
+        if: function (prop) {
+            return prop.style != null ? true : false;
+        },
         bind: function (elem, prop, props, propIndex) {
             var propData, propStyle, propCurrent = {};
             if (prop.current != null) {
@@ -830,13 +867,15 @@ cog.init = function () {
     });
     cog.newBind({
         name: "temp",
-        if: "prop.temp != null && prop.repeat == null && (prop.if == null || cog.if(prop.if))",
+        if: function (prop) {
+            return prop.temp != null && prop.repeat == null && (prop.if == null || cog.if(prop.if)) ? true : false;
+        },
         bind: function (elem, prop, props, propIndex) {
             var template;
             if (prop.data != null) {
-                template = cog.template({id:prop.temp, data:prop.data});
+                template = cog.template({id:prop.temp, elem:elem, data:prop.data});
             } else {
-                template = cog.template({id:prop.temp});
+                template = cog.template({id:prop.temp, elem:elem});
             }
             if (template != null) {
                 elem.innerHTML = template.innerHTML;
@@ -848,11 +887,13 @@ cog.init = function () {
     });
     cog.newBind({
         name: "repeat",
-        if: "prop.repeat != null && (prop.if == null || cog.if(prop.if))",
+        if: function (prop) {
+            return prop.repeat != null && (prop.if == null || cog.if(prop.if)) ? true : false;
+        },
         bind: function (elem, prop, props, propIndex) {
             var propData, propDatasIterate, template, repeatVal, i, key, parent = cog.normalizeKeys(cog.purifyToken(prop.repeat.split(" ")[0])), alias = prop.repeat.split(" ")[2];
             propData = cog.getRecursiveValue({str:parent});
-            cog.template({id:prop.temp, elem:elem});
+            template = cog.template({id:prop.temp, elem:elem});
             if (typeof propData === 'object' && !Array.isArray(propData)) {
                 propDatasIterate = Object.keys(propData);
             } else {
@@ -866,34 +907,34 @@ cog.init = function () {
                     } else {
                         key = i;
                     }
-                    template = cog.template({id:prop.temp});
-                    cog.replaceToken(template, function (pure) {
-                        var result = null, pureSplit;
-                        pure = cog.normalizeKeys(pure);
-                        pureSplit = pure.split(".");
-                        if (pureSplit[0] == alias && pureSplit[1] != cog.keyword.index) {
-                            if (typeof propData === 'object' && !Array.isArray(propData)) {
-                                pureSplit.splice(0, 1);
-                                pureSplit.splice(0, 0, parent, key);
-                                result = cog.normalizeKeys(pureSplit);
-                            } else {
-                                pureSplit.splice(0, 1);
-                                pureSplit.splice(0, 0, parent, i);
-                                result = cog.normalizeKeys(pureSplit);
+                    template = cog.template({
+                        id: prop.temp,
+                        bind: true,
+                        replace: function (pure) {
+                            var result = null, pureSplit;
+                            pure = cog.normalizeKeys(pure);
+                            pureSplit = pure.split(".");
+                            if (pureSplit[0] == alias && pureSplit[1] != cog.keyword.index) {
+                                if (typeof propData === 'object' && !Array.isArray(propData)) {
+                                    pureSplit.splice(0, 1);
+                                    pureSplit.splice(0, 0, parent, key);
+                                    result = cog.normalizeKeys(pureSplit);
+                                } else {
+                                    pureSplit.splice(0, 1);
+                                    pureSplit.splice(0, 0, parent, i);
+                                    result = cog.normalizeKeys(pureSplit);
+                                }
                             }
+                            if (pure == alias+'.'+cog.keyword.index) {
+                                result = i;
+                            }
+                            return result;
                         }
-                        if (pure == alias+'.'+cog.keyword.index) {
-                            result = i;
-                        }
-                        return result;
                     });
                     repeatVal += template.innerHTML;
                 }
             }
             elem.innerHTML = repeatVal;
-            if (cog.isReady) {
-                cog.bindAll({node:elem});
-            }
         }
     });
 };
