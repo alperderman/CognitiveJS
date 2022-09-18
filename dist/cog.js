@@ -32,6 +32,7 @@ cog.keyword = {
     parent: "_parent",
     key: "_key",
     index: "_index",
+    row: "_row",
     count: "_count",
     token: "_token",
     auto: "_auto"
@@ -434,7 +435,7 @@ cog.replaceToken = function (node, replace, recursive) {
     if (recursive == null) {recursive = true;}
     if (typeof node === 'string') {
         return replace_string(node);
-    } else {
+    } else if (cog.isElement(node)) {
         childs = node.querySelectorAll("["+cog.label.bind+"], ["+cog.label.prop+"]");
         for (i = 0;i < childs.length;i++) {
             child = childs[i];
@@ -447,6 +448,8 @@ cog.replaceToken = function (node, replace, recursive) {
                 child.setAttribute(cog.label.prop, attrProp);
             }
         }
+    } else {
+        return node;
     }
     function replace_string(str) {
         var tokens, result = str;
@@ -891,7 +894,7 @@ cog.init = function () {
             return prop.repeat != null && (prop.if == null || cog.if(prop.if)) ? true : false;
         },
         bind: function (elem, prop, props, propIndex) {
-            var propData, propDatasIterate, template, repeatVal, i, key, parent = cog.normalizeKeys(cog.purifyToken(prop.repeat.split(" ")[0])), alias = prop.repeat.split(" ")[2];
+            var propData, propLimit, propPage, propOffset, propDatasIterate, template, repeatVal, i, row, key, parent = cog.normalizeKeys(cog.purifyToken(prop.repeat.split(" ")[0])), alias = prop.repeat.split(" ")[2];
             propData = cog.getRecursiveValue({str:parent});
             cog.template({id:prop.temp, elem:elem});
             if (typeof propData === 'object' && !Array.isArray(propData)) {
@@ -899,39 +902,74 @@ cog.init = function () {
             } else {
                 propDatasIterate = propData;
             }
+            propLimit = cog.replaceToken(prop.limit, function (pure) {
+                return parseInt(cog.getRecursiveValue({str:pure}));
+            });
+            propOffset = cog.replaceToken(prop.offset, function (pure) {
+                return parseInt(cog.getRecursiveValue({str:pure}));
+            });
+            propPage = cog.replaceToken(prop.page, function (pure) {
+                return parseInt(cog.getRecursiveValue({str:pure}));
+            });
+            if (propPage == null || propPage < 1) {
+                propPage = 1;
+            }
+            if (propLimit != null) {
+                if (propOffset == null) {
+                    propOffset = propLimit*(propPage-1);
+                }
+                if (propOffset >= propDatasIterate.length) {
+                    if (propDatasIterate.length % propLimit == 0) {
+                        propPage = propDatasIterate.length/propLimit;
+                    } else {
+                        propPage = (propDatasIterate.length/propLimit)+1;
+                    }
+                    propOffset = propLimit*(propPage-1);
+                }
+                if (propOffset < 0) {
+                    propOffset = 0;
+                }
+            }
             repeatVal = "";
             if (propData != null) {
+                row = 1;
                 for (i = 0;i < propDatasIterate.length;i++) {
-                    if (typeof propData === 'object' && !Array.isArray(propData)) {
-                        key = Object.keys(propData)[i];
-                    } else {
-                        key = i;
-                    }
-                    template = cog.template({
-                        id: prop.temp,
-                        bind: true,
-                        replace: function (pure) {
-                            var result = null, pureSplit;
-                            pure = cog.normalizeKeys(pure);
-                            pureSplit = pure.split(".");
-                            if (pureSplit[0] == alias && pureSplit[1] != cog.keyword.index) {
-                                if (typeof propData === 'object' && !Array.isArray(propData)) {
-                                    pureSplit.splice(0, 1);
-                                    pureSplit.splice(0, 0, parent, key);
-                                    result = cog.normalizeKeys(pureSplit);
-                                } else {
-                                    pureSplit.splice(0, 1);
-                                    pureSplit.splice(0, 0, parent, i);
-                                    result = cog.normalizeKeys(pureSplit);
-                                }
-                            }
-                            if (pure == alias+'.'+cog.keyword.index) {
-                                result = i;
-                            }
-                            return result;
+                    if (propLimit == null || (row <= propLimit && i >= propOffset)) {
+                       if (typeof propData === 'object' && !Array.isArray(propData)) {
+                            key = Object.keys(propData)[i];
+                        } else {
+                            key = i;
                         }
-                    });
-                    repeatVal += template.innerHTML;
+                        template = cog.template({
+                            id: prop.temp,
+                            bind: true,
+                            replace: function (pure) {
+                                var result = null, pureSplit;
+                                pure = cog.normalizeKeys(pure);
+                                pureSplit = pure.split(".");
+                                if (pureSplit[0] == alias && pureSplit[1] != cog.keyword.index && pureSplit[1] != cog.keyword.row) {
+                                    if (typeof propData === 'object' && !Array.isArray(propData)) {
+                                        pureSplit.splice(0, 1);
+                                        pureSplit.splice(0, 0, parent, key);
+                                        result = cog.normalizeKeys(pureSplit);
+                                    } else {
+                                        pureSplit.splice(0, 1);
+                                        pureSplit.splice(0, 0, parent, i);
+                                        result = cog.normalizeKeys(pureSplit);
+                                    }
+                                }
+                                if (pure == alias+'.'+cog.keyword.index) {
+                                    result = i;
+                                }
+                                if (pure == alias+'.'+cog.keyword.row) {
+                                    result = row;
+                                }
+                                return result;
+                            }
+                        });
+                        repeatVal += template.innerHTML;
+                        row++;
+                    }
                 }
             }
             elem.innerHTML = repeatVal;
