@@ -105,7 +105,7 @@ cog.set = function (key, set, arg) {
 cog.rebind = function (key, changed, i) {
     if (i == null) {i = 0;}
     if (changed == null) {changed = [];}
-    var elems, elem, elemBind, elemBindSplit, elemBindSplitData, normalizedKey, normalizedElemBindSplitData, bound = false, ii;
+    var elems, elem, elemBind, elemBindSplit, elemBindSplitData, bound = false, ii;
     elems = document.querySelectorAll("["+cog.label.bind+"]:not(["+cog.label.skip+"])");
     if (i < elems.length) {
         elem = elems[i];
@@ -117,9 +117,7 @@ cog.rebind = function (key, changed, i) {
         }
         for (ii = 0;ii < elemBindSplit.length;ii++) {
             elemBindSplitData = cog.replaceAll(elemBindSplit[ii].trim(), "\\", "");
-            normalizedKey = cog.normalizeKeys(key);
-            normalizedElemBindSplitData = cog.normalizeKeys(elemBindSplitData);
-            if (normalizedElemBindSplitData.indexOf(normalizedKey) === 0 || normalizedKey.indexOf(normalizedElemBindSplitData) === 0) {
+            if (cog.checkKeys(key, elemBindSplitData)) {
                 bound = true;
                 break;
             }
@@ -218,14 +216,15 @@ cog.getRecursiveValue = function (arg) {
     }
     return result;
 };
-cog.normalizeKeys = function (str) {
+cog.normalizeKeys = function (val) {
     var result;
-    if (typeof str === 'string') {
-        result = str.replace(cog.regex.normalize, function (m1, m2) {return "."+m2;});
+    if (typeof val === 'string') {
+        result = val.replace(cog.regex.normalize, function (m1, m2) {return "."+m2;});
         result = result.replace(/^\./, '');
-    } else {
+    }
+    if (Array.isArray(val)) {
         result = "";
-        str.forEach(function (key, i) {
+        val.forEach(function (key, i) {
             if (i == 0) {
                 result += key;
             } else {
@@ -234,6 +233,11 @@ cog.normalizeKeys = function (str) {
         });
     }
     return result;
+};
+cog.checkKeys = function (key1, key2) {
+    key1 = cog.normalizeKeys(key1);
+    key2 = cog.normalizeKeys(key2);
+    return key1.indexOf(key2) === 0 || key2.indexOf(key1) === 0 ? true : false;
 };
 cog.parseSet = function (str) {
     return str.split(":");
