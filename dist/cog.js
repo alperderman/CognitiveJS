@@ -963,15 +963,9 @@ cog.init = function () {
                                 pure = cog.normalizeKeys(pure);
                                 pureSplit = pure.split(".");
                                 if (pureSplit[0] == alias && pureSplit[1] != cog.keyword.index && pureSplit[1] != cog.keyword.row) {
-                                    if (typeof propData === 'object' && !Array.isArray(propData)) {
-                                        pureSplit.splice(0, 1);
-                                        pureSplit.splice(0, 0, parent, key);
-                                        result = cog.normalizeKeys(pureSplit);
-                                    } else {
-                                        pureSplit.splice(0, 1);
-                                        pureSplit.splice(0, 0, parent, i);
-                                        result = cog.normalizeKeys(pureSplit);
-                                    }
+                                    pureSplit.splice(0, 1);
+                                    pureSplit.splice(0, 0, parent, key);
+                                    result = cog.normalizeKeys(pureSplit);
                                 }
                                 if (pure == alias+'.'+cog.keyword.index) {
                                     result = i;
