@@ -556,7 +556,10 @@ cog.eval = function (str) {
     cog.encapVar = str;
     return cog.encapEval();
 };
-cog.executeEvents = function (event, elem) {
+cog.eventListener = function (event) {
+    cog.eventHandler(event);
+};
+cog.eventHandler = function (event, elem) {
     if (!elem) {elem = event.target;}
     if (typeof elem.getAttribute !== 'function') {return;}
     var elemAllEvents = cog.getElementAllEvents(elem), prevent = false;
@@ -573,7 +576,7 @@ cog.executeEvents = function (event, elem) {
         });
     }
     if (!prevent && elem.parentNode) {
-        cog.executeEvents(event, elem.parentNode);
+        cog.eventHandler(event, elem.parentNode);
     }
 };
 cog.addEventListenerAll = function (target, listener, capture) {
@@ -585,7 +588,7 @@ cog.addEventListenerAll = function (target, listener, capture) {
     }
 };
 cog.init = function () {
-    cog.addEventListenerAll(document.documentElement, cog.executeEvents);
+    cog.addEventListenerAll(document.documentElement, cog.eventListener);
     cog.newBind({
         name: "json",
         set: function (elem, key) {
