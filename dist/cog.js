@@ -35,6 +35,7 @@ cog.keyword = {
     row: "_row",
     count: "_count",
     token: "_token",
+    prevent: "_prevent",
     auto: "_auto"
 };
 cog.regex = {
@@ -555,17 +556,24 @@ cog.eval = function (str) {
     cog.encapVar = str;
     return cog.encapEval();
 };
-cog.executeEvents = function (event) {
-    if (!cog.isElement(event.target)) {return;}
-    var elemAllEvents = cog.getElementAllEvents(event.target);
-    if (elemAllEvents != null) {
+cog.executeEvents = function (event, elem) {
+    if (!elem) {elem = event.target;}
+    if (typeof elem.getAttribute !== 'function') {return;}
+    var elemAllEvents = cog.getElementAllEvents(elem), prevent = false;
+    if (elemAllEvents.length > 0) {
         elemAllEvents.forEach(function (current) {
             Object.keys(current).forEach(function (key) {
-                if (event.type === key) {
+                if (key == event.type) {
                     cog.eval(current[key]);
+                }
+                if (key == cog.keyword.prevent && cog.if(current[key])) {
+                    prevent = true;
                 }
             });
         });
+    }
+    if (!prevent && elem.parentNode) {
+        cog.executeEvents(event, elem.parentNode);
     }
 };
 cog.addEventListenerAll = function (target, listener, capture) {
