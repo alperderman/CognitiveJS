@@ -1160,13 +1160,13 @@ cog.loadContents = function (callback) {
                 }
             }
             node.setAttribute(cog.label.sourceAwait, "");
-            cog.xhr(src, function (xhr, node) {
+            cog.xhr(src, function (xhr) {
                 if (xhr.readyState == 4) {
                     if (xhr.status == 200) {
                         node.outerHTML = xhr.responseText;
                     }
                 }
-            }, node, method, data, cache);
+            }, {method:method, data:data, cache:cache});
             cog.loadContents(callback);
         }
     } else {
@@ -1251,26 +1251,27 @@ cog.urlEncode = function (obj) {
     }
     return result;
 };
-cog.xhr = function (url, callback, arg, method, obj, cache, async) {
-    if (cache == null) {cache = cog.cache;}
-    if (method == null) {
-        if (!cache) {
-            method = 'POST';
+cog.xhr = function (url, callback, arg) {
+    if (arg == null) {arg = {};}
+    if (arg.cache == null) {arg.cache = cog.cache;}
+    if (arg.method == null) {
+        if (!arg.cache) {
+            arg.method = 'POST';
         } else {
-            method = 'GET';
+            arg.method = 'GET';
         }
     }
-    if (obj == null) {obj = '';}
-    if (async == null) {async = true;}
+    if (arg.data == null) {arg.data = '';}
+    if (arg.async == null) {arg.async = true;}
     var xhr, guid, cacheUrl, hashUrl, key, mergedObj, urlObj;
-    method = method.toUpperCase();
+    arg.method = arg.method.toUpperCase();
     xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
         if (xhr.readyState == XMLHttpRequest.DONE) {
-            callback(xhr, arg);
+            callback(xhr);
         }
     };
-    if (!cache && method == 'GET') {
+    if (!arg.cache && arg.method == 'GET') {
         guid = Date.now();
         cacheUrl = url.replace(/#.*$/, "");
         hashUrl = url.slice(cacheUrl.length);
@@ -1278,19 +1279,19 @@ cog.xhr = function (url, callback, arg, method, obj, cache, async) {
         hashUrl = ((/\?/).test(cacheUrl) ? "&" : "?") + "_=" + (guid++) + hashUrl;
         url = cacheUrl + hashUrl;
     }
-    if (method == 'GET' && obj != '') {
+    if (arg.method == 'GET' && arg.data != '') {
         mergedObj = {};
         urlObj = cog.getUrlParams(url);
         for (key in urlObj) {mergedObj[key] = urlObj[key];}
-        for (key in obj) {mergedObj[key] = obj[key];}
+        for (key in arg.data) {mergedObj[key] = arg.data[key];}
         url = url.split(/[?#]/)[0]+'?'+cog.urlEncode(mergedObj);
     }
-    xhr.open(method, url, async);
-    if (method == 'GET') {
+    xhr.open(arg.method, url, arg.async);
+    if (arg.method == 'GET') {
         xhr.send();
     } else {
         xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xhr.send(cog.urlEncode(obj));
+        xhr.send(cog.urlEncode(arg.data));
     }
 };
 cog.DOMLoad = function () {
