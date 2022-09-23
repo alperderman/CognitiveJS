@@ -179,6 +179,9 @@ cog.getRecursiveValue = function (arg) {
         key = strSplit[i];
         if (refData[key] !== undefined && i != strSplit.length-1 && i != arg.index) {
             refData = refData[key];
+            if (typeof refData === 'function') {
+                refData = refData();
+            }
         } else {
             if (key == cog.keyword.parent) {
                 strSplit.splice(i,1);
