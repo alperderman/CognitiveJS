@@ -1000,11 +1000,9 @@ cog.render = function (layoutSrc) {
     function step_start() {
         cog.isReady = false;
         cog.xhr(layoutSrc, function (xhr) {
-            if (xhr.readyState == 4) {
-                if (xhr.status == 200) {
-                    layout = xhr.responseText;
-                    step_design();
-                }
+            if (xhr.status == 200) {
+                layout = xhr.responseText;
+                step_design();
             }
         });
     }
@@ -1164,10 +1162,8 @@ cog.loadContents = function (callback) {
             }
             node.setAttribute(cog.label.sourceAwait, "");
             cog.xhr(src, function (xhr) {
-                if (xhr.readyState == 4) {
-                    if (xhr.status == 200) {
-                        node.outerHTML = xhr.responseText;
-                    }
+                if (xhr.status == 200) {
+                    node.outerHTML = xhr.responseText;
                 }
             }, {method:method, data:data, cache:cache});
             cog.loadContents(callback);
@@ -1270,7 +1266,7 @@ cog.xhr = function (url, callback, arg) {
     arg.method = arg.method.toUpperCase();
     xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
-        if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.readyState == 4) {
             callback(xhr);
         }
     };
@@ -1310,15 +1306,13 @@ cog.DOMEval = function (code) {
 };
 cog.getScript = function (url, callback) {
     cog.xhr(url, function (xhr) {
-        if (xhr.readyState == 4) {
-            if (xhr.status == 200) {
-                cog.DOMEval(xhr.responseText);
-            }
-            if (typeof callback === 'function') {
-                setTimeout(function () {
-                    callback(xhr);
-                }, 0);
-            }
+        if (xhr.status == 200) {
+            cog.DOMEval(xhr.responseText);
+        }
+        if (typeof callback === 'function') {
+            setTimeout(function () {
+                callback(xhr);
+            }, 0);
         }
     });
 };
