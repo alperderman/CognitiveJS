@@ -804,6 +804,9 @@ cog.init = function () {
                         propCurrent[propEvent] = propData;
                     }
                 });
+                if (prop[cog.keyword.prevent] !== undefined) {
+                    propCurrent[cog.keyword.prevent] = prop[cog.keyword.prevent];
+                }
                 if (propCurrent != null) {
                     props[propIndex].current = propCurrent;
                     elem.setAttribute(cog.label.prop, cog.serialize(props));
@@ -841,6 +844,9 @@ cog.init = function () {
                 propToken = cog.normalizeKeys(propToken);
                 if (propToken != null) {
                     propCurrent[propEvent] = "cog.set('"+propToken+"', "+propData+", {custom:true})";
+                    if (prop[cog.keyword.prevent] !== undefined) {
+                        propCurrent[cog.keyword.prevent] = prop[cog.keyword.prevent];
+                    }
                 }
                 if (propCurrent != null) {
                     props[propIndex].current = propCurrent;
