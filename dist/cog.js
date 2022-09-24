@@ -6,6 +6,7 @@ var cog = {};
 cog.data = {};
 cog.templates = {};
 cog.bindTypes = {};
+cog.bound = {};
 cog.encapVar = null;
 cog.isReady = true;
 cog.cache = true;
@@ -130,7 +131,29 @@ cog.rebind = function (key, changed, i) {
         i++;
         cog.rebind(key, changed, i);
     } else {
+        rebound();
         return changed;
+    }
+    function rebound() {
+        var i, ii, rebindKey, boundKeys, boundKey;
+        for (i = 0;i < Object.keys(cog.bound).length;i++) {
+            rebindKey = Object.keys(cog.bound)[i];
+            boundKeys = cog.bound[rebindKey];
+            if (typeof boundKeys === 'string') {
+                boundKey = boundKeys;
+                if (cog.normalizeKeys(key) != cog.normalizeKeys(rebindKey) && cog.checkKeys(key, boundKey)) {
+                    changed = changed.concat(cog.rebind(rebindKey));
+                }
+            } else if (Array.isArray(boundKeys)) {
+                for (ii = 0;ii < boundKeys.length;ii++) {
+                    boundKey = boundKeys[ii];
+                    if (cog.normalizeKeys(key) != cog.normalizeKeys(rebindKey) && cog.checkKeys(key, boundKey)) {
+                        changed = changed.concat(cog.rebind(rebindKey));
+                        break;
+                    }
+                }
+            }
+        }
     }
 };
 cog.getElementBind = function (elem) {
@@ -239,9 +262,25 @@ cog.normalizeKeys = function (val) {
     return result;
 };
 cog.checkKeys = function (key1, key2) {
-    key1 = cog.normalizeKeys(key1);
-    key2 = cog.normalizeKeys(key2);
-    return key1.indexOf(key2) === 0 || key2.indexOf(key1) === 0 ? true : false;
+    var result = false, i, ii, keys1, keys2, key1Combined, key2Combined;
+    keys1 = cog.normalizeKeys(key1).split(".");
+    keys2 = cog.normalizeKeys(key2).split(".");
+    key1Combined = "";
+    for (i = 0;i < keys1.length;i++) {
+        key1Combined += keys1[i];
+        key2Combined = "";
+        for (ii = 0;ii < keys2.length;ii++) {
+            key2Combined += keys2[ii];
+            if (key1Combined == key2Combined) {
+                result = true;
+                break;
+            }
+        }
+        if (result) {
+            break;
+        }
+    }
+    return result;
 };
 cog.parseSet = function (str) {
     return str.split(":");
