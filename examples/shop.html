@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CognitiveJS Example</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha384-SOnAn/m2fVJCwnbEYgD4xzrPtvsXdElhOVvR8ND1YjB5nhGNwwf7nBQlhfAwHAZC" crossorigin="anonymous">
+</head>
+  <body style="display: none;">
+    <div class="container">
+      <h1 class="mb-5 text-center">CognitiveJS Shopping Example</h1>
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-3">
+          <!--SIDEBAR-->
+          <nav data-prop="repeat:'%categories% as category', temp:'categories'" class="nav flex-column nav-pills">
+            <button data-prop="{text:'%%category%%'}, {event:{click:'changeMenu(%%category%%)'}}" class="nav-link"></button>
+          </nav>
+        </div>
+        <div class="col-12 col-md-9">
+          <!--CART-->
+          <button data-bind="_auto" data-prop="if:'%cart._count% &lt;= 0'" class="btn btn-primary position-relative">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span data-bind="_auto" data-prop="text:'%cart._count%'" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+          </button>
+          <div data-bind="_auto" data-prop="if:'%cart._count% > 0'" class="btn-group">
+            <button class="btn btn-primary dropdown-toggle position-relative" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fa-solid fa-cart-shopping"></i>
+              <span data-bind="_auto" data-prop="text:'%cart._count%'" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+            </button>
+            <ul class="dropdown-menu p-2" style="width: 300px;">
+              <div data-bind="_auto" data-prop="repeat:'%cart% as item', temp:'cart'">
+                <div class="row align-items-center p-1">
+                  <div class="col">
+                    <span data-prop="text:'%%item.title%%'"></span>
+                  </div>
+                  <div class="col-auto">
+                    <span data-prop="text:' X %%item.quantity%%'" class="text-primary fw-bold"></span>
+                  </div>
+                  <div class="col-auto">
+                    <button data-prop="event:{click:'removeItem(%%item.id%%)'}" class="btn btn-danger"><i class="fs-5 fa-solid fa-trash"></i></button>
+                  </div>
+                </div>
+                <hr data-prop="if:'%item._row% != %cart._count%'" class="dropdown-divider">
+              </div>
+              <hr class="dropdown-divider">
+              <div>
+                <span class="fw-bold">TOTAL: </span>
+                <span data-bind="_auto" data-prop="text:'%cartTotal% $'"></span>
+              </div>
+            </ul>
+          </div>
+          <!--PAGINATION-->
+          <nav class="mt-3">
+            <ul class="pagination">
+              <li data-prop="event:{click:'prevPage()'}" class="page-item"><button class="page-link">Previous</button></li>
+              <div data-bind="_auto" data-prop="repeat:'%pages% as _page', temp:'pagination'" class="pagination">
+                <li data-prop="{event:{click:'changePage(%%_page.page%%)'}}, {class:'active', if:'%%_page.active%%'}" class="page-item">
+                  <button data-prop="text:'%%_page.page%%'" class="page-link"></button>
+                </li>
+              </div>
+              <li data-prop="event:{click:'nextPage()'}" class="page-item"><button class="page-link">Next</button></li>
+            </ul>
+          </nav>
+          <!--SEARCH BAR-->
+          <input data-bind="_auto" data-prop="{context:{value:'%search%'}}, {live:'search', event:'input'}, {event:{input:'searchProducts()'}}" class="form-control" placeholder="search" type="text">
+          <!--PRODUCTS TABLE-->
+          <table class="table table-striped">
+            <thead>
+              <tr class="fw-bold">
+                <td>Title</td>
+                <td>Price</td>
+                <td>Rating</td>
+                <td>Category</td>
+              </tr>
+            </thead>
+            <tbody data-bind="_auto" data-prop="repeat:'%productsFiltered% as product', temp:'products', limit:'%limit%', page:'%page%'">
+              <tr>
+                <td data-prop="text:'%%product.title%%'"></td>
+                <td data-prop="text:'%%product.price%% $'"></td>
+                <td data-prop="text:'%%product.rating%%'"></td>
+                <td data-prop="text:'%%product.category%%'"></td>
+                <td><button data-prop="event:{click:'addItem(%%product.id%%)'}" class="btn btn-success"><i class="fa-solid fa-plus"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+          <!--PAGINATION-->
+          <nav>
+            <ul class="pagination">
+              <li data-prop="event:{click:'prevPage()'}" class="page-item"><button class="page-link">Previous</button></li>
+              <div data-bind="_auto" data-prop="repeat:'%pages% as _page', temp:'pagination'" class="pagination">
+                <li data-prop="{event:{click:'changePage(%%_page.page%%)'}}, {class:'active', if:'%%_page.active%%'}" class="page-item">
+                  <button data-prop="text:'%%_page.page%%'" class="page-link"></button>
+                </li>
+              </div>
+              <li data-prop="event:{click:'nextPage()'}" class="page-item"><button class="page-link">Next</button></li>
+            </ul>
+          </nav>
+        </div>
+        
+      </div>
+      
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/gh/alperderman/CognitiveJS@7330de19f6c7b469e76b39f5d05a0a761263b6de/dist/cog.js" integrity="sha384-DuCwl30szj8UDEuGQX7Q2CYM43tXGFqaKldYqVu1Px3wwrTLnctiExjcuDhPEhjx" crossorigin="anonymous"></script>
+    <script>
+        // DEFINITIONS
+        cog.data.search = "";
+        cog.data.products = null;
+        cog.data.productsFiltered = null;
+        cog.data.categories = ["all products"];
+        cog.data.cart = [];
+        cog.data.cartTotal = function () {
+          var total = 0;
+          cog.data.cart.forEach(function(item){
+            total = total + (item.quantity*item.price);
+          });
+          return total;
+        };
+        cog.data.pagination = 3;
+        cog.data.paginationFloor = function () {
+          return Math.floor(cog.data.pagination/2);
+        };
+        cog.data.limit = 20;
+        cog.data.page = 1;
+        cog.data.pages = function () {
+          var arr = [], from = cog.data.page-cog.data.paginationFloor(), to = cog.data.page+cog.data.paginationFloor();
+          if (from < 1) {
+            to = to - from+1;
+          }
+          if (to > cog.data.productsFiltered.length/cog.data.limit) {
+            from = from - Math.ceil(to-cog.data.productsFiltered.length/cog.data.limit);
+          }
+          for (var i = from;i <= to;i++) {
+            if (i > 0 && (parseInt(cog.data.limit) * (i-1)) < cog.data.productsFiltered.length) {
+              if (cog.data.page == i) {
+                arr.push({page:i, active:true});
+              } else {
+                arr.push({page:i, active:false});
+              }
+            }
+          }
+          return arr;
+        };
+
+        // binding function tokens with the tokens that have been used inside them so that any element that uses these function tokens will be refreshed respectfully
+        cog.bound["pages"] = ["page", "productsFiltered", "paginationFloor"];
+        cog.bound["cartTotal"] = "cart";
+        cog.bound["paginationFloor"] = "pagination";
+
+        // FUNCTIONS
+        function changeMenu (menu) {
+          var filtered = [], navs = document.querySelectorAll(".nav-link");
+          for (var i = 0;i < navs.length;i++) {
+              navs[i].classList.remove("active");
+              if (navs[i].innerText == menu) {
+                navs[i].classList.add("active");
+              }
+          }
+          cog.set("page", 1);
+          if (menu != "all products") {
+              cog.data.products.forEach(function (product) {
+                if (product.category == menu) {
+                    filtered.push(product);
+                }
+              });
+              cog.set("productsFiltered", filtered);
+          } else {
+              cog.set("productsFiltered", cog.get("products"));
+          }
+          cog.set("search", "");
+        }
+        function searchProducts() {
+          var q = cog.data.search, filtered = [], actives = document.querySelectorAll(".nav-link.active");
+          for (var i = 0;i < actives.length;i++) {
+              actives[i].classList.remove("active");
+          }
+          if (cog.data.page != 1) {
+            cog.set("page", 1);
+          }
+          if (q == "") {
+            changeMenu("all products");
+          } else {
+            cog.data.products.forEach(function (product) {
+                if (product.title.toLowerCase().indexOf(q.toLowerCase()) !== -1) {
+                    filtered.push(product);
+                }
+            });
+            cog.set("productsFiltered", filtered);
+          }
+        }
+        function changePage(i) {
+          cog.set("page",
+          function(val){
+              result = val;
+              if (i > 0 && parseInt(cog.data.limit) * (i-1) < cog.data.productsFiltered.length) {
+                  result = i;
+              }
+              return result;
+          },
+          {custom:true});
+        }
+        function nextPage() {
+          changePage(cog.data.page+1);
+        }
+        function prevPage() {
+          changePage(cog.data.page-1);
+        }
+        function addItem(id) {
+            var cart = cog.get("cart");
+            var exists = false;
+            cog.data.products.forEach(function (product) {
+                if (product.id == id) {
+                    cart.forEach(function (item) {
+                        if (item.id == id) {
+                            exists = true;
+                            item.quantity += 1;
+                        }
+                    });
+                    if (!exists) {
+                      product.quantity = 1;
+                      cart.push(product);
+                    }
+                }
+            });
+            cog.set("cart", cart);
+        }
+        function removeItem(id) {
+          var cart = cog.get("cart");
+          cart.forEach(function (item, i) {
+              if (item.id == id) {
+                  cart.splice(i,1);
+              }
+          });
+          cog.set("cart", cart);
+        }
+
+        // getting the products data, executing cog.bindAll() function after we process the categories and lastly removing the display none style from body (I've done it with internal cog.xhr() function but you can use any other API or library you want)
+        cog.xhr("https://dummyjson.com/products?limit=100", function(xhr) {
+          cog.data.products = JSON.parse(xhr.responseText).products;
+          cog.data.products.forEach(function (product) {
+            var push = true;
+            cog.data.categories.forEach(function (el) {
+                if (el == product.category) {
+                  push = false;
+                }
+            });
+            if (push) {
+              cog.data.categories.push(product.category);
+            }
+          });
+          cog.data.productsFiltered = cog.get("products");
+          cog.bindAll();
+          document.querySelector(".nav-link").classList.add("active");
+          document.body.style.display = "block";
+        });
+    </script>
+  </body>
+</html>

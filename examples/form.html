@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CognitiveJS Example</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+  </head>
+  <body style="display: none;">
+    <div class="container">
+      <h1 class="mb-5 text-center">CognitiveJS Form Example</h1>
+      <div class="row justify-content-center">
+        <!--FORM-->
+        <div class="col-12 col-md-6 px-4 mb-5">
+          <h2>Form</h2>
+          <hr>
+          <form data-prop="{event:{submit:'submitForm()'}}" autocomplete="off">
+            <div class="mb-2">
+              <label class="form-label" for="username">User Name:</label>
+              <input data-prop="{live:'form.username', event:'input'}" class="form-control" type="text" id="username" name="username">
+            </div>
+            <div class="mb-2">
+              <label class="form-label" for="password">Password:</label>
+              <input data-prop="{live:'form.password', event:'input'}" class="form-control" type="password" id="password" name="password">
+            </div>
+            <div class="mb-2">
+              <p>Gender</p>
+              <label class="form-label" for="male">Male:</label>
+              <input data-prop="{live:'form.gender'}" class="form-check-input" type="radio" id="male" name="gender" value="male">
+              <label class="form-label" for="female">Female:</label>
+              <input data-prop="{live:'form.gender'}" class="form-check-input" type="radio" id="female" name="gender" value="female">
+            </div>
+            <div class="mb-2">
+              <p>Favourite Food</p>
+              <input data-prop="{live:'form.favFood.food_pizza', data:'event.target.checked'}" class="form-check-input" type="checkbox" id="food_pizza" name="food_pizza" value="Pizza">
+              <label class="form-label" for="food_pizza">Pizza</label>
+              <input data-prop="{live:'form.favFood.food_burger', data:'event.target.checked'}" class="form-check-input" type="checkbox" id="food_burger" name="food_burger" value="Burger">
+              <label class="form-label" for="food_burger">Burger</label>
+              <input data-prop="{live:'form.favFood.food_beans', data:'event.target.checked'}" class="form-check-input" type="checkbox" id="food_beans" name="food_beans" value="Beans">
+              <label class="form-label" for="food_beans">Beans</label>
+            </div>
+            <div class="mb-2">
+              <label class="form-label" for="car">Choose a car:</label>
+              <select data-prop="{live:'form.car'}" class="form-select" id="car" name="car">
+                <option selected disabled>Choose</option>
+                <option value="volvo">Volvo</option>
+                <option value="saab">Saab</option>
+                <option value="fiat">Fiat</option>
+                <option value="audi">Audi</option>
+              </select>
+            </div>
+            <div class="mb-2">
+              <button class="btn btn-primary" type="submit">Submit</button>
+            </div>
+          </form>
+        </div>
+        <!--VALUES-->
+        <div class="col-12 col-md-6 px-4">
+          <h2>Values</h2>
+          <hr>
+          <div data-bind="_auto" data-prop="text:'%formJSON%'"></div>
+        </div>
+      </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/gh/alperderman/CognitiveJS@7330de19f6c7b469e76b39f5d05a0a761263b6de/dist/cog.js" integrity="sha384-DuCwl30szj8UDEuGQX7Q2CYM43tXGFqaKldYqVu1Px3wwrTLnctiExjcuDhPEhjx" crossorigin="anonymous"></script>
+    <script>
+        // DEFINITIONS
+        cog.data.form = {
+          username: '',
+          password: '',
+          gender: '',
+          favFood: {
+              food_pizza: false,
+              food_burger: false,
+              food_beans: false,
+          },
+          car: ''
+        };
+        cog.data.formJSON = function () {
+          return JSON.stringify(cog.data.form, null, 2);
+        };
+
+        // binding the formJSON function with form so that if any changes happens to form it will refresh the elements that use formJSON
+        cog.bound["formJSON"] = "form";
+
+        // preventing default behaviour of the form for demonstration purposes
+        function submitForm() {
+          event.preventDefault();
+        }
+
+        // executing cog.bindAll() and removing display none style from body
+        cog.bindAll();
+        document.body.style.display = "block";
+    </script>
+  </body>
+</html>

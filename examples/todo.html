@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CognitiveJS Example</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha384-SOnAn/m2fVJCwnbEYgD4xzrPtvsXdElhOVvR8ND1YjB5nhGNwwf7nBQlhfAwHAZC" crossorigin="anonymous">
+</head>
+  <body style="display: none;">
+    <div class="container">
+      <h1 class="mb-5 text-center">CognitiveJS To-do List Example</h1>
+      <!--INPUT-->
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-6 col-xl-4 px-4 mb-3">
+          <div class="input-group">
+            <input data-bind="_auto" data-prop="{context:{value:'%todo.input%'}}, {live:'todo.input', event:'input'}" class="form-control" type="text">
+            <button data-prop="{event:{click:'todoAdd()'}}" class="btn btn-primary"><i class="fa-solid fa-plus"></i></button>
+          </div>
+        </div>
+      </div>
+      <!--LIST-->
+      <div data-bind="_auto" data-prop="repeat:'%todo.list% as item', temp:'list'">
+        <div class="row justify-content-center">
+          <div class="col-12 col-md-6 col-xl-4 px-4">
+            <div class="card">
+              <div class="row g-0 align-center">
+                <div class="col-auto">
+                  <button data-prop="
+                  {event:{click:'todoComplete(%item._index%)'}, if:'!(%%item.complete%%)'},
+                  {event:{click:'todoRevert(%item._index%)'}, if:'%%item.complete%%'},
+                  {class:'btn-success', if:'!(%%item.complete%%)'},
+                  {class:'btn-secondary', if:'%%item.complete%%'}" class="btn">
+                    <i class="fs-5 fa-solid fa-check"></i>
+                  </button>
+                </div>
+                <div data-prop="{text:'%%item.text%%'}, {class:'text-decoration-line-through', if:'%%item.complete%%'}" class="col px-3 align-self-center"></div>
+                <div class="col-auto">
+                  <button data-prop="{event:{click:'todoDel(%item._index%)'}}" class="btn btn-danger">
+                    <i class="fs-5 fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/gh/alperderman/CognitiveJS@7330de19f6c7b469e76b39f5d05a0a761263b6de/dist/cog.js" integrity="sha384-DuCwl30szj8UDEuGQX7Q2CYM43tXGFqaKldYqVu1Px3wwrTLnctiExjcuDhPEhjx" crossorigin="anonymous"></script>
+    <script>
+        // DEFINITIONS
+        cog.data.todo = {
+          list: [{text:'Shop for groceries', complete:false}, {text:'Meet with Jake', complete:true}],
+          input: ''
+        };
+
+        // FUNCTIONS
+        function todoAdd() {
+          if (cog.get('todo.input') != '') {
+            cog.set(
+              "todo.list",
+              function(val){
+                val.unshift({text:cog.get('todo.input') , complete: false});
+                return val;
+              },
+              {custom:true}
+            );
+            cog.set('todo.input', '');
+          }
+        }
+        function todoDel(index) {
+          cog.set(
+            "todo.list",
+            function(val){
+              val.splice(index, 1);
+              return val;
+            },
+            {custom:true}
+          );
+        }
+        function todoComplete(index) {
+          cog.set(
+            "todo.list",
+            function(val){
+              val[index].complete = true;
+              val.push(val[index]);
+              val.splice(index, 1);
+              return val;
+            },
+            {custom:true}
+          );
+        }
+        function todoRevert(index) {
+          cog.set(
+            "todo.list",
+            function(val){
+              val[index].complete = false;
+              return val;
+            },
+            {custom:true}
+          );
+        }
+
+        // executing cog.bindAll() and removing display none style from body
+        cog.bindAll();
+        document.body.style.display = "block";
+    </script>
+  </body>
+</html>
