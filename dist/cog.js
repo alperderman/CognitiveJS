@@ -262,21 +262,28 @@ cog.normalizeKeys = function (val) {
     return result;
 };
 cog.checkKeys = function (key1, key2) {
-    var result = false, i, ii, keys1, keys2, key1Combined, key2Combined;
-    keys1 = cog.normalizeKeys(key1).split(".");
-    keys2 = cog.normalizeKeys(key2).split(".");
-    key1Combined = "";
-    for (i = 0;i < keys1.length;i++) {
-        key1Combined += keys1[i];
-        key2Combined = "";
-        for (ii = 0;ii < keys2.length;ii++) {
-            key2Combined += keys2[ii];
-            if (key1Combined == key2Combined) {
-                result = true;
-                break;
-            }
+    var result = false, i, keys1, keys2, keysLong, keyShort, keyLong = "";
+    key1 = cog.normalizeKeys(key1);
+    key2 = cog.normalizeKeys(key2);
+    if (key1 == key2) {return true;}
+    keys1 = key1.split(".");
+    keys2 = key2.split(".");
+    if (keys1.length == keys2.length) {return false;}
+    if (keys1.length > keys2.length) {
+        keysLong = keys1;
+        keyShort = key2;
+    } else {
+        keysLong = keys2;
+        keyShort = key1;
+    }
+    for (i = 0;i < keysLong.length;i++) {
+        if (i == 0) {
+            keyLong += keysLong[i];
+        } else {
+            keyLong += "."+keysLong[i];
         }
-        if (result) {
+        if (keyLong == keyShort) {
+            result = true;
             break;
         }
     }
