@@ -64,7 +64,7 @@
       </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/gh/alperderman/CognitiveJS@7330de19f6c7b469e76b39f5d05a0a761263b6de/dist/cog.js" integrity="sha384-DuCwl30szj8UDEuGQX7Q2CYM43tXGFqaKldYqVu1Px3wwrTLnctiExjcuDhPEhjx" crossorigin="anonymous"></script>
+    <script src="../dist/cog.js"></script>
     <script>
         // DEFINITIONS
         cog.data.form = {
@@ -82,7 +82,7 @@
           return JSON.stringify(cog.data.form, null, 2);
         };
 
-        // binding the formJSON function with form so that if any changes happens to form it will refresh the elements that use formJSON
+        // binding the formJSON function with form token so that if any changes happens to the form token it will refresh the elements that use formJSON
         cog.bound["formJSON"] = "form";
 
         // preventing default behaviour of the form for demonstration purposes
