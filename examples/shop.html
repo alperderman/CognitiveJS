@@ -118,35 +118,32 @@
           return total;
         };
         cog.data.pagination = 3;
-        cog.data.paginationFloor = function () {
-          return Math.floor(cog.data.pagination/2);
-        };
         cog.data.limit = 20;
         cog.data.page = 1;
         cog.data.pages = function () {
-          var arr = [], from = cog.data.page-cog.data.paginationFloor(), to = cog.data.page+cog.data.paginationFloor();
+          var arr = [], count = 0, i, paginationHalf = Math.floor(cog.data.pagination/2), from = cog.data.page-paginationHalf, total = Math.ceil(cog.data.productsFiltered.length/cog.data.limit);
+          if (total - cog.data.page < paginationHalf) {
+            from = from - (paginationHalf - (total - cog.data.page))
+          }
           if (from < 1) {
-            to = to - from+1;
+            from = 1;
           }
-          if (to > cog.data.productsFiltered.length/cog.data.limit) {
-            from = from - Math.ceil(to-cog.data.productsFiltered.length/cog.data.limit);
-          }
-          for (var i = from;i <= to;i++) {
-            if (i > 0 && (parseInt(cog.data.limit) * (i-1)) < cog.data.productsFiltered.length) {
+          for (i = from;i <= total;i++) {
+            if (count < cog.data.pagination) {
               if (cog.data.page == i) {
                 arr.push({page:i, active:true});
               } else {
                 arr.push({page:i, active:false});
               }
+              count++;
             }
           }
           return arr;
         };
 
         // binding function tokens with the tokens that have been used inside them so that any element that uses these function tokens will be refreshed respectfully
-        cog.bound["pages"] = ["page", "productsFiltered", "paginationFloor"];
+        cog.bound["pages"] = ["page", "productsFiltered", "pagination"];
         cog.bound["cartTotal"] = "cart";
-        cog.bound["paginationFloor"] = "pagination";
 
         // FUNCTIONS
         function changeMenu (menu) {
@@ -171,18 +168,18 @@
           cog.set("search", "");
         }
         function searchProducts() {
-          var q = cog.data.search, filtered = [], actives = document.querySelectorAll(".nav-link.active");
+          var query = cog.data.search, filtered = [], actives = document.querySelectorAll(".nav-link.active");
           for (var i = 0;i < actives.length;i++) {
               actives[i].classList.remove("active");
           }
           if (cog.data.page != 1) {
             cog.set("page", 1);
           }
-          if (q == "") {
+          if (query == "") {
             changeMenu("all products");
           } else {
             cog.data.products.forEach(function (product) {
-                if (product.title.toLowerCase().indexOf(q.toLowerCase()) !== -1) {
+                if (product.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
                     filtered.push(product);
                 }
             });
@@ -190,15 +187,17 @@
           }
         }
         function changePage(i) {
-          cog.set("page",
-          function(val){
-              result = val;
-              if (i > 0 && parseInt(cog.data.limit) * (i-1) < cog.data.productsFiltered.length) {
-                  result = i;
-              }
-              return result;
-          },
-          {custom:true});
+          if (i > 0 && i <= Math.ceil(cog.data.productsFiltered.length/cog.data.limit) && i != cog.data.page) {
+            cog.set("page",
+            function(val){
+                result = val;
+                if (i > 0 && parseInt(cog.data.limit) * (i-1) < cog.data.productsFiltered.length) {
+                    result = i;
+                }
+                return result;
+            },
+            {custom:true});
+          }
         }
         function nextPage() {
           changePage(cog.data.page+1);
