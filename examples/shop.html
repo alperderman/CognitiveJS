@@ -188,15 +188,7 @@
         }
         function changePage(i) {
           if (i > 0 && i <= Math.ceil(cog.data.productsFiltered.length/cog.data.limit) && i != cog.data.page) {
-            cog.set("page",
-            function(val){
-                result = val;
-                if (i > 0 && parseInt(cog.data.limit) * (i-1) < cog.data.productsFiltered.length) {
-                    result = i;
-                }
-                return result;
-            },
-            {custom:true});
+            cog.set("page", i);
           }
         }
         function nextPage() {
