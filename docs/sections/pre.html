@@ -1,11 +1,11 @@
 <h1>Pre-processing</h1>
 <p>As we have mentioned on the above, pre-processing way is the originally intended way of using CognitiveJS. This way changes the structure of your project considerably.</p>
-<p>In this way, instead of binding props directly on the current document, we are going to render a whole another page, and only then we'll bind them with the props that we have gathered from the main page.</p>
+<p>In this method, instead of binding props directly on the current document, we are going to render a whole another page, and only then we'll bind them with the props that we have gathered from the main page.</p>
 <p>This way solves couple of problems that happen regardless of the framework that you are using.</p>
 <p>First problem is normally when you render a page to be usable on web, you would have to use back-end to compile it first, but with CognitiveJS this process is completely done on the front-end. No overhead, no package dependencies or any other things that makes web development a spaghetti swamp.</p>
-<p>Second advantage is content management, since contents are on a single page, seperated from layout, Cognitive makes management a lot easier. Even if you are not making a static website (like this documentation for example), its still usable with a few modifications. Just construct the main page with contents on the back-end and ship it as it is, Cognitive will handle the rest.</p>
-<p>Now that we have briefly explained what is pre-processing and what are the advatages are, we can discuss about how do we use it.</p>
-<p>In pre-processing, first we are going to set values and templates directly as an element inside the main page with <code>data-set</code> attribute, then we'll render the second page that has the layout with bindings, styles, scripts and so on with <code>cog.render()</code> function.</p>
+<p>Second advantage is content management, since contents are on a single page, seperated from layout, it makes management a lot easier. Even if you are not making a static website (like this documentation for example), its still usable with a few modifications. Just construct the main page with contents on the back-end and ship it as it is, Cognitive will handle the rest.</p>
+<p>Now that we have briefly explained what is pre-processing and what are the advantages are, we can discuss about how do we use it.</p>
+<p>In pre-processing, first we are going to set values and templates directly as an element inside the main page with <code>data-set</code> attribute, then we'll render the second page which has the whole layout with bindings, styles, scripts and so on with <code>cog.render()</code> function.</p>
 <p>Additionally we can use <code>data-src</code> attribute for getting external contents.</p>
 <div class="row">
     <div class="col-sm-12 col-md-6">

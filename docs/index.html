@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CognitiveJS | Docs</title>
   </head>
-  <body class="overflow-hidden">
+  <body>
 
     <div data-set="json:sidebar">
       {
@@ -81,10 +81,18 @@
     <div data-set="html:docs.utility">
       <div data-src="sections/utility.html"></div>
     </div>
+    
+    <div data-set="temp:sidebar">
+      <nav data-prop="repeat:'%sidebar% as menu', temp:'_sidebar'" class="nav flex-column nav-pills">
+        <a data-prop="{text:'%%menu.title%%'}, {attr:{href:'#%%menu._key%%'}}" class="nav-link"></a>
+        <div data-prop="repeat:'%%menu.sub%% as sub', temp:'sidebarSub', if:'%%menu.sub%% != null'">
+          <a data-prop="{text:'%%sub%%'}, {attr:{href:'#%%sub._key%%'}}" class="ms-4 py-0 nav-link"></a>
+        </div>
+      </nav>
+    </div>
 
     <script src="../dist/cog.js"></script>
     <script>
-      cog.cache = false;
       cog.render("layout.html");
     </script>
   </body>
