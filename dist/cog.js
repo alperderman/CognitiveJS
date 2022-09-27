@@ -1360,6 +1360,6 @@ cog.getScript = function (url, callback) {
                 callback(xhr);
             }, 0);
         }
-    });
+    }, {method:"GET"});
 };
 cog.init();
