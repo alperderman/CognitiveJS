@@ -81,7 +81,35 @@ cog.set = function (key, set, arg) {
     if (arg == null) {arg = {};}
     if (arg.custom == null) {arg.custom = false;}
     if (arg.alter == null) {arg.alter = true;}
-    if (arg.custom && typeof set === 'function') {
+    if (key == null && set == null) {
+        cog.loadContents(function () {
+            var setElem, setAttr, setType, setKey, bindType, i, links = document.getElementsByTagName("link"), link, heads = document.querySelectorAll("["+cog.label.head+"]"), head;
+            while (setElem = document.querySelector("["+cog.label.set+"]:not(["+cog.label.skip+"])")) {
+                setAttr = setElem.getAttribute(cog.label.set);
+                setType = cog.parseSet(setAttr)[0];
+                setKey = cog.parseSet(setAttr)[1].trim();
+                for (bindType in cog.bindTypes) {
+                    if (cog.bindTypes[bindType].set != null && setType == bindType) {
+                        cog.bindTypes[bindType].set(setElem, setKey);
+                    }
+                }
+                setElem.parentNode.removeChild(setElem);
+            }
+            for (i = 0;i < links.length;i++) {
+                link = links[i];
+                document.head.appendChild(link);
+                link.href = link.href;
+            }
+            for (i = 0;i < heads.length;i++) {
+                head = heads[i];
+                head.removeAttribute("head");
+                document.head.appendChild(head);
+            }
+            if (typeof arg.callback === 'function') {
+                arg.callback();
+            }
+        });
+    } else if (arg.custom && typeof set === 'function') {
         cog.get(key, {
             set: set,
             alter: arg.alter,
@@ -473,14 +501,26 @@ cog.bindAll = function (arg) {
     if (arg == null) {arg = {};}
     if (arg.elem == null) {arg.elem = document;}
     if (arg.i == null) {arg.i = 0;}
-    var elems = arg.elem.querySelectorAll("["+cog.label.prop+"]:not(["+cog.label.skip+"])");
-    if (arg.i < elems.length) {
-        cog.bind(elems[arg.i]);
-        arg.i++;
-        cog.bindAll(arg);
+    if (arg.set == null) {arg.set = true;}
+    if (arg.set) {
+        cog.set(null, null, {
+            callback: function () {
+                bind();
+            }
+        });
     } else {
-        if (typeof arg.callback === 'function') {
-            arg.callback();
+        bind();
+    }
+    function bind() {
+        var elems = arg.elem.querySelectorAll("["+cog.label.prop+"]:not(["+cog.label.skip+"])");
+        if (arg.i < elems.length) {
+            cog.bind(elems[arg.i]);
+            arg.i++;
+            cog.bindAll(arg);
+        } else {
+            if (typeof arg.callback === 'function') {
+                arg.callback();
+            }
         }
     }
 };
@@ -562,7 +602,7 @@ cog.template = function (arg) {
         }
     }
     if (arg.bind && cog.isReady) {
-        cog.bindAll({elem:template});
+        cog.bindAll({set:false, elem:template});
     }
     if (arg.fragment) {
         template = cog.elemFragment(template);
@@ -1067,50 +1107,18 @@ cog.render = function (layoutSrc) {
             document.body.innerHTML += layout;
         }
         setTimeout(function () {
-            cog.loadContents(function () {
-                step_set(function () {
-                    step_detail();
-                });
-            });
-        }, 0);
-    }
-    function step_set(callback) {
-        var elem, attr, type, key, bindType;
-        while (elem = document.querySelector("["+cog.label.set+"]:not(["+cog.label.skip+"])")) {
-            attr = elem.getAttribute(cog.label.set);
-            type = cog.parseSet(attr)[0];
-            key = cog.parseSet(attr)[1].trim();
-            for (bindType in cog.bindTypes) {
-                if (cog.bindTypes[bindType].set != null && type == bindType) {
-                    cog.bindTypes[bindType].set(elem, key);
+            cog.set(null, null, {
+                callback: function () {
+                    step_bind();
                 }
-            }
-            elem.parentNode.removeChild(elem);
-        }
-        if (typeof callback === 'function') {
-            callback();
-        }
-    }
-    function step_detail() {
-        var i, links = document.getElementsByTagName("link"), link, heads = document.querySelectorAll("["+cog.label.head+"]"), head;
-        for (i = 0;i < links.length;i++) {
-            link = links[i];
-            document.head.appendChild(link);
-            link.href = link.href;
-        }
-        for (i = 0;i < heads.length;i++) {
-            head = heads[i];
-            head.removeAttribute("head");
-            document.head.appendChild(head);
-        }
-        setTimeout(function () {
-            step_bind();
+            });
         }, 0);
     }
     function step_bind() {
         document.dispatchEvent(new CustomEvent(cog.event.beforeRender));
         setTimeout(function () {
             cog.bindAll({
+                set: false,
                 callback: function () {
                     cog.isReady = true;
                     step_scripts();
