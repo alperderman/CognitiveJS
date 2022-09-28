@@ -9,6 +9,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha384-SOnAn/m2fVJCwnbEYgD4xzrPtvsXdElhOVvR8ND1YjB5nhGNwwf7nBQlhfAwHAZC" crossorigin="anonymous">
 </head>
   <body style="display: none;">
+    <!--PAGINATION TEMPLATE-->
+    <div data-set="temp:pagination">
+      <ul class="pagination">
+        <li data-prop="event:{click:'prevPage()'}" class="page-item"><button class="page-link">Previous</button></li>
+        <div data-bind="_auto" data-prop="repeat:'%pages% as _page', temp:'paginationLink', limit:'%paginationLimit%', offset:'%paginationOffset%'" class="pagination">
+          <li data-prop="{event:{click:'changePage(%%_page.page%%)'}}, {class:'active', if:'%%_page.active%%'}" class="page-item">
+            <button data-prop="text:'%%_page.page%%'" class="page-link"></button>
+          </li>
+        </div>
+        <li data-prop="event:{click:'nextPage()'}" class="page-item"><button class="page-link">Next</button></li>
+      </ul>
+    </div>
     <div class="container">
       <h1 class="mb-5 text-center">CognitiveJS Shopping Example</h1>
       <div class="row justify-content-center">
@@ -25,12 +37,17 @@
             <span data-bind="_auto" data-prop="text:'%cart._count%'" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
           </button>
           <div data-bind="_auto" data-prop="if:'%cart._count% > 0'" class="btn-group">
-            <button class="btn btn-primary dropdown-toggle position-relative" data-bs-toggle="dropdown" aria-expanded="false">
+            <button class="btn btn-primary dropdown-toggle position-relative" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
               <i class="fa-solid fa-cart-shopping"></i>
               <span data-bind="_auto" data-prop="text:'%cart._count%'" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
             </button>
             <ul class="dropdown-menu p-2" style="width: 300px;">
-              <div data-bind="_auto" data-prop="repeat:'%cart% as item', temp:'cart'">
+              <div class="position-fixed start-0 top-0 p-3">
+                <span class="fw-bold">TOTAL: </span>
+                <span data-bind="_auto" data-prop="text:'%cartTotal% $'"></span>
+              </div>
+              <hr class="dropdown-divider mt-5">
+              <div data-bind="_auto" data-prop="repeat:'%cart% as item', temp:'cart'" style="max-height: 300px;overflow-y: auto;overflow-x: hidden;">
                 <div class="row align-items-center p-1">
                   <div class="col">
                     <span data-prop="text:'%%item.title%%'"></span>
@@ -44,27 +61,20 @@
                 </div>
                 <hr data-prop="if:'%item._row% != %cart._count%'" class="dropdown-divider">
               </div>
-              <hr class="dropdown-divider">
-              <div>
-                <span class="fw-bold">TOTAL: </span>
-                <span data-bind="_auto" data-prop="text:'%cartTotal% $'"></span>
-              </div>
             </ul>
           </div>
           <!--PAGINATION-->
-          <nav class="mt-3">
-            <ul class="pagination">
-              <li data-prop="event:{click:'prevPage()'}" class="page-item"><button class="page-link">Previous</button></li>
-              <div data-bind="_auto" data-prop="repeat:'%pages% as _page', temp:'pagination'" class="pagination">
-                <li data-prop="{event:{click:'changePage(%%_page.page%%)'}}, {class:'active', if:'%%_page.active%%'}" class="page-item">
-                  <button data-prop="text:'%%_page.page%%'" class="page-link"></button>
-                </li>
-              </div>
-              <li data-prop="event:{click:'nextPage()'}" class="page-item"><button class="page-link">Next</button></li>
-            </ul>
-          </nav>
+          <nav class="mt-3" data-prop="temp:'pagination'"></nav>
           <!--SEARCH BAR-->
-          <input data-bind="_auto" data-prop="{context:{value:'%search%'}}, {live:'search', event:'input'}, {event:{input:'searchProducts()'}}" class="form-control" placeholder="search" type="text">
+          <input data-bind="_auto" data-prop="{context:{value:'%search%'}}, {live:'search', event:'input'}, {event:{input:'searchProducts()'}}" class="form-control mb-3" placeholder="search" type="text">
+          <div class="row">
+            <div class="col-6">
+              <p class="text-start m-0" data-bind="_auto" data-prop="if:'%products._count% != %productsFiltered._count%'">Filtered <span data-bind="_auto" data-prop="text:'%productsFiltered._count%'" class="fw-bold"></span> items</p>
+            </div>
+            <div class="col-6">
+              <p class="text-end m-0">Total of <span data-bind="_auto" data-prop="text:'%products._count%'" class="fw-bold"></span> items</p>
+            </div>
+          </div>
           <!--PRODUCTS TABLE-->
           <table class="table table-striped">
             <thead>
@@ -75,7 +85,7 @@
                 <td>Category</td>
               </tr>
             </thead>
-            <tbody data-bind="_auto" data-prop="repeat:'%productsFiltered% as product', temp:'products', limit:'%limit%', page:'%page%'">
+            <tbody data-bind="_auto" data-prop="repeat:'%productsFiltered% as product', temp:'products', limit:'%productsLimit%', page:'%productsPage%'">
               <tr>
                 <td data-prop="text:'%%product.title%%'"></td>
                 <td data-prop="text:'%%product.price%% $'"></td>
@@ -86,17 +96,7 @@
             </tbody>
           </table>
           <!--PAGINATION-->
-          <nav>
-            <ul class="pagination">
-              <li data-prop="event:{click:'prevPage()'}" class="page-item"><button class="page-link">Previous</button></li>
-              <div data-bind="_auto" data-prop="repeat:'%pages% as _page', temp:'pagination'" class="pagination">
-                <li data-prop="{event:{click:'changePage(%%_page.page%%)'}}, {class:'active', if:'%%_page.active%%'}" class="page-item">
-                  <button data-prop="text:'%%_page.page%%'" class="page-link"></button>
-                </li>
-              </div>
-              <li data-prop="event:{click:'nextPage()'}" class="page-item"><button class="page-link">Next</button></li>
-            </ul>
-          </nav>
+          <nav data-prop="temp:'pagination'"></nav>
         </div>
       </div>
     </div>
@@ -117,32 +117,34 @@
           });
           return total;
         };
-        cog.data.pagination = 3;
-        cog.data.limit = 20;
-        cog.data.page = 1;
+        cog.data.paginationLimit = 3;
+        cog.data.paginationOffset = 0;
+        cog.data.productsLimit = 20;
+        cog.data.productsPage = 1;
         cog.data.pages = function () {
-          var arr = [], count = 0, i, paginationHalf = Math.floor(cog.data.pagination/2), from = cog.data.page-paginationHalf, total = Math.ceil(cog.data.productsFiltered.length/cog.data.limit);
-          if (total - cog.data.page < paginationHalf) {
-            from = from - (paginationHalf - (total - cog.data.page))
+          var arr = [], i, paginationHalf = Math.ceil(cog.data.paginationLimit/2), total = Math.ceil(cog.data.productsFiltered.length/cog.data.productsLimit);
+          if ((cog.data.productsPage-paginationHalf+1) >= 1 && (cog.data.productsPage+paginationHalf-1) <= total) {
+            if (cog.data.paginationLimit % 2 == 0) {
+              cog.data.paginationOffset = cog.data.productsPage-(paginationHalf+1);
+            } else {
+              cog.data.paginationOffset = cog.data.productsPage-paginationHalf;
+            }
           }
-          if (from < 1) {
-            from = 1;
+          if (cog.data.paginationOffset < 0 || cog.data.productsPage == 1) {
+            cog.data.paginationOffset = 0;
           }
-          for (i = from;i <= total;i++) {
-            if (count < cog.data.pagination) {
-              if (cog.data.page == i) {
-                arr.push({page:i, active:true});
-              } else {
-                arr.push({page:i, active:false});
-              }
-              count++;
+          for (i = 1;i <= total;i++) {
+            if (cog.data.productsPage == i) {
+              arr.push({page:i, active:true});
+            } else {
+              arr.push({page:i, active:false});
             }
           }
           return arr;
         };
 
         // binding function tokens with the tokens that have been used inside them so that any element that uses these function tokens will be refreshed respectfully
-        cog.bound["pages"] = ["page", "productsFiltered", "pagination"];
+        cog.bound["pages"] = ["productsPage", "productsLimit", "productsFiltered", "paginationLimit", "paginationOffset"];
         cog.bound["cartTotal"] = "cart";
 
         // FUNCTIONS
@@ -154,7 +156,7 @@
                 navs[i].classList.add("active");
               }
           }
-          cog.set("page", 1);
+          cog.set("productsPage", 1);
           if (menu != "all products") {
               cog.data.products.forEach(function (product) {
                 if (product.category == menu) {
@@ -172,8 +174,8 @@
           for (var i = 0;i < actives.length;i++) {
               actives[i].classList.remove("active");
           }
-          if (cog.data.page != 1) {
-            cog.set("page", 1);
+          if (cog.data.productsPage != 1) {
+            cog.set("productsPage", 1);
           }
           if (query == "") {
             changeMenu("all products");
@@ -187,15 +189,15 @@
           }
         }
         function changePage(i) {
-          if (i > 0 && i <= Math.ceil(cog.data.productsFiltered.length/cog.data.limit) && i != cog.data.page) {
-            cog.set("page", i);
+          if (i > 0 && i <= Math.ceil(cog.data.productsFiltered.length/cog.data.productsLimit) && i != cog.data.productsPage) {
+            cog.set("productsPage", i);
           }
         }
         function nextPage() {
-          changePage(cog.data.page+1);
+          changePage(cog.data.productsPage+1);
         }
         function prevPage() {
-          changePage(cog.data.page-1);
+          changePage(cog.data.productsPage-1);
         }
         function addItem(id) {
             var cart = cog.get("cart");
@@ -241,9 +243,10 @@
             }
           });
           cog.data.productsFiltered = cog.get("products");
-          cog.bindAll();
-          document.querySelector(".nav-link").classList.add("active");
-          document.body.style.display = "block";
+          cog.bindAll({callback: function() {
+            document.querySelector(".nav-link").classList.add("active");
+            document.body.style.display = "block";
+          }});
         });
     </script>
   </body>
