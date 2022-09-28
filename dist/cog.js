@@ -1050,7 +1050,7 @@ cog.render = function (layoutSrc) {
                 layout = xhr.responseText;
                 step_design();
             }
-        });
+        }, {method:"GET"});
     }
     function step_design() {
         while (document.getElementsByTagName('script').length > 0) {
@@ -1299,13 +1299,7 @@ cog.urlEncode = function (obj) {
 cog.xhr = function (url, callback, arg) {
     if (arg == null) {arg = {};}
     if (arg.cache == null) {arg.cache = cog.cache;}
-    if (arg.method == null) {
-        if (!arg.cache) {
-            arg.method = 'POST';
-        } else {
-            arg.method = 'GET';
-        }
-    }
+    if (arg.method == null) {arg.method = 'GET';}
     if (arg.data == null) {arg.data = '';}
     if (arg.async == null) {arg.async = true;}
     var xhr, guid, cacheUrl, hashUrl, key, mergedObj, urlObj;
@@ -1316,7 +1310,7 @@ cog.xhr = function (url, callback, arg) {
             callback(xhr);
         }
     };
-    if (!arg.cache && arg.method == 'GET') {
+    if (arg.method == 'GET' && !arg.cache) {
         guid = Date.now();
         cacheUrl = url.replace(/#.*$/, "");
         hashUrl = url.slice(cacheUrl.length);
