@@ -119,6 +119,24 @@
     </code>
 </pre>
 <hr>
+<h3 data-prop="{text:'%sidebar.bind.sub.bind_bound%'},{attr:{id:'%sidebar.bind.sub.bind_bound._key%'}}"></h3>
+<p><code>cog.bound</code> object is used for binding a token with another token so that if any changes happens to the bound token, the other token will also be refreshed. Its especially useful when you use other tokens inside the raw function tokens.</p>
+<pre>
+    <code class="js">
+        cog.data.number1 = 34;
+        cog.data.number2 = 56;
+        cog.data.number1Half = function () {
+            return cog.data.number1/2;
+        };
+        cog.data.multiplyNumbers = function () {
+            return cog.data.number1*cog.data.number2;
+        };
+        cog.bound["number1Half"] = "number1";
+        //set an array if you want to bind multiple tokens
+        cog.bound["multiplyNumbers"] = ["number1", "number2"];
+    </code>
+</pre>
+<hr>
 <h3 data-prop="{text:'%sidebar.bind.sub.bind_bindall%'},{attr:{id:'%sidebar.bind.sub.bind_bindall._key%'}}"></h3>
 <p><code>cog.bindAll()</code> is another wrapper for <code>cog.bind()</code>. Its used for binding every element inside another element, mostly used for initiating the CognitiveJS.</p>
 <pre>
@@ -126,6 +144,16 @@
         cog.bindAll({
             elem: document.getElementById('element'),
             callback: function(){console.log("bound!");}
+        });
+    </code>
+</pre>
+<p class="alert alert-info">Default element is <code>document</code>.</p>
+<p><code>cog.bindAll()</code> function automatically renders the <code>data-set</code> and <code>data-src</code> attributes. In order to disable this setting, we can use the <code>set</code> parameter.</p>
+<pre>
+    <code class="js">
+        cog.bindAll({
+            elem: document.getElementById('element'),
+            set: false
         });
     </code>
 </pre>

@@ -58,6 +58,14 @@
     </code>
 </pre>
 <hr>
+<h3 data-prop="{text:'%sidebar.prop.sub.prop_context%'},{attr:{id:'%sidebar.prop.sub.prop_context._key%'}}"></h3>
+<p>Context property, directly sets the native JavaScript property of the DOM element. For example the value property of an input.</p>
+<pre>
+    <code class="html">
+        &lt;input type="text" data-prop="{context{value:'%input%'}}">
+    </code>
+</pre>
+<hr>
 <h3 data-prop="{text:'%sidebar.prop.sub.prop_event%'},{attr:{id:'%sidebar.prop.sub.prop_event._key%'}}"></h3>
 <p>Defines an event to the element.</p>
 <pre>
@@ -86,6 +94,13 @@
         &lt;span data-bind="_auto" data-prop="text:'Welcome back %name%!'">&lt;/span>
     </code>
 </pre>
+<p>Default data to be kept track of is <code>event.target.value</code>. Set a data property to change the data.</p>
+<pre>
+    <code class="html">
+        &lt;input type="checkbox" data-prop="{live:'checkbox', data:'event.target.checked'}">
+        &lt;span data-bind="_auto" data-prop="text:'Welcome back %name%!'">&lt;/span>
+    </code>
+</pre>
 <hr>
 <h3 data-prop="{text:'%sidebar.prop.sub.prop_if%'},{attr:{id:'%sidebar.prop.sub.prop_if._key%'}}"></h3>
 <p>Condition property has two use cases, first one is standalone definition for rendering the element based on condition, second use case is for applying conditions to other properties.</p>
@@ -103,32 +118,30 @@
 <h3 data-prop="{text:'%sidebar.prop.sub.prop_temp%'},{attr:{id:'%sidebar.prop.sub.prop_temp._key%'}}"></h3>
 <p>Templating is one of the most crucial features, and fortunately in CognitiveJS its very easy to use and manage.</p>
 <p>In order to use templates, first you need to load them to the <code>cog.templates</code> object with the key you desire, <code>cog.template()</code> function can handle this process.</p>
-<p>After you load them, using them is a breeze. Just assign the corresponding property. To pass an object or a value, you have to use an alias inside the template to avoid intersecting values, and since its just an alias we have to encapsulate the alias seperately.</p>
+<p>After you load them, using them is a breeze. Just assign the corresponding property. To pass an object or a value, you have to use an alias inside the template to avoid intersecting values, and since its just an alias we have to double encapsulate.</p>
 <pre>
     <code class="html">
+        &lt;!--template definition made with data-set attribute (you can also create your templates with JavaScript instead of getting them from the DOM, this is just one of the ways of doing it)-->
+        &lt;div data-set="temp:cardData">
+            &lt;h3 data-prop="text:'%%aliasData.title%%'">&lt;/h3>
+            &lt;div data-prop="text:'%%aliasData.desc%%'">&lt;/div>
+        &lt;/div>
+
         &lt;!--template property-->
         &lt;div data-prop="{temp:'card', data:'%cardData% as aliasData'}">&lt;/div>
 
-        &lt;!--template definition (you can also create your templates with JavaScript instead of getting them from the DOM, this is just one of the ways of doing it)-->
-        &lt;div id="templateCard">
-            &lt;h3 data-prop="text:'%%aliasData%.title%'">&lt;/h3>
-            &lt;div data-prop="text:'%%aliasData%.desc%'">&lt;/div>
-        &lt;/div>
-
         &lt;script>
-            //first load the template
-            cog.template({id:'card', elem:document.getElementById('templateCard')});
-            //optionally you can delete the template definition
-            //then initiate the Cognitive
             cog.data.cardData = {title:'This is title', desc:'This is description'};
             cog.bindAll();
         &lt;/script>
     </code>
 </pre>
-<p>Templates can also be rendered directly with the <code>cog.template()</code>.</p>
+<p>Templates can also be loaded and rendered directly with the <code>cog.template()</code> function.</p>
 <pre>
     <code class="js">
+        //first load the template
         cog.template({id:'card', elem:document.getElementById('templateCard')});
+        //then render it with the dataset
         var templateElement = cog.template({id:'card', data:'cardData as aliasData'});
     </code>
 </pre>
@@ -150,5 +163,26 @@
             }
             cog.bindAll();
         &lt;/script>
+    </code>
+</pre>
+<p>CognitiveJS doesn't do any differing (a method used to change only the altered elements on the DOM). When refreshed, it reconstructs the whole element with that repeat binding. Because of this, if you are working with huge datasets, you may expect a tenth of a second delay every couple hundered items repeated.</p>
+<p>In order to compansate this problem, I have added a pagination system to the repeaters. There are 3 parameters: <code>limit</code>, <code>offset</code> and <code>page</code>.</p>
+<ul>
+    <li><code>limit</code> parameter, sets a limit for the iterated data.</li>
+    <li><code>offset</code> parameter, specifies the number of datas to be skipped.</li>
+    <li><code>page</code> parameter, specifies the page (a shorthand for offset)</li>
+</ul>
+<p>If you are familiar with <b>SQL</b> you can expect the same outcome from <code>limit</code> and <code>offset</code> parameters. In order to paginate a set of data, you have to combine <code>limit</code> parameter with either <code>offset</code> or <code>page</code> parameter.</p>
+<pre>
+    <code class="html">
+        &lt;table data-prop="repeat:'%people% as person', temp:'row', limit:25, page:1">
+            &lt;tr>&lt;td data-prop="text:'%%person%.name%'">&lt;/td>&lt;td data-prop="text:'%%person%.surname%'">&lt;/td>&lt;/tr>
+        &lt;/table>
+
+        &lt;!--or with offset-->
+
+        &lt;table data-prop="repeat:'%people% as person', temp:'row', limit:25, offset:0">
+            &lt;tr>&lt;td data-prop="text:'%%person%.name%'">&lt;/td>&lt;td data-prop="text:'%%person%.surname%'">&lt;/td>&lt;/tr>
+        &lt;/table>
     </code>
 </pre>

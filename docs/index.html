@@ -24,6 +24,7 @@
             "prop_class":"Class",
             "prop_attr":"Attribute",
             "prop_style":"Style",
+            "prop_context":"Context",
             "prop_event":"Event",
             "prop_live":"Live",
             "prop_if":"Condition",
@@ -37,6 +38,7 @@
             "bind_bind":"cog.bind()",
             "bind_get":"cog.get()",
             "bind_set":"cog.set()",
+            "bind_bound":"cog.bound",
             "bind_bindall":"cog.bindAll()",
             "bind_rebind":"cog.rebind()"
           }
@@ -54,7 +56,8 @@
             "utility_keywords":"Keywords",
             "utility_cache":"cog.cacheRender",
             "utility_elementbind":"cog.getElementBind()",
-            "utility_elementprop":"cog.getElementProp()"
+            "utility_elementprop":"cog.getElementProp()",
+            "utility_checkkeys":"cog.checkKeys()"
           }
         }
       }
@@ -93,6 +96,7 @@
 
     <script src="../dist/cog.js"></script>
     <script>
+      cog.cache = false;
       cog.render("layout.html");
     </script>
   </body>
