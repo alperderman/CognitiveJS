@@ -4,7 +4,7 @@ CognitiveJS (previously called [DCG](https://github.com/alperderman/dcg)) is a f
 
 Cognitive broadly inspired by [Knockout](https://knockoutjs.com/). As opposed to Knockout however, Cognitive doesn't have a design pattern and it can be used as a pre-processing framework with certain modifications.
 
-See more information about in on the [documentation](https://alperderman/github.io/CognitiveJS/docs/).
+See more information about in on the [documentation](https://alperderman.github.io/CognitiveJS/docs/).
 
 ###Example
 
