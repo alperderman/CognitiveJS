@@ -6,7 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CognitiveJS | Docs</title>
   </head>
-  <body style="display: none;">
+  <body>
+
+    <div id="loading" style="display: flex;justify-content: center;align-items: center;position: fixed;top:0;left:0;width: 100vw;height: 100vh;z-index: 1100;background-color: #fff;">
+      <div>
+        <img style="height:175px;" src="media/cog_logo.png">
+        <p style="text-align: center;">LOADING...</p>
+      </div>
+    </div>
 
     <div data-set="json:sidebar">
       {
@@ -103,7 +110,7 @@
     <script>
       cog.cache = true;
       document.addEventListener("COGAfterRender", function () {
-        document.body.style.display = "block";
+        document.getElementById("loading").parentElement.removeChild(document.getElementById("loading"));
       });
       cog.render("layout.html");
     </script>
