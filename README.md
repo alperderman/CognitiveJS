@@ -6,7 +6,7 @@ Cognitive broadly inspired by [Knockout](https://knockoutjs.com/). As opposed to
 
 See more information about in on the [documentation](https://alperderman.github.io/CognitiveJS/docs/).
 
-###Example
+### Example
 
 ```html
 <html>
