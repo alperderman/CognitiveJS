@@ -228,10 +228,7 @@ cog.getRecursiveValue = function (arg) {
     }
     for (i = 0;i < strSplit.length;i++) {
         key = strSplit[i];
-        if (typeof refData === 'undefined' && (i == strSplit.length-1 || i == arg.index)) {
-            result = undefined;
-            break;
-        } else if (typeof refData[key] !== 'undefined' && i != strSplit.length-1 && i != arg.index) {
+        if (typeof refData !== 'undefined' && typeof refData[key] !== 'undefined' && i != strSplit.length-1 && i != arg.index) {
             refData = refData[key];
             if (typeof refData === 'function') {
                 refData = refData();
@@ -261,7 +258,11 @@ cog.getRecursiveValue = function (arg) {
                     document.dispatchEvent(new CustomEvent(cog.event.beforeData, {detail:{key:arg.str, old:refData[key], new:arg.val}}));
                     refData[key] = arg.val;
                 }
-                result = refData[key];
+                if (typeof refData === 'undefined' || typeof refData[key] === 'undefined') {
+                    result = undefined;
+                } else {
+                    result = refData[key];
+                }
                 break;
             }
         }
