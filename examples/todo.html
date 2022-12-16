@@ -59,47 +59,43 @@
         // FUNCTIONS
         function todoAdd() {
           if (cog.get('todo.input') != '') {
-            cog.set(
+            cog.alter(
               "todo.list",
               function(val){
                 val.unshift({text:cog.get('todo.input') , complete: false});
                 return val;
-              },
-              {custom:true}
+              }
             );
             cog.set('todo.input', '');
           }
         }
         function todoDel(index) {
-          cog.set(
+          cog.alter(
             "todo.list",
             function(val){
               val.splice(index, 1);
               return val;
-            },
-            {custom:true}
+            }
           );
         }
         function todoComplete(index) {
-          cog.set(
+          cog.alter(
             "todo.list",
             function(val){
               val[index].complete = true;
               val.push(val[index]);
               val.splice(index, 1);
               return val;
-            },
-            {custom:true}
+            }
           );
         }
         function todoRevert(index) {
-          cog.set(
+          cog.alter(
             "todo.list",
             function(val){
               val[index].complete = false;
               return val;
-            },
-            {custom:true}
+            }
           );
         }
 

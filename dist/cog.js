@@ -51,15 +51,14 @@ cog.get = function (key, arg) {
     if (arg == null) {arg = {};}
     if (arg.reference == null) {arg.reference = false;}
     if (arg.execute == null) {arg.execute = false;}
-    if (arg.alter == null) {arg.alter = true;}
-    var result, old, changedElems = [], custom = false;
+    var result, old, changedElems = [], alter = false;
     if (typeof arg.replace === 'function') {
-        custom = true;
+        alter = true;
     }
-    if (typeof arg.set !== 'undefined' || custom) {
+    if (typeof arg.set !== 'undefined' || alter) {
         old = cog.getRecursiveValue({str:key, exec:false});
-        if ((old !== arg.set && (typeof old === 'undefined' || arg.alter)) || custom) {
-            if (custom) {
+        if (old !== arg.set || alter) {
+            if (alter) {
                 result = arg.replace({str:key, val:arg.set, ref:arg.reference, exec:arg.execute});
             } else {
                 result = cog.getRecursiveValue({str:key, val:arg.set, ref:arg.reference, exec:arg.execute});
@@ -79,9 +78,9 @@ cog.get = function (key, arg) {
 };
 cog.set = function (key, set, arg) {
     if (arg == null) {arg = {};}
-    if (arg.custom == null) {arg.custom = false;}
-    if (arg.alter == null) {arg.alter = true;}
-    if (key == null && set == null) {
+    if (arg.alter == null) {arg.alter = false;}
+    if (arg.setElems == null) {arg.setElems = false;}
+    if (arg.setElems) {
         cog.loadContents(function () {
             var setElem, setAttr, setType, setKey, bindType, i, links = document.getElementsByTagName("link"), link, heads = document.querySelectorAll("["+cog.label.head+"]"), head;
             while (setElem = document.querySelector("["+cog.label.set+"]:not(["+cog.label.skip+"])")) {
@@ -109,16 +108,15 @@ cog.set = function (key, set, arg) {
                 arg.callback();
             }
         });
-    } else if (arg.custom && typeof set === 'function') {
+    } else if (arg.alter && typeof set === 'function') {
         cog.get(key, {
             set: set,
-            alter: arg.alter,
             callback: arg.callback,
             replace: function (argReplace) {
                 var result = cog.getRecursiveValue({str:argReplace.str, exec:false});
-                var custom = set(result);
-                if (custom !== result) {
-                    argReplace.val = custom;
+                var replace = set(result);
+                if (replace !== result) {
+                    argReplace.val = replace;
                     result = cog.getRecursiveValue(argReplace);
                 }
                 return result;
@@ -127,10 +125,14 @@ cog.set = function (key, set, arg) {
     } else {
         cog.get(key, {
             set: set,
-            alter: arg.alter,
             callback: arg.callback
         });
     }
+};
+cog.alter = function (key, set, arg) {
+    if (arg == null) {arg = {};}
+    arg.alter = true;
+    cog.set(key, set, arg);
 };
 cog.rebind = function (key, changed, i) {
     if (i == null) {i = 0;}
@@ -508,6 +510,7 @@ cog.bindAll = function (arg) {
     if (arg.set == null) {arg.set = true;}
     if (arg.set) {
         cog.set(null, null, {
+            setElems: true,
             callback: function () {
                 bind();
             }
@@ -936,7 +939,7 @@ cog.init = function () {
                 }
                 propToken = cog.normalizeKeys(propToken);
                 if (propToken != null) {
-                    propCurrent[propEvent] = "cog.set('"+propToken+"', "+propData+", {custom:true})";
+                    propCurrent[propEvent] = "cog.alter('"+propToken+"', "+propData+")";
                     if (typeof prop[cog.keyword.prevent] !== 'undefined') {
                         propCurrent[cog.keyword.prevent] = prop[cog.keyword.prevent];
                     }
@@ -1112,6 +1115,7 @@ cog.render = function (layoutSrc) {
         }
         setTimeout(function () {
             cog.set(null, null, {
+                setElems: true,
                 callback: function () {
                     step_bind();
                 }

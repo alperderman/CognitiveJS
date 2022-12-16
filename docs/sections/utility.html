@@ -1,5 +1,5 @@
-<h1>Utility Functions</h1>
-<p>Utility functions are set of functions that can be used to further enhance your CognitiveJS project.</p>
+<h1>Utility Features</h1>
+<p>Utility features can be used to further enhance your CognitiveJS project.</p>
 <hr>
 <h3 data-prop="{text:'%sidebar.utility.sub.utility_events%'},{attr:{id:'%sidebar.utility.sub.utility_events._key%'}}"></h3>
 <p>There are 4 different events that can be used to keep track of changes: before and after data change with <code>cog.get()</code> function, before and after render events that is used on pre-processing way.</p>
@@ -9,7 +9,7 @@
             console.log(e.detail.key); //changed key
             console.log(e.detail.old); //old value
             console.log(e.detail.new); //new value
-        }); 
+        });
 
         document.addEventListener('COGAfterData', function (e) {
             console.log(e.detail.elems); // elements that are changed
