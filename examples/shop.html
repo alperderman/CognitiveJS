@@ -21,6 +21,19 @@
         <li data-prop="event:{click:'nextPage()'}" class="page-item"><button class="page-link">Next</button></li>
       </ul>
     </div>
+    <!--TOAST TEMPLATE-->
+    <div data-set="temp:toast">
+      <div data-bind="_auto" data-prop="{class:'%%toast.bg%%'}, {attr:{id:'%%toast.id%%'}}" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div data-bind="_auto" class="toast-body" data-prop="text:'%%toast.product%% %%toast.text%%'">
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
+    <!--TOAST CONTAINER-->
+    <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    </div>
     <div class="container">
       <h1 class="mb-5 text-center">CognitiveJS Shopping Example</h1>
       <div class="row justify-content-center">
@@ -110,6 +123,10 @@
         cog.data.productsFiltered = null;
         cog.data.categories = ["all products"];
         cog.data.cart = [];
+        cog.data.toasts = {
+          "add": {"id":"addToast", "product":"Product", "text":"successfully added to the cart!", "bg":"bg-primary"},
+          "remove": {"id":"removeToast", "product":"Product", "text":"successfully removed from the cart!", "bg":"bg-danger"}
+        };
         cog.data.cartTotal = function () {
           var total = 0;
           cog.data.cart.forEach(function(item){
@@ -200,18 +217,25 @@
           changePage(cog.data.productsPage-1);
         }
         function addItem(id) {
-            var cart = cog.get("cart");
+            var cart = cog.get("cart"), toastTemp, toast;
             var exists = false;
             cog.data.products.forEach(function (product) {
                 if (product.id == id) {
+                    cog.set("toasts.add.product", product.title);
+                    document.getElementById("toastContainer").innerHTML = "";
+                    toastTemp = cog.template({id:'toast', data:'%toasts.add% as toast', fragment:true});
+                    document.getElementById("toastContainer").appendChild(toastTemp);
+                    toast = new bootstrap.Toast(document.getElementById("addToast"));
                     cart.forEach(function (item) {
                         if (item.id == id) {
                             exists = true;
+                            toast.show();
                             item.quantity += 1;
                         }
                     });
                     if (!exists) {
                       product.quantity = 1;
+                      toast.show();
                       cart.push(product);
                     }
                 }
@@ -219,9 +243,15 @@
             cog.set("cart", cart);
         }
         function removeItem(id) {
-          var cart = cog.get("cart");
+          var cart = cog.get("cart"), toastTemp, toast;
           cart.forEach(function (item, i) {
               if (item.id == id) {
+                  cog.set("toasts.remove.product", item.title);
+                  document.getElementById("toastContainer").innerHTML = "";
+                  toastTemp = cog.template({id:'toast', data:'%toasts.remove% as toast', fragment:true});
+                  document.getElementById("toastContainer").appendChild(toastTemp);
+                  toast = new bootstrap.Toast(document.getElementById("removeToast"));
+                  toast.show();
                   cart.splice(i,1);
               }
           });
