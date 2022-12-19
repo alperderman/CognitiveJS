@@ -575,7 +575,7 @@ cog.purifyToken = function (token) {
 cog.template = function (arg) {
     var template, createEl, parent, alias;
     if (arg.id == null) {return;}
-    if (arg.bind == null) {arg.bind = false;}
+    if (arg.bind == null) {arg.bind = true;}
     if (arg.fragment == null) {arg.fragment = false;}
     if (cog.templates[arg.id] == null && arg.elem != null) {
         if (typeof arg.elem === 'string') {
@@ -993,16 +993,16 @@ cog.init = function () {
         bind: function (elem, prop, props, propIndex) {
             var template;
             if (prop.data != null) {
-                template = cog.template({id:prop.temp, elem:elem, data:prop.data});
+                template = cog.template({id:prop.temp, elem:elem, data:prop.data, bind:false});
             } else {
-                template = cog.template({id:prop.temp, elem:elem});
+                template = cog.template({id:prop.temp, elem:elem, bind:false});
             }
             if (template != null) {
                 elem.innerHTML = template.innerHTML;
             }
         },
         set: function (elem, key) {
-            cog.template({id:key, elem:elem});
+            cog.template({id:key, elem:elem, bind:false});
         }
     });
     cog.newBind({
@@ -1013,7 +1013,7 @@ cog.init = function () {
         bind: function (elem, prop, props, propIndex) {
             var propData, propLimit, propPage, propOffset, propDatasIterate, template, repeatVal, i, row, key, parent = cog.normalizeKeys(cog.purifyToken(prop.repeat.split(" ")[0])), alias = prop.repeat.split(" ")[2];
             propData = cog.getRecursiveValue({str:parent});
-            cog.template({id:prop.temp, elem:elem});
+            cog.template({id:prop.temp, elem:elem, bind:false});
             if (typeof propData === 'object' && !Array.isArray(propData)) {
                 propDatasIterate = Object.keys(propData);
             } else {
