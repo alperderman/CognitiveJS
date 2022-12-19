@@ -142,7 +142,14 @@
         //first load the template
         cog.template({id:'card', elem:document.getElementById('templateCard')});
         //then render it with the dataset
-        var templateElement = cog.template({id:'card', data:'cardData as aliasData'});
+        var templateElement = cog.template({id:'card', data:'%cardData% as aliasData'});
+    </code>
+</pre>
+<p>Additionally, if you want to get just the elements inside the template instead of encapsulated by a parent element, you can set the <code>fragment</code> argument to <code>true</code>. This will return the fragmented version of the elements.</p>
+<pre>
+    <code class="js">
+        var templateElement = cog.template({id:'card', data:'%cardData% as aliasData', fragment:true});
+        document.body.appendChild(templateElement);
     </code>
 </pre>
 <hr>
