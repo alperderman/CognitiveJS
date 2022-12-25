@@ -13,7 +13,7 @@
     <div data-set="temp:pagination">
       <ul class="pagination">
         <li data-prop="event:{click:'prevPage()'}" class="page-item"><button class="page-link">Previous</button></li>
-        <div data-bind="_auto" data-prop="repeat:'%pages% as _page', temp:'paginationLink', limit:'%paginationLimit%', offset:'%paginationOffset%'" class="pagination">
+        <div data-bind="[pages]" data-prop="repeat:'%pages% as _page', temp:'paginationLink', limit:'%paginationLimit%', offset:'%paginationOffset%'" class="pagination">
           <li data-prop="{event:{click:'changePage(%%_page.page%%)'}}, {class:'active', if:'%%_page.active%%'}" class="page-item">
             <button data-prop="text:'%%_page.page%%'" class="page-link"></button>
           </li>
@@ -23,9 +23,9 @@
     </div>
     <!--TOAST TEMPLATE-->
     <div data-set="temp:toast">
-      <div data-bind="_auto" data-prop="{class:'%%toast.bg%%'}, {attr:{id:'%%toast.id%%'}}" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div data-bind="[%toast%]" data-prop="{class:'%%toast.bg%%'}, {attr:{id:'%%toast.id%%'}}" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
-          <div data-bind="_auto" class="toast-body" data-prop="text:'%%toast.product%% %%toast.text%%'">
+          <div data-bind="[%toast%]" class="toast-body" data-prop="text:'%%toast.product%% %%toast.text%%'">
           </div>
           <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
@@ -45,22 +45,22 @@
         </div>
         <div class="col-12 col-md-9">
           <!--CART-->
-          <button data-bind="_auto" data-prop="if:'%cart._count% &lt;= 0'" class="btn btn-primary position-relative">
+          <button data-bind="[cart]" data-prop="if:'%cart._count% &lt;= 0'" class="btn btn-primary position-relative">
             <i class="fa-solid fa-cart-shopping"></i>
-            <span data-bind="_auto" data-prop="text:'%cart._count%'" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+            <span data-bind="[cart]" data-prop="text:'%cart._count%'" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
           </button>
-          <div data-bind="_auto" data-prop="if:'%cart._count% > 0'" class="btn-group">
+          <div data-bind="[cart]" data-prop="if:'%cart._count% > 0'" class="btn-group">
             <button class="btn btn-primary dropdown-toggle position-relative" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
               <i class="fa-solid fa-cart-shopping"></i>
-              <span data-bind="_auto" data-prop="text:'%cart._count%'" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+              <span data-bind="[cart]" data-prop="text:'%cart._count%'" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
             </button>
             <ul class="dropdown-menu p-2" style="width: 300px;">
               <div class="position-fixed start-0 top-0 p-3">
                 <span class="fw-bold">TOTAL: </span>
-                <span data-bind="_auto" data-prop="text:'%cartTotal% $'"></span>
+                <span data-bind="[cartTotal]" data-prop="text:'%cartTotal% $'"></span>
               </div>
               <hr class="dropdown-divider mt-5">
-              <div data-bind="_auto" data-prop="repeat:'%cart% as item', temp:'cart'" style="max-height: 300px;overflow-y: auto;overflow-x: hidden;">
+              <div data-bind="[cart]" data-prop="repeat:'%cart% as item', temp:'cart'" style="max-height: 300px;overflow-y: auto;overflow-x: hidden;">
                 <div class="row align-items-center p-1">
                   <div class="col">
                     <span data-prop="text:'%%item.title%%'"></span>
@@ -79,13 +79,13 @@
           <!--PAGINATION-->
           <nav class="mt-3" data-prop="temp:'pagination'"></nav>
           <!--SEARCH BAR-->
-          <input data-bind="_auto" data-prop="{context:{value:'%search%'}}, {live:'search', event:'input'}, {event:{input:'searchProducts()'}}" class="form-control mb-3" placeholder="search" type="text">
+          <input data-bind="[search]" data-prop="{context:{value:'%search%'}}, {live:'search', event:'input'}, {event:{input:'searchProducts()'}}" class="form-control mb-3" placeholder="search" type="text">
           <div class="row">
             <div class="col-6">
-              <p class="text-start m-0" data-bind="_auto" data-prop="if:'%products._count% != %productsFiltered._count%'">Filtered <span data-bind="_auto" data-prop="text:'%productsFiltered._count%'" class="fw-bold"></span> items</p>
+              <p class="text-start m-0" data-bind="[productsFiltered], [products]" data-prop="if:'%products._count% != %productsFiltered._count%'">Filtered <span data-bind="[productsFiltered]" data-prop="text:'%productsFiltered._count%'" class="fw-bold"></span> items</p>
             </div>
             <div class="col-6">
-              <p class="text-end m-0">Total of <span data-bind="_auto" data-prop="text:'%products._count%'" class="fw-bold"></span> items</p>
+              <p class="text-end m-0">Total of <span data-bind="[products]" data-prop="text:'%products._count%'" class="fw-bold"></span> items</p>
             </div>
           </div>
           <!--PRODUCTS TABLE-->
@@ -98,7 +98,7 @@
                 <td>Category</td>
               </tr>
             </thead>
-            <tbody data-bind="_auto" data-prop="repeat:'%productsFiltered% as product', temp:'products', limit:'%productsLimit%', page:'%productsPage%'">
+            <tbody data-bind="[productsFiltered], [productsLimit], [productsPage]" data-prop="repeat:'%productsFiltered% as product', temp:'products', limit:'%productsLimit%', page:'%productsPage%'">
               <tr>
                 <td data-prop="text:'%%product.title%%'"></td>
                 <td data-prop="text:'%%product.price%% $'"></td>
@@ -275,7 +275,7 @@
           cog.data.productsFiltered = cog.get("products");
           cog.bindAll({callback: function() {
             document.querySelector(".nav-link").classList.add("active");
-            document.body.style.display = "block";
+            document.body.style.display = "";
           }});
         });
     </script>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CognitiveJS | Chat Room Example</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha384-SOnAn/m2fVJCwnbEYgD4xzrPtvsXdElhOVvR8ND1YjB5nhGNwwf7nBQlhfAwHAZC" crossorigin="anonymous">
+</head>
+  <body style="display: none;">
+    <div class="container">
+      <h1 class="mb-5 text-center">CognitiveJS Chat Room Example</h1>
+      <!--NAME-->
+      <div class="row justify-content-center" data-bind="[chat.section_login]" data-prop="if:'%chat.section_login%'">
+        <div class="col-10 col-md-6 col-lg-4 p-0">
+          <div>Your Name:</div>
+          <div class="input-group">
+            <input data-prop="{context:{value:'%chat.name%'}}, {live:'chat.name', event:'input'}, {event:{keypress:'chatLogin()'}}" class="form-control" type="text">
+            <button data-prop="{event:{click:'chatLogin()'}}" class="btn btn-primary">Enter</button>
+          </div>
+        </div>
+      </div>
+      <!--CHAT-->
+      <div class="row justify-content-center align-items-bottom" data-bind="[chat.section_chat]" data-prop="if:'%chat.section_chat%'">
+        <div id="chat" data-prop="repeat:'%chat.log% as item', temp:'chat'" class="col-12 col-md-8 px-4 card" style="height:25em;overflow-y: auto;">
+          <div class="row g-0" data-bind="[%item%]" data-prop="if:'%%item%%'">
+            <span class="text-primary col-auto" data-bind="[%item%]" data-prop="text:'%%item.user%%'"></span>
+            <span class="col-auto me-1">:</span>
+            <span class="col-auto" data-bind="[%item%]" data-prop="text:'%%item.text%%'"></span></div>
+        </div>
+      </div>
+      <!--INPUT-->
+      <div class="row justify-content-center" data-bind="[chat.section_chat]" data-prop="if:'%chat.section_chat%'">
+        <div class="col-12 col-md-8 p-0">
+          <div class="input-group">
+            <input data-bind="[chat.input]" data-prop="{context:{value:'%chat.input%'}}, {live:'chat.input', event:'input'}, {event:{keypress:'chatAdd()'}}" class="form-control" type="text">
+            <button data-prop="{event:{click:'chatAdd()'}}" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <script src="../dist/cog.js"></script>
+    <script>
+        // DEFINITIONS
+        cog.data.chat = {
+          section_login: true,
+          section_chat: false,
+          log: [
+            {user:"John", text:'hello everyone, how are we today?'},
+            {user:"Jane", text:'going great so far'},
+            {user:"Kyle", text:'been better'},
+            {user:"Pamela", text:'I don\'t feel so good'},
+            {user:"John", text:'what happened Pam? what\'s wrong?'},
+            {user:"Pamela", text:'had an accident at the cafeteria today, I spilled my coffee everywhere including the papers that are related to a really important project of mine'},
+            {user:"Jane", text:'how unfortunate'},
+            {user:"Kyle", text:'thats too bad, so what are you going to do now?'},
+            {user:"Pamela", text:'now I have to rewrite everything from scratch, fortunately I\'m able to read whats written on the papers despite the coffee stains'},
+            {user:"John", text:'atleast you can still read thats great, I\'m sorry that this happened to you'},
+            {user:"Pamela", text:'its all my fault, I should\'ve been more careful'},
+            {user:"Jane", text:'don\'t blame yourself, some things are just meant to happen'}
+          ],
+          name: '',
+          input: ''
+        };
+
+        // FUNCTIONS
+        function chatAdd () {
+          if (cog.get('chat.input') != null && (typeof event.code === 'undefined' || event.code == 'Enter')) {
+            var msg = {user:cog.data.chat.name, text:cog.get('chat.input')};
+            cog.alter(
+              "chat.log",
+              function(val){
+                val.push(msg);
+                return val;
+              }
+            );
+            var index = cog.get("chat.log._count")-1;
+            var temp = cog.template({id:'chat', data:'%chat.log.'+index+'% as item', fragment:true});
+            document.getElementById("chat").appendChild(temp);
+            cog.set('chat.input', '');
+            chatScrollBottom();
+          }
+        }
+        function chatScrollBottom() {
+          el = document.getElementById("chat");
+          el.scrollTop = el.scrollHeight;
+        }
+        function chatLogin() {
+          if (cog.data.chat.name != null && (typeof event.code === 'undefined' || event.code == 'Enter')) {
+            cog.set("chat.section_login", false);
+            cog.set("chat.section_chat", true);
+          }
+        }
+
+        // executing cog.bindAll() and removing display none style from body
+        cog.bindAll();
+        chatScrollBottom();
+        document.body.style.display = "";
+    </script>
+  </body>
+</html>

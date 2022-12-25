@@ -1,9 +1,9 @@
 <h1>Binding</h1>
-<p>Binding is the most common and useful feature of every JavaScript framework, almost every framework implements binding differently, some of them use getter and setters, others use more advanced Object.observe feature and Cognitive on the other hand uses native function.</p>
+<p>Binding is the most common and useful feature of every JavaScript framework, almost every framework implements binding differently, some of them use getter and setters, others use more advanced Object.observe feature and Cognitive on the other hand uses simply a function, coupled with custom HTML attributes.</p>
 <p>Bindings on CognitiveJS is one-way (can be made it two-way with modifications). First let's talk about, how to bind elements with specified data. To bind an element, you have to define a <code>data-bind</code> attribute with the key of the data you want to bind.</p>
 <pre>
     <code class="html">
-        &lt;p data-bind="foo" data-prop="text:'%foo%'">&lt;/p>
+        &lt;p data-bind="[foo]" data-prop="text:'%foo%'">&lt;/p>
 
         &lt;script src="cog.js">&lt;/script>
         &lt;script>
@@ -16,7 +16,7 @@
 <p>There are 3 ways of changing the value of a bound data: first way is using the <code>cog.get()</code> function to directly change the data, second way is using the shorthand of <code>cog.get()</code> which is <code>cog.set()</code>, and the third way is binding a variable with the <code>cog.bind()</code> function.</p>
 <pre>
     <code class="html">
-        &lt;p data-bind="foo" data-prop="text:'%foo%'">&lt;/p>
+        &lt;p data-bind="[foo]" data-prop="text:'%foo%'">&lt;/p>
 
         &lt;script src="cog.js">&lt;/script>
         &lt;script>
@@ -39,17 +39,19 @@
 <h3 data-prop="{text:'%sidebar.bind.sub.bind_data-bind%'},{attr:{id:'%sidebar.bind.sub.bind_data-bind._key%'}}"></h3>
 <p><code>data-bind</code> is the HTML attribute for binding elements. What it actually does under the hood is, it just labels elements to be refreshed when specified value has been altered. If you don't set this attribute to the element, properties will not refresh.</p>
 <p>Apart from the example above, you can also bind two or more values to an element, any change to the either of those values will trigger a refresh for that element.</p>
+<p>One thing to consider while using this attribute is only the dot representation of the tokens encapsulated by square brackets is allowed, the reason for that is due to performance issues.</p>
 <pre>
     <code class="html">
-        &lt;p data-bind="foo, brands['ford'].title" data-prop="text:'%foo%'">&lt;/p>
+        &lt;p data-bind="[foo], [brands.0.title]" data-prop="text:'%foo%'">&lt;/p>
     </code>
 </pre>
-<p>To automatically refresh an element regardless of which value has been changed, write <code>_auto</code> to the attribute.</p>
+<p>To automatically refresh an element regardless of which value has been changed, set it to _auto.</p>
 <pre>
     <code class="html">
         &lt;p data-bind="_auto" data-prop="text:'%foo%'">&lt;/p>
     </code>
 </pre>
+<p class="alert alert-info">If you are using _auto keyword, beware of the performance issues while working with huge number of elements, you may want to stick to the manual way.</p>
 <hr>
 <h3 data-prop="{text:'%sidebar.bind.sub.bind_bind%'},{attr:{id:'%sidebar.bind.sub.bind_bind._key%'}}"></h3>
 <p>One function to rule them all. <code>cog.bind()</code> is the powerhouse of the <span style="text-decoration: line-through;">cell</span> CognitiveJS.</p>
@@ -89,6 +91,7 @@
 <h3 data-prop="{text:'%sidebar.bind.sub.bind_get%'},{attr:{id:'%sidebar.bind.sub.bind_get._key%'}}"></h3>
 <p><code>cog.get()</code> is a wrapper for <code>cog.bind()</code>. Its purpose is to get and set values and refresh properties of the elements that are bound to these values.</p>
 <p><code>cog.get()</code> takes 2 parameters: first one is for string key, second is for argument object.</p>
+<p>Although using <code>cog.get()</code> to set values is viable, it is not recommended because <code>cog.set()</code> and <code>cog.alter()</code> wrappers are much more easy to use.</p>
 <pre>
     <code class="js">
         //GET VALUE
@@ -97,6 +100,7 @@
         //SET VALUE
         cog.get("customers[0].debt", {
             set: 1000,
+            action: "set",
             callback: function () {console.log("changed!");}
         });
     </code>
@@ -109,7 +113,7 @@
         cog.set("customers[0].debt", 1000, {callback: function(){console.log("changed!");}});
     </code>
 </pre>
-<p>Additionally, instead of just setting a value directly, you can also modify it as a function beforehand, just set the alter parameter to <code>true</code>.</p>
+<p>You may also set the tokens as a function but if you want to modify the values beforehand using a function instead of setting the token as a function, you should set the alter parameter to <code>true</code>.</p>
 <pre>
     <code class="js">
         cog.set("customers",

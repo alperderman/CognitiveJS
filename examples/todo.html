@@ -15,13 +15,13 @@
       <div class="row justify-content-center">
         <div class="col-12 col-md-6 col-xl-4 px-4 mb-3">
           <div class="input-group">
-            <input data-bind="_auto" data-prop="{context:{value:'%todo.input%'}}, {live:'todo.input', event:'input'}" class="form-control" type="text">
+            <input data-bind="[todo.input]" data-prop="{context:{value:'%todo.input%'}}, {live:'todo.input', event:'input'}, {event:{keypress:'todoAdd()'}}" class="form-control" type="text">
             <button data-prop="{event:{click:'todoAdd()'}}" class="btn btn-primary"><i class="fa-solid fa-plus"></i></button>
           </div>
         </div>
       </div>
       <!--LIST-->
-      <div data-bind="_auto" data-prop="repeat:'%todo.list% as item', temp:'list'">
+      <div data-bind="[todo.list]" data-prop="repeat:'%todo.list% as item', temp:'list'">
         <div class="row justify-content-center">
           <div class="col-12 col-md-6 col-xl-4 px-4">
             <div class="card">
@@ -58,7 +58,7 @@
 
         // FUNCTIONS
         function todoAdd() {
-          if (cog.get('todo.input') != '') {
+          if (cog.get('todo.input') != '' && (typeof event.code === 'undefined' || event.code == 'Enter')) {
             cog.alter(
               "todo.list",
               function(val){
@@ -101,7 +101,7 @@
 
         // executing cog.bindAll() and removing display none style from body
         cog.bindAll();
-        document.body.style.display = "block";
+        document.body.style.display = "";
     </script>
   </body>
 </html>

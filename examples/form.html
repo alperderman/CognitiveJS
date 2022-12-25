@@ -59,7 +59,7 @@
         <div class="col-12 col-md-6 px-4">
           <h2>Values</h2>
           <hr>
-          <div data-bind="_auto" data-prop="text:'%formJSON%'"></div>
+          <div data-bind="[formJSON]" data-prop="text:'%formJSON%'"></div>
         </div>
       </div>
     </div>
@@ -92,7 +92,7 @@
 
         // executing cog.bindAll() and removing display none style from body
         cog.bindAll();
-        document.body.style.display = "block";
+        document.body.style.display = "";
     </script>
   </body>
 </html>

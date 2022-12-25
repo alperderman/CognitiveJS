@@ -84,21 +84,21 @@
 <pre>
     <code class="html">
         &lt;input type="text" data-prop="{live:'name'}">
-        &lt;span data-bind="_auto" data-prop="text:'Welcome back %name%!'">&lt;/span>
+        &lt;span data-bind="[name]" data-prop="text:'Welcome back %name%!'">&lt;/span>
     </code>
 </pre>
 <p>Default event of live bindings is <code>change</code>. Set an event property to change the event.</p>
 <pre>
     <code class="html">
         &lt;input type="text" data-prop="{live:'name', event:'input'}">
-        &lt;span data-bind="_auto" data-prop="text:'Welcome back %name%!'">&lt;/span>
+        &lt;span data-bind="[name]" data-prop="text:'Welcome back %name%!'">&lt;/span>
     </code>
 </pre>
 <p>Default data to be kept track of is <code>event.target.value</code>. Set a data property to change the data.</p>
 <pre>
     <code class="html">
         &lt;input type="checkbox" data-prop="{live:'checkbox', data:'event.target.checked'}">
-        &lt;span data-bind="_auto" data-prop="text:'Welcome back %name%!'">&lt;/span>
+        &lt;span data-bind="[name]" data-prop="text:'Welcome back %name%!'">&lt;/span>
     </code>
 </pre>
 <hr>
@@ -176,19 +176,20 @@
 <p>In order to compansate this problem, I have added a pagination system to the repeaters. There are 3 parameters: <code>limit</code>, <code>offset</code> and <code>page</code>.</p>
 <ul>
     <li><code>limit</code> parameter, sets a limit for the iterated data.</li>
-    <li><code>offset</code> parameter, specifies the number of datas to be skipped.</li>
+    <li><code>offset</code> parameter, specifies the number of datas to be skipped (if it is below zero it will skip from the end of the object).</li>
     <li><code>page</code> parameter, specifies the page (a shorthand for offset)</li>
+    <li><code>order</code> parameter, specifies the sorting order, default is ascending, set it to <code>desc</code> for descending order</li>
 </ul>
 <p>If you are familiar with <b>SQL</b> you can expect the same outcome from <code>limit</code> and <code>offset</code> parameters. In order to paginate a set of data, you have to combine <code>limit</code> parameter with either <code>offset</code> or <code>page</code> parameter.</p>
 <pre>
     <code class="html">
-        &lt;table data-prop="repeat:'%people% as person', temp:'row', limit:25, page:1">
+        &lt;table data-prop="repeat:'%people% as person', temp:'row', limit:25, order:'desc', page:1">
             &lt;tr>&lt;td data-prop="text:'%%person%.name%'">&lt;/td>&lt;td data-prop="text:'%%person%.surname%'">&lt;/td>&lt;/tr>
         &lt;/table>
 
         &lt;!--or with offset-->
 
-        &lt;table data-prop="repeat:'%people% as person', temp:'row', limit:25, offset:0">
+        &lt;table data-prop="repeat:'%people% as person', temp:'row', limit:25, order:'desc', offset:0">
             &lt;tr>&lt;td data-prop="text:'%%person%.name%'">&lt;/td>&lt;td data-prop="text:'%%person%.surname%'">&lt;/td>&lt;/tr>
         &lt;/table>
     </code>
