@@ -67,6 +67,9 @@
 
         &lt;div data-prop="{event:{click:'%clickFunc%'}, _prevent:true}">&lt;/div>
         &lt;!--prevents bubbling up-->
+
+        &lt;div data-bind="_auto" data-prop="text:'%fruits.apple.color%'">&lt;/div>
+        &lt;!--now this element will refresh that property every time a value has been altered-->
     </code>
 </pre>
 <hr>
