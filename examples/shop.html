@@ -259,7 +259,7 @@
         }
 
         // getting the products data, executing cog.bindAll() function after we process the categories and lastly removing the display none style from body (I've done it with internal cog.xhr() function but you can use any other API or library you want)
-        cog.xhr("https://dummyjson.com/products?limit=100", function(xhr) {
+        cog.xhr("products.json", function(xhr) {
           cog.data.products = JSON.parse(xhr.responseText).products;
           cog.data.products.forEach(function (product) {
             var push = true;
