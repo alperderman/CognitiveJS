@@ -159,21 +159,56 @@
 <p>Here is a simple example,</p>
 <pre>
     <code class="html">
-        &lt;table data-prop="repeat:'%people% as person', temp:'row'">
-            &lt;tr>&lt;td data-prop="text:'%%person%.name%'">&lt;/td>&lt;td data-prop="text:'%%person%.surname%'">&lt;/td>&lt;/tr>
+        &lt;table data-bind="[people]" data-prop="repeat:'%people% as person', temp:'row'">
+            &lt;tr>
+                &lt;td data-prop="text:'%%person%.name%'">&lt;/td>
+                &lt;td data-prop="text:'%%person%.surname%'">&lt;/td>
+            &lt;/tr>
         &lt;/table>
         
         &lt;script>
             cog.data.people = {
                 {name:'Jane', surname:'Doe'},
-                {name:'John', surname:'Doe'},
+                {name:'John', surname:'Doe'}
             }
             cog.bindAll();
         &lt;/script>
     </code>
 </pre>
-<p>CognitiveJS doesn't do any differing (a method used to change only the altered elements on the DOM). When refreshed, it reconstructs the whole element with that repeat binding. Because of this, if you are working with huge datasets, you may expect a tenth of a second delay every couple hundered items repeated.</p>
-<p>In order to compansate this problem, I have added a pagination system to the repeaters. There are 3 parameters: <code>limit</code>, <code>offset</code> and <code>page</code>.</p>
+<p>Working with huge datasets in CognitiveJS has its consequences, mainly about performance. When a repeater element with bind is rebound, since Cognitive cannot actually track, locate and update the modified items once its repeated (since Cognitive uses DOM directly as a refrence point), it deletes everything inside the repeater and reconstructs it as a whole. This causes a slight delay for each couple hundered items repeated.</p>
+<p>If you are having performance problems with repeaters, you have two options that you can apply; either you have to bind the each item of the template (instead of binding only the element with the repeat prop) and manually adding elements by creating templates after it has done its first repeating cycle or you have to use the pagination system.</p>
+<p>With the first option you can add as many items you want with remotely no delays, but removing items is possible yet a bit problematic with this option. This method mainly used in projects with constant data flow such as a real-time statistics on a dashboard or a chat room (which there is an example you can check it out on the <a class="font-weight-bold" data-prop="{text:'%sidebar.examples.title%'},{attr:{href:'#%sidebar.examples._key%'}}"></a> section).</p>
+<p>Here is an example that demonstrates the manual way of adding templates to the repeaters:</p>
+<pre>
+    <code class="html">
+        &lt;table id="table" data-prop="repeat:'%people% as person', temp:'row'">
+            &lt;tr> &lt;!--binding elements inside the repeater-->
+                &lt;td data-bind="[%%person%%]" data-prop="text:'%%person%.name%'">&lt;/td>
+                &lt;td data-bind="[%%person%%]" data-prop="text:'%%person%.surname%'">&lt;/td>
+            &lt;/tr>
+        &lt;/table>
+        
+        &lt;script>
+            cog.data.people = {
+                {name:'Jane', surname:'Doe'},
+                {name:'John', surname:'Doe'}
+            }
+            cog.bindAll();
+
+            function addPerson () { // this will add a new person to the dataset and the table
+                var newPerson = {name:'William', surname:'Blake'};
+                cog.alter("people", function (data) {
+                    data.push(newPerson);
+                    return data;
+                });
+                var newPersonIndex = cog.get("chat.log._count")-1;
+                var rowTemplate = cog.template({id:'row', data:'%people.'+newPersonIndex+'% as person', fragment:true});
+                document.getElementById("table").appendChild(template);
+            }
+        &lt;/script>
+    </code>
+</pre>
+<p>If you are going with the pagination system, there are 4 additional parameters added onto the repeat prop: <code>limit</code>, <code>offset</code>, <code>page</code> and lastly <code>order</code>.</p>
 <ul>
     <li><code>limit</code> parameter, sets a limit for the iterated data.</li>
     <li><code>offset</code> parameter, specifies the number of datas to be skipped (if it is below zero it will skip from the end of the object).</li>
@@ -184,7 +219,10 @@
 <pre>
     <code class="html">
         &lt;table data-prop="repeat:'%people% as person', temp:'row', limit:25, order:'desc', page:1">
-            &lt;tr>&lt;td data-prop="text:'%%person%.name%'">&lt;/td>&lt;td data-prop="text:'%%person%.surname%'">&lt;/td>&lt;/tr>
+            &lt;tr>
+                &lt;td data-prop="text:'%%person%.name%'">&lt;/td>
+                &lt;td data-prop="text:'%%person%.surname%'">&lt;/td>
+            &lt;/tr>
         &lt;/table>
 
         &lt;!--or with offset-->

@@ -1,6 +1,6 @@
 <h1>Binding</h1>
-<p>Binding is the most common and useful feature of every JavaScript framework, almost every framework implements binding differently, some of them use getter and setters, others use more advanced Object.observe feature and Cognitive on the other hand uses simply a function, coupled with custom HTML attributes.</p>
-<p>Bindings on CognitiveJS is one-way (can be made it two-way with modifications). First let's talk about, how to bind elements with specified data. To bind an element, you have to define a <code>data-bind</code> attribute with the key of the data you want to bind.</p>
+<p>Binding is the most common and useful feature of every JavaScript framework, almost every framework implements binding differently, some of them use getter and setters, others use more advanced Object.observe feature, Virtual DOM and Cognitive on the other hand, uses simply a function, coupled with custom HTML attributes to track the properties and changes.</p>
+<p>First let's talk about, how to bind elements with specified data. To bind an element, you have to define a <code>data-bind</code> attribute with the key of the data you want to bind.</p>
 <pre>
     <code class="html">
         &lt;p data-bind="[foo]" data-prop="text:'%foo%'">&lt;/p>
@@ -13,7 +13,7 @@
         &lt;/script>
     </code>
 </pre>
-<p>There are 3 ways of changing the value of a bound data: first way is using the <code>cog.get()</code> function to directly change the data, second way is using the shorthand of <code>cog.get()</code> which is <code>cog.set()</code>, and the third way is binding a variable with the <code>cog.bind()</code> function.</p>
+<p>There are 3 ways of changing the value of a bound data: first way is using the <code>cog.get()</code> function to directly change the data, second way is using the shorthand of <code>cog.get()</code> which are <code>cog.set()</code> and <code>cog.alter()</code>, or the third way is binding a variable with the <code>cog.bind()</code> function.</p>
 <pre>
     <code class="html">
         &lt;p data-bind="[foo]" data-prop="text:'%foo%'">&lt;/p>
@@ -39,7 +39,7 @@
 <h3 data-prop="{text:'%sidebar.bind.sub.bind_data-bind%'},{attr:{id:'%sidebar.bind.sub.bind_data-bind._key%'}}"></h3>
 <p><code>data-bind</code> is the HTML attribute for binding elements. What it actually does under the hood is, it just labels elements to be refreshed when specified value has been altered. If you don't set this attribute to the element, properties will not refresh.</p>
 <p>Apart from the example above, you can also bind two or more values to an element, any change to the either of those values will trigger a refresh for that element.</p>
-<p>One thing to consider while using this attribute is only the dot representation of the tokens encapsulated by square brackets is allowed, the reason for that is due to performance issues.</p>
+<p>One thing to consider while using this attribute is only the dot representation of the tokens encapsulated by square brackets is allowed, the reason for that is due to pruely performance issues.</p>
 <pre>
     <code class="html">
         &lt;p data-bind="[foo], [brands.0.title]" data-prop="text:'%foo%'">&lt;/p>
