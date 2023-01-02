@@ -11,7 +11,7 @@
   <body style="display: none;">
     <div class="container">
       <h1 class="mb-5 text-center">CognitiveJS Chat Room Example</h1>
-      <!--NAME-->
+      <!--LOGIN-->
       <div class="row justify-content-center" data-bind="[chat.section_login]" data-prop="if:'%chat.section_login%'">
         <div class="col-10 col-md-6 col-lg-4 p-0">
           <div>Your Name:</div>
@@ -19,6 +19,13 @@
             <input data-prop="{context:{value:'%chat.name%'}}, {live:'chat.name', event:'input'}, {event:{keypress:'chatLogin()'}}" class="form-control" type="text">
             <button data-prop="{event:{click:'chatLogin()'}}" class="btn btn-primary">Enter</button>
           </div>
+        </div>
+      </div>
+      <!--LOGOUT-->
+      <div class="row justify-content-center mb-3" data-bind="[chat.section_chat]" data-prop="if:'%chat.section_chat%'">
+        <div class="col-12 col-md-8 p-0">
+          <button data-prop="{event:{click:'chatLogout()'}}" class="btn btn-danger"><i class="fa-solid fa-right-from-bracket"></i></button>
+          <span class="p-1 fw-bold" data-bind="[chat.name]" data-prop="text:'%chat.name%'"></span>
         </div>
       </div>
       <!--CHAT-->
@@ -67,7 +74,7 @@
 
         // FUNCTIONS
         function chatAdd () {
-          if (cog.get('chat.input') != null && (typeof event.code === 'undefined' || event.code == 'Enter')) {
+          if (cog.get('chat.input') != null && (typeof event.keyCode === 'undefined' || event.keyCode == 13)) {
             var msg = {user:cog.data.chat.name, text:cog.get('chat.input')};
             cog.alter(
               "chat.log",
@@ -80,6 +87,7 @@
             var temp = cog.template({id:'chat', data:'%chat.log.'+index+'% as item', fragment:true});
             document.getElementById("chat").appendChild(temp);
             cog.set('chat.input', '');
+            localStorage.setItem("chatLog", JSON.stringify(cog.get("chat.log")));
             chatScrollBottom();
           }
         }
@@ -88,10 +96,23 @@
           el.scrollTop = el.scrollHeight;
         }
         function chatLogin() {
-          if (cog.data.chat.name != null && (typeof event.code === 'undefined' || event.code == 'Enter')) {
+          if (cog.data.chat.name != null && (typeof event.keyCode === 'undefined' || event.keyCode == 13)) {
             cog.set("chat.section_login", false);
             cog.set("chat.section_chat", true);
+            localStorage.setItem("chatName", cog.data.chat.name);
           }
+        }
+        function chatLogout() {
+          cog.set("chat.section_login", true);
+          cog.set("chat.section_chat", false);
+        }
+
+        // CHAT PERSISTENCE
+        if (localStorage.getItem("chatLog") !== null) {
+          cog.data.chat.log = JSON.parse(localStorage.getItem("chatLog"));
+        }
+        if (localStorage.getItem("chatName") !== null) {
+          cog.data.chat.name = localStorage.getItem("chatName");
         }
 
         // executing cog.bindAll() and removing display none style from body
