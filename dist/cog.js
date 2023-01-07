@@ -141,18 +141,11 @@ cog.rebind = function (key, changed, i, query) {
     if (i == null) {i = 0;}
     if (query == null) {query = ""}
     if (changed == null) {changed = [];}
-    var elems, elem, tokens = cog.normalizeKeys(key).split("."), combined = "";
+    var elems, elem;
     if (query == "") {
-        tokens.forEach(function (token, ii) {
-            if (ii == 0) {
-                combined += token;
-            } else {
-                combined += "."+token;
-            }
-            query += "["+cog.label.bind+"*='["+combined+"]']:not(["+cog.label.skip+"]),";
-        });
+        query = cog.getBoundElements(key, true);
+        query += ",["+cog.label.bind+"='"+cog.keyword.auto+"']:not(["+cog.label.skip+"])";
     }
-    query += "["+cog.label.bind+"='"+cog.keyword.auto+"']:not(["+cog.label.skip+"])";
     elems = document.querySelectorAll(query);
     if (i < elems.length) {
         elem = elems[i];
@@ -184,6 +177,33 @@ cog.rebind = function (key, changed, i, query) {
                 }
             }
         }
+    }
+};
+cog.getBoundElements = function (tokens, returnQuery) {
+    if (tokens == null) {return;}
+    if (returnQuery == null) {returnQuery = false;}
+    if (!Array.isArray(tokens)) {
+        tokens = [tokens];
+    }
+    var queryArr = [], query = "", combined;
+    tokens.forEach(function (keys) {
+        keys = cog.normalizeKeys(keys).split(".");
+        combined = "";
+        keys.forEach(function (key, i) {
+            if (i == 0) {
+                combined += key;
+            } else {
+                combined += "."+key;
+            }
+            queryArr.push("["+cog.label.bind+"*='["+combined+"]']:not(["+cog.label.skip+"])");
+        });
+    });
+    queryArr = cog.removeDuplicatesFromArray(queryArr);
+    query = queryArr.join(",");
+    if (returnQuery) {
+        return query;
+    } else {
+        return document.querySelectorAll(query);
     }
 };
 cog.getElementBind = function (elem) {
