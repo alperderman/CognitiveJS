@@ -12,7 +12,7 @@
         });
 
         document.addEventListener('COGAfterData', function (e) {
-            console.log(e.detail.elems); // elements that are changed
+            console.log(e.detail.elems); //elements that are changed
             console.log(e.detail.key);
             console.log(e.detail.old);
             console.log(e.detail.new);
@@ -82,11 +82,21 @@
     </code>
 </pre>
 <hr>
+<h3 data-prop="{text:'%sidebar.utility.sub.utility_boundelements%'},{attr:{id:'%sidebar.utility.sub.utility_boundelements._key%'}}"></h3>
+<p><code>cog.getBoundElements()</code> function is used for getting the elements bound with specified token or tokens.</p>
+<pre>
+    <code class="js">
+        cog.getBoundElements("names.0");
+        //WITH MULTIPLE TOKENS
+        cog.getBoundElements(["names.0", "names.4", "surnames"]);
+    </code>
+</pre>
+<hr>
 <h3 data-prop="{text:'%sidebar.utility.sub.utility_elementbind%'},{attr:{id:'%sidebar.utility.sub.utility_elementbind._key%'}}"></h3>
 <p><code>cog.getElementBind()</code> function is used for getting the bound values of an element.</p>
 <pre>
     <code class="js">
-        console.log(cog.getElementBind(document.getElementById("element")));
+        cog.getElementBind(document.getElementById("element"));
     </code>
 </pre>
 <hr>
@@ -94,7 +104,7 @@
 <p>Similiary <code>cog.getElementProp()</code> function is used for getting the properties of an element.</p>
 <pre>
     <code class="js">
-        console.log(cog.getElementProp(document.getElementById("element")));
+        cog.getElementProp(document.getElementById("element"));
     </code>
 </pre>
 <hr>
@@ -102,6 +112,6 @@
 <p><code>cog.checkKeys()</code> function is used for checking two keys and returns true if they encapsulate one another or if they are the same key.</p>
 <pre>
     <code class="js">
-        console.log(cog.checkKeys("names", "name");
+        cog.checkKeys("names", "name");
     </code>
 </pre>
