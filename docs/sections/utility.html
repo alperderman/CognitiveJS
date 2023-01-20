@@ -83,12 +83,20 @@
 </pre>
 <hr>
 <h3 data-prop="{text:'%sidebar.utility.sub.utility_boundelements%'},{attr:{id:'%sidebar.utility.sub.utility_boundelements._key%'}}"></h3>
-<p><code>cog.getBoundElements()</code> function is used for getting the elements bound with specified token or tokens.</p>
+<p><code>cog.getBoundElements()</code> function is used for getting all of the elements bound with specified token or tokens.</p>
 <pre>
     <code class="js">
         cog.getBoundElements("names.0");
         //WITH MULTIPLE TOKENS
         cog.getBoundElements(["names.0", "names.4", "surnames"]);
+    </code>
+</pre>
+<hr>
+<h3 data-prop="{text:'%sidebar.utility.sub.utility_boundelement%'},{attr:{id:'%sidebar.utility.sub.utility_boundelement._key%'}}"></h3>
+<p><code>cog.getBoundElement()</code> function is used for getting the first bound element instead of all of the elements.</p>
+<pre>
+    <code class="js">
+        cog.getBoundElement("names.0");
     </code>
 </pre>
 <hr>
