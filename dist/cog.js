@@ -206,6 +206,9 @@ cog.getBoundElements = function (tokens, returnQuery) {
         return document.querySelectorAll(query);
     }
 };
+cog.getBoundElement = function (tokens) {
+    return document.querySelector(cog.getBoundElements(tokens, true));
+};
 cog.getElementBind = function (elem) {
     var elemBinds = elem.getAttribute(cog.label.bind), binds;
     if (elemBinds != null) {
