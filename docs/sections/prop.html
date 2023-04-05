@@ -195,13 +195,13 @@
             }
             cog.bindAll();
 
-            function addPerson () { // this will add a new person to the dataset and the table
-                var newPerson = {name:'William', surname:'Blake'};
+            function addPerson (name, surname) { // this will add a new person to the dataset and the table
+                var newPerson = {name:name, surname:surname};
                 cog.alter("people", function (data) {
                     data.push(newPerson);
                     return data;
                 });
-                var newPersonIndex = cog.get("chat.log._count")-1;
+                var newPersonIndex = cog.get("people._count")-1;
                 var rowTemplate = cog.template({id:'row', data:'%people.'+newPersonIndex+'% as person', fragment:true});
                 document.getElementById("table").appendChild(template);
             }
