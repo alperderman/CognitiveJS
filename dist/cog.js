@@ -496,17 +496,21 @@ cog.bind = function (node, arg) {
                     }
                     if (prop.context != null) {
                         Object.keys(prop.current).forEach(function (key) {
-                            elem[key] = "";
+                            if (prop.current[key] == node[key]) {
+                                node[key] = "";
+                            }
                         });
                     }
                     if (prop.attr != null) {
                         Object.keys(prop.current).forEach(function (key) {
-                            elem.removeAttribute(key);
+                            node.removeAttribute(key);
                         });
                     }
                     if (prop.style != null) {
                         Object.keys(prop.current).forEach(function (key) {
-                            node.style[key] = "";
+                            if (prop.current[key] == node.style[key]) {
+                                node.style[key] = "";
+                            }
                         });
                     }
                     delete props[i].current;
@@ -776,7 +780,9 @@ cog.init = function () {
             var propData, propContext, propCurrent = {};
             if (prop.current != null) {
                 Object.keys(prop.current).forEach(function (key) {
-                    elem[key] = "";
+                    if (prop.current[key] == elem[key]) {
+                        elem[key] = "";
+                    }
                 });
                 delete props[propIndex].current;
                 elem.setAttribute(cog.label.prop, cog.serialize(props));
@@ -976,7 +982,9 @@ cog.init = function () {
             var propData, propStyle, propCurrent = {};
             if (prop.current != null) {
                 Object.keys(prop.current).forEach(function (key) {
-                    elem.style[key] = "";
+                    if (prop.current[key] == elem.style[key]) {
+                        elem.style[key] = "";
+                    }
                 });
                 delete props[propIndex].current;
                 elem.setAttribute(cog.label.prop, cog.serialize(props));
@@ -1352,11 +1360,13 @@ cog.xhr = function (url, callback, arg) {
     if (arg == null) {arg = {};}
     if (arg.cache == null) {arg.cache = cog.cache;}
     if (arg.method == null) {arg.method = 'GET';}
+    if (arg.type == null) {arg.type = '';}
     if (arg.data == null) {arg.data = '';}
     if (arg.async == null) {arg.async = true;}
     var xhr, guid, cacheUrl, hashUrl, key, mergedObj, urlObj;
     arg.method = arg.method.toUpperCase();
     xhr = new XMLHttpRequest();
+    xhr.responseType = arg.type;
     xhr.onreadystatechange = function () {
         if (xhr.readyState == 4) {
             callback(xhr);
