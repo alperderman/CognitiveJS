@@ -20,6 +20,7 @@ cog.label = {
     source: "data-src",
     sourceObject: "data-object",
     sourceMethod: "data-method",
+    sourceType: "data-type",
     sourceCache: "data-cache",
     sourceAwait: "await"
 };
@@ -1239,12 +1240,13 @@ cog.removeDuplicatesFromArray = function (arr) {
     return newArr;
 };
 cog.loadContents = function (callback) {
-    var node, src, method, data, dataJSON, cache;
+    var node, src, method, data, dataJSON, type, cache;
     node = document.querySelector("["+cog.label.source+"]:not(["+cog.label.sourceAwait+"]):not(["+cog.label.skip+"])");
     if (node) {
         src = node.getAttribute(cog.label.source);
         method = node.getAttribute(cog.label.sourceMethod);
         data = node.getAttribute(cog.label.sourceObject);
+        type = node.getAttribute(cog.label.sourceType);
         cache = node.getAttribute(cog.label.sourceCache);
         if (cache != null) {
             if (cache != 'false') {
@@ -1271,7 +1273,7 @@ cog.loadContents = function (callback) {
                 if (xhr.status == 200) {
                     node.outerHTML = xhr.responseText;
                 }
-            }, {method:method, data:data, cache:cache});
+            }, {method:method, data:data, type:type, cache:cache});
             cog.loadContents(callback);
         }
     } else {
