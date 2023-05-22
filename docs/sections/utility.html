@@ -29,7 +29,7 @@
 </pre>
 <hr>
 <h3 data-prop="{text:'%sidebar.utility.sub.utility_keywords%'},{attr:{id:'%sidebar.utility.sub.utility_keywords._key%'}}"></h3>
-<p>Keywords are additional modifiers for situation specific features.</p>
+<p>There are total 4 keywords that you can use:</p>
 <ul>
     <li><b>_parent:</b> for getting the parent element.</li>
     <li><b>_key:</b> for getting the key of the value.</li>
@@ -38,6 +38,7 @@
     <li><b>_count:</b> for getting the length of an object, array or a string.</li>
     <li><b>_prevent:</b> prevents live or event bindings from bubbling up.</li>
     <li><b>_auto:</b> for automatically refreshing an element regardless of the value.</li>
+    <li><b>_keep:</b> for keeping the previous property value after rebinding of that specific element (only available for context, attr, class and style props).</li>
 </ul>
 <pre>
     <code class="html">
@@ -70,6 +71,15 @@
 
         &lt;div data-bind="_auto" data-prop="text:'%fruits.apple.color%'">&lt;/div>
         &lt;!--now this element will refresh that property every time a value has been altered-->
+
+        &lt;div data-bind="[propCondition]" data-prop="
+        {style:{backgroundColor:'#0f0'}, _keep:true, if:'%propCondition%'},
+        {style:{backgroundColor:'#f00'}, _keep:true, if:'!%propCondition%'}">
+        &lt;/div>
+        &lt;!--
+        previous values will be kept so that you can target the same property value without risking of removing the property with the conditional rendering,
+        thats because property rebinding is destructive and targeting the same property value with a condition, may remove the whole property altogether
+        -->
     </code>
 </pre>
 <hr>
