@@ -38,7 +38,8 @@ cog.keyword = {
     count: "_count",
     token: "_token",
     prevent: "_prevent",
-    auto: "_auto"
+    auto: "_auto",
+    keep: "_keep"
 };
 cog.regex = {
     head: new RegExp("<head[^>]*>((.|[\\\n\\\r])*)<\\\/head>", "im"),
@@ -497,9 +498,7 @@ cog.bind = function (node, arg) {
                     }
                     if (prop.context != null) {
                         Object.keys(prop.current).forEach(function (key) {
-                            if (prop.current[key] == node[key]) {
-                                node[key] = "";
-                            }
+                            node[key] = "";
                         });
                     }
                     if (prop.attr != null) {
@@ -509,9 +508,7 @@ cog.bind = function (node, arg) {
                     }
                     if (prop.style != null) {
                         Object.keys(prop.current).forEach(function (key) {
-                            if (prop.current[key] == node.style[key]) {
-                                node.style[key] = "";
-                            }
+                            node.style[key] = "";
                         });
                     }
                     delete props[i].current;
@@ -778,12 +775,10 @@ cog.init = function () {
             return prop.context != null ? true : false;
         },
         bind: function (elem, prop, props, propIndex) {
-            var propData, propContext, propCurrent = {};
-            if (prop.current != null) {
+            var propData, propContext, propCurrent = {}, propCurrentMerged = {}, key;
+            if (prop.current != null && (typeof prop[cog.keyword.keep] === 'undefined' || (typeof prop[cog.keyword.keep] !== 'undefined' && !cog.if(prop[cog.keyword.keep])))) {
                 Object.keys(prop.current).forEach(function (key) {
-                    if (prop.current[key] == elem[key]) {
-                        elem[key] = "";
-                    }
+                    elem[key] = "";
                 });
                 delete props[propIndex].current;
                 elem.setAttribute(cog.label.prop, cog.serialize(props));
@@ -807,7 +802,13 @@ cog.init = function () {
                     }
                 });
                 if (propCurrent != null) {
-                    props[propIndex].current = propCurrent;
+                    if (prop.current != null) {
+                        for (key in prop.current) {propCurrentMerged[key] = prop.current[key];}
+                        for (key in propCurrent) {propCurrentMerged[key] = propCurrent[key];}
+                    } else {
+                        propCurrentMerged = propCurrent;
+                    }
+                    props[propIndex].current = propCurrentMerged;
                     elem.setAttribute(cog.label.prop, cog.serialize(props));
                 }
             }
@@ -832,8 +833,8 @@ cog.init = function () {
             return prop.class != null ? true : false;
         },
         bind: function (elem, prop, props, propIndex) {
-            var propData, propCurrent;
-            if (prop.current != null) {
+            var propData, propCurrent, propCurrentMerged;
+            if (prop.current != null && (typeof prop[cog.keyword.keep] === 'undefined' || (typeof prop[cog.keyword.keep] !== 'undefined' && !cog.if(prop[cog.keyword.keep])))) {
                 prop.current.split(" ").forEach(function (str) {
                     if (str != "") {
                         elem.classList.remove(str);
@@ -847,6 +848,7 @@ cog.init = function () {
                     return cog.getRecursiveValue({str:pure});
                 });
                 if (propData != null) {
+                    propData = cog.removeDuplicatesFromArray(propData.split(" ")).join(" ");
                     propData.split(" ").forEach(function (str) {
                         if (str != "") {
                             elem.classList.add(str);
@@ -855,7 +857,13 @@ cog.init = function () {
                     propCurrent = propData;
                 }
                 if (propCurrent != null) {
-                    props[propIndex].current = propCurrent;
+                    if (prop.current != null) {
+                        propCurrentMerged = prop.current+" "+propCurrent;
+                        propCurrentMerged = cog.removeDuplicatesFromArray(propCurrentMerged.split(" ")).join(" ");
+                    } else {
+                        propCurrentMerged = propCurrent;
+                    }
+                    props[propIndex].current = propCurrentMerged;
                     elem.setAttribute(cog.label.prop, cog.serialize(props));
                 }
             }
@@ -867,8 +875,8 @@ cog.init = function () {
             return prop.attr != null ? true : false;
         },
         bind: function (elem, prop, props, propIndex) {
-            var propData, propAttr, propCurrent = {};
-            if (prop.current != null) {
+            var propData, propAttr, propCurrent = {}, propCurrentMerged = {}, key;
+            if (prop.current != null && (typeof prop[cog.keyword.keep] === 'undefined' || (typeof prop[cog.keyword.keep] !== 'undefined' && !cog.if(prop[cog.keyword.keep])))) {
                 Object.keys(prop.current).forEach(function (key) {
                     elem.removeAttribute(key);
                 });
@@ -889,7 +897,13 @@ cog.init = function () {
                     }
                 });
                 if (propCurrent != null) {
-                    props[propIndex].current = propCurrent;
+                    if (prop.current != null) {
+                        for (key in prop.current) {propCurrentMerged[key] = prop.current[key];}
+                        for (key in propCurrent) {propCurrentMerged[key] = propCurrent[key];}
+                    } else {
+                        propCurrentMerged = propCurrent;
+                    }
+                    props[propIndex].current = propCurrentMerged;
                     elem.setAttribute(cog.label.prop, cog.serialize(props));
                 }
             }
@@ -980,12 +994,10 @@ cog.init = function () {
             return prop.style != null ? true : false;
         },
         bind: function (elem, prop, props, propIndex) {
-            var propData, propStyle, propCurrent = {};
-            if (prop.current != null) {
+            var propData, propStyle, propCurrent = {}, propCurrentMerged = {}, key;
+            if (prop.current != null && (typeof prop[cog.keyword.keep] === 'undefined' || (typeof prop[cog.keyword.keep] !== 'undefined' && !cog.if(prop[cog.keyword.keep])))) {
                 Object.keys(prop.current).forEach(function (key) {
-                    if (prop.current[key] == elem.style[key]) {
-                        elem.style[key] = "";
-                    }
+                    elem.style[key] = "";
                 });
                 delete props[propIndex].current;
                 elem.setAttribute(cog.label.prop, cog.serialize(props));
@@ -1004,7 +1016,13 @@ cog.init = function () {
                     }
                 });
                 if (propCurrent != null) {
-                    props[propIndex].current = propCurrent;
+                    if (prop.current != null) {
+                        for (key in prop.current) {propCurrentMerged[key] = prop.current[key];}
+                        for (key in propCurrent) {propCurrentMerged[key] = propCurrent[key];}
+                    } else {
+                        propCurrentMerged = propCurrent;
+                    }
+                    props[propIndex].current = propCurrentMerged;
                     elem.setAttribute(cog.label.prop, cog.serialize(props));
                 }
             }
