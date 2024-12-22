@@ -1,30 +1,7 @@
 # CognitiveJS
 
-CognitiveJS (previously called [DCG](https://github.com/alperderman/dcg)) is a front-end JavaScript framework/library for rendering dynamically declared contents and templates on DOM. Compared to the other frameworks, Cognitive aims to write minimal amount code as possible.
+CognitiveJS is a front-end framework/library, aims to make web development a bit easier by separating the content from the layout using data driven methods. It is stripped down from almost if not all preliminary actions and design patterns, additionally it has no dependencies making it a great choice for those who search for lightweight DOM manipulation tool with only *sprinkles* on top.
 
-Cognitive broadly inspired by [Knockout](https://knockoutjs.com/). As opposed to Knockout however, Cognitive doesn't have a design pattern and it can be used as a pre-processing framework with certain modifications.
+Cognitive loosely inspired by [Knockout](https://knockoutjs.com/) and deprecated version of [AngularJS](https://angularjs.org/).
 
-See more information about in on the [documentation](https://alperderman.github.io/CognitiveJS/docs/).
-
-### Example
-
-```html
-<html>
-<head>
-    <title>CognitiveJS</title>
-</head>
-<body>
-
-    <p data-prop="text:'%hello%'"></p>
-
-    <script src="cog.js"></script>
-    <script>
-        cog.data = {
-            hello:"Hello World"
-        };
-        cog.bindAll();
-    </script>
-
-</body>
-</html>
-```
+See more information about it on [CognitiveJS Documentation](https://alperderman.github.io/CognitiveJS/docs/).

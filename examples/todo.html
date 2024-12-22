@@ -1,107 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CognitiveJS | To-do List Example</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha384-SOnAn/m2fVJCwnbEYgD4xzrPtvsXdElhOVvR8ND1YjB5nhGNwwf7nBQlhfAwHAZC" crossorigin="anonymous">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CognitiveJS | To-do List Example</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+    integrity="sha384-SOnAn/m2fVJCwnbEYgD4xzrPtvsXdElhOVvR8ND1YjB5nhGNwwf7nBQlhfAwHAZC" crossorigin="anonymous">
 </head>
-  <body style="display: none;">
-    <div class="container">
-      <h1 class="mb-5 text-center">CognitiveJS To-do List Example</h1>
-      <!--INPUT-->
-      <div class="row justify-content-center">
-        <div class="col-12 col-md-6 col-xl-4 px-4 mb-3">
-          <div class="input-group">
-            <input data-bind="[todo.input]" data-prop="{context:{value:'%todo.input%'}}, {live:'todo.input', event:'input'}, {event:{keypress:'todoAdd()'}}" class="form-control" type="text">
-            <button data-prop="{event:{click:'todoAdd()'}}" class="btn btn-primary"><i class="fa-solid fa-plus"></i></button>
-          </div>
+
+<body style="display: none;">
+  <div class="container">
+    <h1 class="mb-5 text-center">CognitiveJS To-do List Example</h1>
+    <!--INPUT-->
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-6 col-xl-4 px-4 mb-3">
+        <div class="input-group">
+          <input cog-prop="context:{value:{{todo.input}}}" cog-live="live:'todo.input', event:'input'"
+            cog-event="keypress:'todoAdd()'" class="form-control" type="text">
+          <button cog-event="click:'todoAdd()'" class="btn btn-primary"><i class="fa-solid fa-plus"></i></button>
         </div>
       </div>
-      <!--LIST-->
-      <div data-bind="[todo.list]" data-prop="repeat:'%todo.list% as item', temp:'list'">
-        <div class="row justify-content-center">
-          <div class="col-12 col-md-6 col-xl-4 px-4">
-            <div class="card">
-              <div class="row g-0 align-center">
-                <div class="col-auto">
-                  <button data-prop="
-                  {event:{click:'todoComplete(%item._index%)'}, if:'!(%%item.complete%%)'},
-                  {event:{click:'todoRevert(%item._index%)'}, if:'%%item.complete%%'},
-                  {class:'btn-success', if:'!(%%item.complete%%)'},
-                  {class:'btn-secondary', if:'%%item.complete%%'}" class="btn">
-                    <i class="fs-5 fa-solid fa-check"></i>
-                  </button>
-                </div>
-                <div data-prop="{text:'%%item.text%%'}, {class:'text-decoration-line-through', if:'%%item.complete%%'}" class="col px-3 align-self-center"></div>
-                <div class="col-auto">
-                  <button data-prop="{event:{click:'todoDel(%item._index%)'}}" class="btn btn-danger">
-                    <i class="fs-5 fa-solid fa-trash"></i>
-                  </button>
-                </div>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-6 col-xl-4 px-4">
+        <span>Total of {{todo.list._length}} contents</span>
+      </div>
+    </div>
+    <!--LIST-->
+    <div cog-repeat="list;item;todo.list">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-6 col-xl-4 px-4">
+          <div class="card">
+            <div class="row g-0 align-center">
+              <div class="col-auto">
+                <button
+                  cog-event="if:[!{{item.complete}}, {click:'todoComplete({{item._index}})'}, {click:'todoRevert({{item._index}})'}]"
+                  cog-prop="if:[!{{item.complete}}, {class:'btn-success'}, {class:'btn-secondary'}]" class="btn">
+                  <i class="fs-5 fa-solid fa-check"></i>
+                </button>
+              </div>
+              <div cog-prop="if:[{{item.complete}}, {class:'text-decoration-line-through'}]"
+                class="col px-3 align-self-center">{{item.text}}</div>
+              <div class="col-auto">
+                <button cog-event="click:'todoDel({{item._index}})'" class="btn btn-danger">
+                  <i class="fs-5 fa-solid fa-trash"></i>
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    
-    <script src="../dist/cog.js"></script>
-    <script>
-        // DEFINITIONS
-        cog.data.todo = {
-          list: [{text:'Shop for groceries', complete:false}, {text:'Meet with Jake', complete:true}],
-          input: ''
-        };
+  </div>
 
-        // FUNCTIONS
-        function todoAdd() {
-          if (cog.get('todo.input') != '' && (typeof event.code === 'undefined' || event.code == 'Enter')) {
-            cog.alter(
-              "todo.list",
-              function(val){
-                val.unshift({text:cog.get('todo.input') , complete: false});
-                return val;
-              }
-            );
-            cog.set('todo.input', '');
-          }
-        }
-        function todoDel(index) {
-          cog.alter(
-            "todo.list",
-            function(val){
-              val.splice(index, 1);
-              return val;
-            }
-          );
-        }
-        function todoComplete(index) {
-          cog.alter(
-            "todo.list",
-            function(val){
-              val[index].complete = true;
-              val.push(val[index]);
-              val.splice(index, 1);
-              return val;
-            }
-          );
-        }
-        function todoRevert(index) {
-          cog.alter(
-            "todo.list",
-            function(val){
-              val[index].complete = false;
-              return val;
-            }
-          );
-        }
+  <script src="../dist/cog.js"></script>
+  <script>
+    // DEFINITIONS
+    cog.data.todo = {};
+    cog.data.todo.input = '';
+    cog.data.todo.list = [
+      { text: 'Shop for groceries', complete: false },
+      { text: 'Meet with Jake', complete: true }
+    ];
 
-        // executing cog.bindAll() and removing display none style from body
-        cog.bindAll();
-        document.body.style.display = "";
-    </script>
-  </body>
+    // FUNCTIONS
+    function todoAdd() {
+      if (cog.get('todo.input') != '' && (typeof event.code === 'undefined' || event.code == 'Enter')) {
+        cog.data.todo.list.unshift({ text: cog.get('todo.input'), complete: false });
+        cog.set('todo.input', '');
+      }
+    }
+    function todoDel(index) {
+      cog.data.todo.list.splice(index, 1);
+    }
+    function todoComplete(index) {
+      var selected = cog.data.todo.list[index];
+      selected.complete = true;
+      cog.data.todo.list.push(selected);
+      cog.data.todo.list.splice(index, 1);
+    }
+    function todoRevert(index) {
+      cog.data.todo.list[index].complete = false;
+    }
+
+    // executing cog.render() and removing display none style from body
+    document.addEventListener(cog.event.afterRender, function () {
+      document.body.style.display = "";
+    });
+    cog.render();
+  </script>
+</body>
+
 </html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHAT</title>
+</head>
+
+<body>
+
+    <div cog-repeat="log;item;chat" id="chat">
+        <p>
+            <span cog-prop="style:{color:'#14f'}">{{item.user}}:</span><span>{{item.text}}</span>
+        </p>
+    </div>
+    <input cog-prop="context:{value:{{input}}}" cog-live="live:'input', event:'input'" type="text">
+    <button cog-event="click:'addChat()'">Send</button>
+    <script src="dist/cog.js"></script>
+    <script>
+        cog.data.chat = [
+            { "user": "John", "text": "hello everyone, how are we today?" },
+            { "user": "Jane", "text": "going great so far" },
+            { "user": "Kyle", "text": "been better" },
+            { "user": "Pamela", "text": "I don't feel so good" },
+            { "user": "John", "text": "what happened Pam? what's wrong?" },
+            { "user": "Pamela", "text": "had an accident at the cafeteria today, I spilled my coffee everywhere including the papers that are related to a really important project of mine" },
+            { "user": "Jane", "text": "how unfortunate" },
+            { "user": "Kyle", "text": "thats too bad, so what are you going to do now?" },
+            { "user": "Pamela", "text": "now I have to rewrite everything from scratch, fortunately I'm able to read whats written on the papers despite the coffee stains" },
+            { "user": "John", "text": "atleast you can still read thats great, I'm sorry that this happened to you" },
+            { "user": "Pamela", "text": "its all my fault, I should've been more careful" },
+            { "user": "Jane", "text": "don't blame yourself, some things are just meant to happen" }
+        ];
+        cog.data.username = "[YOU]";
+        cog.data.input = "";
+        addChat = function () {
+            if (cog.get("input") != "") {
+                cog.data.chat.push({ text: cog.get("input"), user: cog.get("username") });
+                cog.set("input", "");
+            }
+        };
+        cog.render();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,31 @@
+<h1 cog-prop="attr:{id:{{section.id}}}">{{section.title}}</h1>
+<p>In CognitiveJS event are not defined with <code>addEventListener()</code> function or any equivalent, instead they are defined with static <code>cog-event</code> attribute and they will stay after render is completed.</p>
+<p>Setting <code>_prevent</code> option to true inside event attribute will prevent the event from bubbling up, so that multiple amount of same event types can be declared inside elements inside one another without triggering the parent element.</p>
+<div class="d-flex justify-content-end">
+    <button class="btn btn-info" code-id="event_exp1" cog-event="click:'openSandbox()'">Open in Sandbox</button>
+</div>
+<pre cog-escape>
+    <code class="html" id="event_exp1">
+        &lt;html>
+        &lt;head>
+            &lt;title>CognitiveJS&lt;/title>
+        &lt;/head>
+        &lt;body>
+
+            &lt;button cog-event="click:'clickButton()', mouseover:'hoverButton()', _prevent:true">Send&lt;/button>
+
+            &lt;script src="../dist/cog.js">&lt;/script>
+            &lt;script>
+                function clickButton() {
+                    console.log("click");
+                }
+                function hoverButton() {
+                    console.log("hover");
+                }
+                cog.render();
+            &lt;/script>
+
+        &lt;/body>
+        &lt;/html>
+    </code>
+</pre>

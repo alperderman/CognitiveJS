@@ -1,0 +1,56 @@
+<h1 cog-prop="attr:{id:{{section.id}}}">{{section.title}}</h1>
+<p>In CognitiveJS, all of the data (excluding templates) is stored under <code>cog.data</code> object. As shown in the example above, data can be declared directly into <code>cog.data</code>, but CognitiveJS can also incorporate DOM itself for data declarations.</p>
+<p>Text, JSON, HTML elements (including templates more info at the templates section), or even raw script (you most likely wouldn't need it but it exists) can be declared using <code>cog-set</code> attribute. At the start of the render, these declarations will be processed and parsed into <code>cog.data</code> object.</p>
+<p>This seemingly unconventional method of declaration, grants us three advantages;</p>
+<ul>
+    <li>It is easier to declare HTML elements directly inside the DOM compared to JSX</li>
+    <li>SEO advantage, crawlers will be able to index the declared data</li>
+    <li>It draws a clear line between contents and JS code</li>
+</ul>
+<p>Since data declared on DOM has to be processed and converted first, <code>beforeRender</code> or <code>afterRender</code> events and <code>cog.get()</code> function can be used in order to access them on script, more information on <a href="#code">Script Side</a> section.</p>
+<div class="d-flex justify-content-end">
+    <button class="btn btn-info" code-id="defdata_exp1" cog-event="click:'openSandbox()'">Open in Sandbox</button>
+</div>
+<pre cog-escape>
+    <code class="html" id="defdata_exp1">
+        &lt;html>
+        &lt;head>
+            &lt;title>CognitiveJS&lt;/title>
+        &lt;/head>
+        &lt;body>
+
+            &lt;!--DECLARATIONS--&gt;
+
+            &lt;div cog-set="text:hello">Hello World&lt;/div>
+            &lt;div cog-set="json:fruits">["apple", "banana", "berry"]&lt;/div>
+            &lt;div cog-set="html:paragraph">
+                &lt;h1>Title&lt;/h1>
+                &lt;p>Lorem ipsum dolor sit amet.&lt;/p>
+            &lt;/div>
+            &lt;div cog-set="raw:bool">true&lt;/div>
+
+            &lt;!--USAGE--&gt;
+
+            &lt;h2>{{hello}}&lt;/h2>
+            &lt;div>{{paragraph}}&lt;/div>
+            &lt;ul cog-repeat="fruitsTemplate;fruit;fruits;">
+                &lt;li>{{fruit}}&lt;/li>
+            &lt;/ul>
+            &lt;p>bool is: {{bool}}&lt;/p>
+
+            &lt;script src="../dist/cog.js">&lt;/script>
+            &lt;script>
+                // ACCESS DECLARED DATA ON SCRIPT
+                document.addEventListener(cog.event.beforeRender, function () {
+                    console.log(cog.get("hello"));
+                });
+                document.addEventListener(cog.event.afterRender, function () {
+                    console.log(cog.get("bool"));
+                });
+                cog.render();
+            &lt;/script>
+
+        &lt;/body>
+        &lt;/html>
+    </code>
+</pre>

@@ -1,0 +1,30 @@
+<h1 cog-prop="attr:{id:{{section.id}}}">{{section.title}}</h1>
+<p>CognitiveJs offers a quick way to fetch external sources such as, JSON, HTML elements or templates with the use of <code>cog-src</code> attribute.</p>
+<p>What it practically does under the hood is, it initiates a XHR request then directly parses the response text in desired places. If you want to programatically call an external request, instead of with attribute, internal <code>cog.xhr()</code> function or any client library of your choose can be used.</p>
+<p>One thing to consider while using external source functionality is that it hinders SEO, because web crawlers cannot execute scripts.</p>
+<p>Browsers cache and store XHR requests to increase performance. There is an option to turn caching off by setting <code>cog.cache</code> value to false, this will turn off caching allowing browsers to refresh external contents every time instead of storing an older version of these contents (which is ideal if you're on development environment but not recommended for production).</p>
+<p>Default response placement type is HTML, so any of the retrieved text will be parsed as HTML. <code>text</code> option can be set true to parsed as pure text just like in the example, it is especially recommended for JSON contents.</p>
+<p><strong>BEWARE:</strong> Tokens are not allowed inside <code>cog-src</code> attribute itself (however tokens inside the external contents are allowed obviously). The reason for that is external sources, fetched before conversion of <code>cog.data</code> and it is higher up on the render priority. Check out more about it on <a href="#code_prio">Render Priority</a> section.</p>
+<pre cog-escape>
+    <code class="html">
+        &lt;html>
+        &lt;head>
+            &lt;title>CognitiveJS&lt;/title>
+        &lt;/head>
+        &lt;body>
+
+            &lt;div cog-src="paragraph.html">&lt;/div>
+
+            &lt;div cog-set="json:fruits" cog-src="url:'fruits.json', text:true, method:'POST', data:{search:'apple'}">&lt;/div>
+        
+            &lt;div cog-set="temp:template_name;template_alias1,template_alias2" cog-src="template.html">&lt;/div>
+
+            &lt;script src="../dist/cog.js">&lt;/script>
+            &lt;script>
+                cog.render();
+            &lt;/script>
+
+        &lt;/body>
+        &lt;/html>
+    </code>
+</pre>

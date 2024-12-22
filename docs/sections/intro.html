@@ -1,53 +1,72 @@
-<h1>Introduction</h1>
-<p>CognitiveJS (previously called DCG) is a front-end JavaScript framework/library for rendering dynamically declared contents and templates on DOM. Compared to the other frameworks, Cognitive aims to write minimal amount code as possible.</p>
-<p>Compared to other frameworks, Cognitive doesn't care about how you write your code. Normally when you use other frameworks, you have to extend or inherit a specific class to work with or there are design patterns that you have to comply. CognitiveJS on the other hand, is agnostic, you have complete freedom of your code. The only thing that concerns CognitiveJS is the data, how its stored, how its modified and how its served.</p>
-<p>Since Cognitive takes care of the data, which is the most problematic part of the DOM, now you can focus on the real logic, algorithm of your code.</p>
-<p>Cognitive loosely inspired by <a href="https://knockoutjs.com/" target="_blank">Knockout</a>. As opposed to Knockout however, Cognitive doesn't have a design pattern and it can be used as a pre-processing framework with certain modifications.</p>
+<h1 cog-prop="attr:{id:{{section.id}}}">{{section.title}}</h1>
+<p>CognitiveJS is a front-end framework/library, aims to make web development easier by separating the content from the layout. It modifies the DOM according to your declarations and these declarations are simple enough to create and manage because they are directly written inside the HTML part of your page. On the script side, CognitiveJS functions are completely seperate from each other like a library, so that it doesn't force you to write your code or algorithm in a specific way and makes you focus on the "real logic" behind your project. So basically, <b>your project is not inside CognitiveJS</b>, instead <b>CognitiveJS is inside your project</b>.</p>
+<p>In addition to that, Cognitive doesn't have dependencies, it is all inside a single JS file and adding it to your code via script tag is all that its needed to get started. You don't have to import anything else.</p>
+<p>One other benefit of using CognitiveJS is, it is stripped down from almost if not all preliminary actions and design patterns such as; extending a highly specific class somewhere in your project, defining a root element (for god knows why), trying to strictly seperate "models", "views" and "controllers" in an environment where its somewhat has to be conjoined together to make it work, or the other way around where they are so mixed together that it is a complete mess to work on with (JSX).</p>
+<p>I despise those practices, thats why I've come to a decision to make my own framework from scratch with my own set of rules. Of course it wasn't an easy job, I had to rewrite the code base 3 times in span of 3 years to make it all work the way that I want.</p>
+<p>Cognitive is loosely inspired by <a href="https://knockoutjs.com/" target="_blank">Knockout</a> and deprecated version of <a href="https://angularjs.org/" target="_blank">AngularJS</a>. They were the closest ones among other frameworks that includes almost everything I've wanted but still it was not enough to sway me away from making my own framework.</p>
+<p>Let's get back to the first statement "seperating the content from the layout", and let me explain how it is different than model, view, controller design patterns or static site generators.</p>
+<p>CognitiveJS started its life as a solution to tackle one single problem, which is how you have to rewrite the same HTML code or sometimes same pages for different contents such as blog posts where their layout is exactly the same, the only thing that changes is the content inside them. Of course there are already established solutions for this (WordPress, Jekyll etc..) but they are all either service based or on the server-side. CognitiveJS on the other hand is completely works on front-end, everything is done on client-side including rendering.</p>
+<p>With that in mind, the terms what I call "content" and "layout" is also different than design patterns. Design patterns, in definition, are too strict for web development and I do genuinely believe that they are just not viable to use it in a meaningful way without crossing set boundaries. Content and layout, on the other hand are made-up arbitary terms to <i>loosely</i> define what is considered raw data and what is considered part of the design of your project in CognitiveJS. What Cognitive does behind the scene is, it only stitches two documents together, fetches the external components and renders them to reduce the repetition of code (solution for problem zero mentioned above). It is completely up to you to decide which part is content and which part is layout.</p>
+<p>And of course, if you don't want to seperate the layout, templates and components, you can also bundle them together in a single file just like in the examples. As previously said, CognitiveJS is flexible in terms of how you write your code, it tries not to restrict you in any way while also keeping the default structure unobstructed with common practices to mitigate ambiguity.</p>
 <hr>
-<h3 data-prop="{text:'%sidebar.intro.sub.intro_download%'},{attr:{id:'%sidebar.intro.sub.intro_download._key%'}}"></h3>
+<h3 cog-prop="attr:{id:{{section.sub.0.id}}}">{{section.sub.0.title}}</h3>
 <a class="btn btn-primary mb-2" target="_blank" href="https://github.com/alperderman/CognitiveJS"><i class="fas fa-external-link-alt mr-1"></i> Download from GitHub</a>
 <hr>
-<h3 data-prop="{text:'%sidebar.intro.sub.intro_usage%'},{attr:{id:'%sidebar.intro.sub.intro_usage._key%'}}"></h3>
-<p>After downloading the CognitiveJS from GitHub, There are two main ways of using it in your project:</p>
-<p>First way is the traditional way, which is calling a function that initiates the CognitiveJS directly on the current document.</p>
-<pre>
-    <code class="html">
+<h3 cog-prop="attr:{id:{{section.sub.1.id}}}">{{section.sub.1.title}}</h3>
+<p>Before we get in to the rest of the documentation I'd like first clarify the terms used inside the documentation;</p>
+<p><b>Tokens:</b> They are variables encapsulated with curly brackets and seperated with dots (even if the data is an array it is seperated with dots), sometimes they are also called keys in the documentation e.g. <code>{{foo.bar}}</code>, <code>{{employees.0.name}}</code>.</p>
+<p><b>Observables:</b> This term is taken directly from <a href="https://knockoutjs.com/" target="_blank">Knockout</a>. It represents the custom objects used to <i>observe</i> changes inside <code>cog.data</code>. More information at <a href="#code_ob">Observables</a> section.</p>
+<p>After downloading CognitiveJS from GitHub, There are two ways of using it:</p>
+<p>First way is the <strong>Internal Render</strong>, which is basically executing the render process directly on the current document.</p>
+<div class="d-flex justify-content-end">
+    <button class="btn btn-info" code-id="intro_exp1" cog-event="click:'openSandbox()'">Open in Sandbox</button>
+</div>
+<pre cog-escape>
+    <code class="html" id="intro_exp1">
         &lt;html>
         &lt;head>
             &lt;title>CognitiveJS&lt;/title>
         &lt;/head>
         &lt;body>
 
-            &lt;p data-prop="text:'%hello%'">&lt;/p>
+            &lt;div cog-set="html:paragraph">
+                &lt;h1>Title&lt;/h1>
+                &lt;p>Lorem ipsum dolor sit amet.&lt;/p>
+            &lt;/div>
 
-            &lt;script src="cog.js">&lt;/script>
+            &lt;h2>{{hello}}&lt;/h2>
+            {{paragraph}}
+
+            &lt;script src="../dist/cog.js">&lt;/script>
             &lt;script>
-                cog.data = {
-                    hello:"Hello World"
-                };
-                cog.bindAll();
+                cog.data.hello = "Hello World!";
+                cog.render();
             &lt;/script>
 
         &lt;/body>
         &lt;/html>
     </code>
 </pre>
-<p>Second way is the pre-processing way that renders a document with the specified path. This is the intended way of using Cognitive and it has couple of benefits such as managing contents and layouts seperately with ease. Explained thoroughly on the <strong data-bind="sidebar.preprocess.title" data-prop="text:'%\sidebar.preprocess.title%'"></strong> section.</p>
-
+<p>Second way is the <strong>External Render</strong> way, which renders another page. This is the intended way of using Cognitive and it makes it easier to manage contents and layouts seperately. External render, essenitally just stitches two pages together including their styles and scripts. Other than that, rendering process is exactly the same as the internal render.</p>
 <div class="row">
     <div class="col-sm-12 col-md-6">
-        <pre>
+        <h3>Main Document</h3>
+        <pre cog-escape>
             <code class="html">
                 &lt;html>
                 &lt;head>
                     &lt;title>Main&lt;/title>
                 &lt;/head>
                 &lt;body>
-    
-                    &lt;div data-set="text:hello">Hello World&lt;/div>
-    
-                    &lt;script src="cog.js">&lt;/script>
+
+                    &lt;div cog-set="html:paragraph">
+                        &lt;h1>Title&lt;/h1>
+                        &lt;p>Lorem ipsum dolor sit amet.&lt;/p>
+                    &lt;/div>
+
+                    &lt;script src="../dist/cog.js">&lt;/script>
                     &lt;script>
+                        cog.data.hello = "Hello World!";
                         cog.render("path/to/layout.html");
                     &lt;/script>
     
@@ -57,7 +76,8 @@
         </pre>
     </div>
     <div class="col-sm-12 col-md-6">
-        <pre>
+        <h3>Layout Document</h3>
+        <pre cog-escape>
             <code class="html">
                 &lt;html>
                 &lt;head>
@@ -66,8 +86,9 @@
                 &lt;/head>
                 &lt;body>
     
-                    &lt;p data-prop="text:'%hello%'">&lt;/p>
-    
+                    &lt;h2>{{hello}}&lt;/h2>
+                    {{paragraph}}
+
                     &lt;script src="your_scripts.js">&lt;/script>
 
                 &lt;/body>

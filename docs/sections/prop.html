@@ -1,234 +1,36 @@
-<h1>Properties</h1>
-<p>Properties allows us to dynamically modify the DOM elements as we please.</p>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_data-prop%'},{attr:{id:'%sidebar.prop.sub.prop_data-prop._key%'}}"></h3>
-<p><code>data-prop</code> is the HTML attribute for defining properties that will modify the elements with the declared values. Properties are defined as pure JavaScript objects inside the attribute and values from the <code>cog.data</code>, can be used but they have to be encapsulated with percentage sign (%) in order to differ them from normal text.</p>
-<pre>
-    <code class="html">
-        &lt;p data-prop="text:'%customers[0][\'title\']%'">&lt;/p>
-        &lt;!--OR-->
-        &lt;p data-prop="text:'%customers[0][title]%'">&lt;/p>
-        &lt;!--OR-->
-        &lt;p data-prop="text:'%customers.0.title%'">&lt;/p>
-        &lt;!--OR EVEN THIS-->
-        &lt;p data-prop="text:'%[customers].0[\'title\']%'">&lt;/p>
-        
-        &lt;!--MULTIPLE PROPERTIES-->
-        &lt;p data-prop="{text:'%customers.0.title%'}, {class:'active'}">&lt;/p>
-    </code>
-</pre>
-<p>Just like on the example above, you are free to use whichever declaration you want to use, CognitiveJS will recognize it.</p>
-<hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_text%'},{attr:{id:'%sidebar.prop.sub.prop_text._key%'}}"></h3>
-<p>Text property is self explanatory, it modifies innerText of the element.</p>
-<pre>
-    <code class="html">
-        &lt;h1 data-prop="text:'Hello, welcome back %customer.name%!'">&lt;/h1>
-    </code>
-</pre>
-<hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_html%'},{attr:{id:'%sidebar.prop.sub.prop_html._key%'}}"></h3>
-<p>HTML property modifies the innerHTML of the element.</p>
-<pre>
-    <code class="html">
-        &lt;div data-prop="html:'%paragraph.content%'">&lt;/div>
-    </code>
-</pre>
-<hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_class%'},{attr:{id:'%sidebar.prop.sub.prop_class._key%'}}"></h3>
-<p>Modifies the classes of the element.</p>
-<pre>
-    <code class="html">
-        &lt;div data-prop="class:'active %fruit.apple.color% card'">&lt;/div>
-    </code>
-</pre>
-<hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_attr%'},{attr:{id:'%sidebar.prop.sub.prop_attr._key%'}}"></h3>
-<p>Sets an attribute to the element.</p>
-<pre>
-    <code class="html">
-        &lt;a data-prop="{attr:{id:'%section.4.id%', href:'%section.4.href%'}}">&lt;/a>
-    </code>
-</pre>
-<hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_style%'},{attr:{id:'%sidebar.prop.sub.prop_style._key%'}}"></h3>
-<p>Sets the style of the element, this definition uses the native <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style" target="_blank">JavaScript style object</a>.</p>
-<pre>
-    <code class="html">
-        &lt;div data-prop="{style:{backgroundImage:'url(%img.url%)', color:'#a5a5a5'}}">&lt;/div>
-    </code>
-</pre>
-<hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_context%'},{attr:{id:'%sidebar.prop.sub.prop_context._key%'}}"></h3>
-<p>Context property, directly sets the native JavaScript property of the DOM element. For example the value property of an input.</p>
-<pre>
-    <code class="html">
-        &lt;input type="text" data-prop="{context:{value:'%input%'}}">
-    </code>
-</pre>
-<hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_event%'},{attr:{id:'%sidebar.prop.sub.prop_event._key%'}}"></h3>
-<p>Defines an event to the element.</p>
-<pre>
-    <code class="html">
-        &lt;div data-prop="{event:{click:'%clickFunc%'}}">&lt;/div>
-        &lt;script>
-            cog.set("clickFunc", function () {
-                console.log("event triggered!");
-            });
-        &lt;/script>
-    </code>
-</pre>
-<hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_live%'},{attr:{id:'%sidebar.prop.sub.prop_live._key%'}}"></h3>
-<p>Live property makes two-way binding possible within Cognitive.</p>
-<pre>
-    <code class="html">
-        &lt;input type="text" data-prop="{live:'name'}">
-        &lt;span data-bind="[name]" data-prop="text:'Welcome back %name%!'">&lt;/span>
-    </code>
-</pre>
-<p>Default event of live bindings is <code>change</code>. Set an event property to change the event.</p>
-<pre>
-    <code class="html">
-        &lt;input type="text" data-prop="{live:'name', event:'input'}">
-        &lt;span data-bind="[name]" data-prop="text:'Welcome back %name%!'">&lt;/span>
-    </code>
-</pre>
-<p>Default data to be kept track of is <code>event.target.value</code>. Set a data property to change the data.</p>
-<pre>
-    <code class="html">
-        &lt;input type="checkbox" data-prop="{live:'checkbox', data:'event.target.checked'}">
-        &lt;span data-bind="[name]" data-prop="text:'Welcome back %name%!'">&lt;/span>
-    </code>
-</pre>
-<hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_if%'},{attr:{id:'%sidebar.prop.sub.prop_if._key%'}}"></h3>
-<p>Condition property has two use cases, first one is standalone definition for rendering the element based on condition, second use case is for applying conditions to other properties.</p>
-<pre>
-    <code class="html">
-        &lt;!--standalone property for hiding elements that doesn't meet the condition-->
-        &lt;div data-prop="{if:'%card.active% == true'}">&lt;/div>
+<h1 cog-prop="attr:{id:{{section.id}}}">{{section.title}}</h1>
+<p>Properties allows us to dynamically modify the elements as we please. Styles, classes, attributes and node properties (called context for the sake of differentiation) can be declared using <code>cog-prop</code> attribute on elements.</p>
+<p>Multiple <code>cog-prop</code> attributes can be defined in a single element, for example <code>cog-prop1</code>, <code>cog-prop2</code>, <code>cog-propXY</code>. As long as the name of the attribute starts with "cog-prop", it will be treated as a property attribute.</p>
+<div class="d-flex justify-content-end">
+    <button class="btn btn-info" code-id="prop_exp1" cog-event="click:'openSandbox()'">Open in Sandbox</button>
+</div>
+<pre cog-escape>
+    <code class="html" id="prop_exp1">
+        &lt;html>
+        &lt;head>
+            &lt;title>CognitiveJS&lt;/title>
+        &lt;/head>
+        &lt;body>
 
-        &lt;!--or with another property-->
-        &lt;div data-prop="{style:{backgroundImage:'url(%img.url%)'}, if:'%img.url% != null'}">&lt;/div>
-    </code>
-</pre>
-<p class="alert alert-info">If you use conditions with the attribute or class properties, when a refresh triggered on that element, previous classes or attributes will be deleted and rebound with the new values.</p>
-<hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_temp%'},{attr:{id:'%sidebar.prop.sub.prop_temp._key%'}}"></h3>
-<p>Templating is one of the most crucial features, and fortunately in CognitiveJS its very easy to use and manage.</p>
-<p>In order to use templates, first you need to load them to the <code>cog.templates</code> object with the key you desire, <code>cog.template()</code> function can handle this process.</p>
-<p>After you load them, using them is a breeze. Just assign the corresponding property. To pass an object or a value, you have to use an alias inside the template to avoid intersecting values, and since its just an alias we have to double encapsulate.</p>
-<pre>
-    <code class="html">
-        &lt;!--template definition made with data-set attribute (you can also create your templates with JavaScript instead of getting them from the DOM, this is just one of the ways of doing it)-->
-        &lt;div data-set="temp:cardData">
-            &lt;h3 data-prop="text:'%%aliasData.title%%'">&lt;/h3>
-            &lt;div data-prop="text:'%%aliasData.desc%%'">&lt;/div>
-        &lt;/div>
+            &lt;h1 cog-prop="style:{color:'#f00'}">TITLE&lt;/h1>
 
-        &lt;!--template property-->
-        &lt;div data-prop="{temp:'card', data:'%cardData% as aliasData'}">&lt;/div>
+            &lt;p 
+            cog-prop1="style:{backgroundColor:{{bgcolor}}, color:'#fff'}, class:'class1 '+{{class}}" 
+            cog-prop2="class:'class3'">Lorem ipsum dolor sit amet.&lt;/p>
 
-        &lt;script>
-            cog.data.cardData = {title:'This is title', desc:'This is description'};
-            cog.bindAll();
-        &lt;/script>
-    </code>
-</pre>
-<p>Templates can also be loaded and rendered directly with the <code>cog.template()</code> function.</p>
-<pre>
-    <code class="js">
-        //first load the template
-        cog.template({id:'card', elem:document.getElementById('templateCard')});
-        //then render it with the dataset
-        var templateElement = cog.template({id:'card', data:'%cardData% as aliasData'});
-    </code>
-</pre>
-<p>Additionally, if you want to get just the elements inside the template instead of encapsulated by a parent element, you can set the <code>fragment</code> argument to <code>true</code>. This will return the fragmented version of the elements.</p>
-<pre>
-    <code class="js">
-        var templateElement = cog.template({id:'card', data:'%cardData% as aliasData', fragment:true});
-        document.body.appendChild(templateElement);
-    </code>
-</pre>
-<hr>
-<h3 data-prop="{text:'%sidebar.prop.sub.prop_repeat%'},{attr:{id:'%sidebar.prop.sub.prop_repeat._key%'}}"></h3>
-<p>Repeaters, iterate through an array or an object and parse them into specified template. if there is no corresponding template in the <code>cog.templates</code> object. Then it creates a new template with the specified name and the children elements.</p>
-<p>Repeaters are a bit complex especially when you have multi-dimensional repeaters but once you understand the templates and alias structure, they are a piece of cake.</p>
-<p>Here is a simple example,</p>
-<pre>
-    <code class="html">
-        &lt;table data-bind="[people]" data-prop="repeat:'%people% as person', temp:'row'">
-            &lt;tr>
-                &lt;td data-prop="text:'%%person%.name%'">&lt;/td>
-                &lt;td data-prop="text:'%%person%.surname%'">&lt;/td>
-            &lt;/tr>
-        &lt;/table>
-        
-        &lt;script>
-            cog.data.people = {
-                {name:'Jane', surname:'Doe'},
-                {name:'John', surname:'Doe'}
-            }
-            cog.bindAll();
-        &lt;/script>
-    </code>
-</pre>
-<p>Working with huge datasets in CognitiveJS has its consequences, mainly about performance. When a repeater element with bind is rebound, since Cognitive cannot actually track, locate and update the modified items once its repeated (since Cognitive uses DOM directly as a refrence point), it deletes everything inside the repeater and reconstructs it as a whole. This causes a slight delay for each couple hundered items repeated.</p>
-<p>If you are having performance problems with repeaters, you have two options that you can apply; either you have to bind the each item of the template (instead of binding only the element with the repeat prop) and manually adding elements by creating templates after it has done its first repeating cycle or you have to use the pagination system.</p>
-<p>With the first option you can add as many items you want with remotely no delays, but removing items is possible yet a bit problematic with this option. This method mainly used in projects with constant data flow such as a real-time statistics on a dashboard or a chat room (which there is an example you can check it out on the <a class="font-weight-bold" data-prop="{text:'%sidebar.examples.title%'},{attr:{href:'#%sidebar.examples._key%'}}"></a> section).</p>
-<p>Here is an example that demonstrates the manual way of adding templates to the repeaters:</p>
-<pre>
-    <code class="html">
-        &lt;table id="table" data-prop="repeat:'%people% as person', temp:'row'">
-            &lt;tr> &lt;!--binding elements inside the repeater-->
-                &lt;td data-bind="[%%person%%]" data-prop="text:'%%person%.name%'">&lt;/td>
-                &lt;td data-bind="[%%person%%]" data-prop="text:'%%person%.surname%'">&lt;/td>
-            &lt;/tr>
-        &lt;/table>
-        
-        &lt;script>
-            cog.data.people = {
-                {name:'Jane', surname:'Doe'},
-                {name:'John', surname:'Doe'}
-            }
-            cog.bindAll();
+            &lt;a cog-prop="attr:{href:'http://google.com'}">Link&lt;/a>
 
-            function addPerson (name, surname) { // this will add a new person to the dataset and the table
-                var newPerson = {name:name, surname:surname};
-                cog.alter("people", function (data) {
-                    data.push(newPerson);
-                    return data;
-                });
-                var newPersonIndex = cog.get("people._count")-1;
-                var rowTemplate = cog.template({id:'row', data:'%people.'+newPersonIndex+'% as person', fragment:true});
-                document.getElementById("table").appendChild(template);
-            }
-        &lt;/script>
+            &lt;input cog-prop="context:{value:'input value'}" type="text">
+
+            &lt;script src="../dist/cog.js">&lt;/script>
+            &lt;script>
+                cog.data.bgcolor = "#00f";
+                cog.data.class = "class2";
+                cog.render();
+            &lt;/script>
+
+        &lt;/body>
+        &lt;/html>
     </code>
 </pre>
-<p>If you are going with the pagination system, there are 4 additional parameters added onto the repeat prop: <code>limit</code>, <code>offset</code>, <code>page</code> and lastly <code>order</code>.</p>
-<ul>
-    <li><code>limit</code> parameter, sets a limit for the iterated data.</li>
-    <li><code>offset</code> parameter, specifies the number of datas to be skipped (if it is below zero it will skip from the end of the object).</li>
-    <li><code>page</code> parameter, specifies the page (a shorthand for offset)</li>
-    <li><code>order</code> parameter, specifies the sorting order, default is ascending, set it to <code>desc</code> for descending order</li>
-</ul>
-<p>If you are familiar with <b>SQL</b> you can expect the same outcome from <code>limit</code> and <code>offset</code> parameters. In order to paginate a set of data, you have to combine <code>limit</code> parameter with either <code>offset</code> or <code>page</code> parameter.</p>
-<pre>
-    <code class="html">
-        &lt;table data-prop="repeat:'%people% as person', temp:'row', limit:25, order:'desc', page:1">
-            &lt;tr>
-                &lt;td data-prop="text:'%%person%.name%'">&lt;/td>
-                &lt;td data-prop="text:'%%person%.surname%'">&lt;/td>
-            &lt;/tr>
-        &lt;/table>
 
-        &lt;!--or with offset-->
-
-        &lt;table data-prop="repeat:'%people% as person', temp:'row', limit:25, order:'desc', offset:0">
-            &lt;tr>&lt;td data-prop="text:'%%person%.name%'">&lt;/td>&lt;td data-prop="text:'%%person%.surname%'">&lt;/td>&lt;/tr>
-        &lt;/table>
-    </code>
-</pre>

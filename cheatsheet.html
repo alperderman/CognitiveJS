@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHEATSHEET</title>
+</head>
+<body>
+    <h1>Basic Definition</h1>
+    <pre cog-escape>
+        <code>
+            &lt;body>
+
+                &lt;p>{{hello}}&lt;/p>
+
+                &lt;script src="cog.js">&lt;/script>
+                &lt;script>
+                    cog.data = {
+                        hello:"Hello World"
+                    };
+                    cog.render();
+                &lt;/script>
+
+            &lt;/body>
+        </code>
+    </pre>
+    <hr/>
+
+    <h1>Set Definitions</h1>
+    <pre cog-escape>
+        <code>
+            &lt;body>
+
+                &lt;div cog-set="text:hello">Hello World&lt;/div>
+
+                &lt;div cog-set="json:fruits">["apple", "banana", "berry"]&lt;/div>
+
+                &lt;div cog-set="raw:bool">true&lt;/div>
+
+                &lt;div cog-set="html:paragraph">
+                    &lt;h1>Title&lt;/h1>
+                    &lt;p>Lorem ipsum dolor sit amet.&lt;/p>
+                &lt;/div>
+
+                &lt;script src="cog.js">&lt;/script>
+                &lt;script>
+                    cog.render();
+                &lt;/script>
+
+            &lt;/body>
+        </code>
+    </pre>
+    <hr/>
+
+    <h1>Pre-Processing Definition</h1>
+    <h2 style="text-decoration: underline;">index.html</h2>
+    <pre cog-escape>
+        <code>
+            &lt;html>
+            &lt;head>
+
+                &lt;title>index.html&lt;/title>
+
+            &lt;/head>
+            &lt;body>
+
+                &lt;div cog-set="text:hello">Hello World&lt;/div>
+
+                &lt;script src="cog.js">&lt;/script>
+                &lt;script>
+                    cog.render("layout.html");
+                &lt;/script>
+
+            &lt;/body>
+            &lt;/html>
+        </code>
+    </pre>
+    <br/>
+    <h2 style="text-decoration: underline;">layout.html</h2>
+    <pre cog-escape>
+        <code>
+            &lt;html>
+            &lt;head>
+
+                &lt;title>layout.html&lt;/title>
+                &lt;link rel="stylesheet" type="text/css" href="your_styles.css" />
+
+            &lt;/head>
+            &lt;body>
+
+                &lt;p>{{hello}}&lt;/p>
+
+                &lt;script src="your_scripts.js">&lt;/script>
+
+            &lt;/body>
+            &lt;/html>
+        </code>
+    </pre>
+    <hr/>
+
+    <h1>Property Definitions</h1>
+    <pre cog-escape>
+        <code>
+            &lt;body>
+
+                &lt;p cog-prop1="style:{backgroundColor:'#ff0', color:'#fff'}, class:'class1 class2'" cog-prop2="class:'class3'">Lorem ipsum dolor sit amet.&lt;/p>
+                
+                &lt;a cog-prop="attr:{href:'http://google.com'}">Link&lt;/a>
+                
+                &lt;input cog-prop="context:{value:'input value'}" type="text">
+
+                &lt;script src="cog.js">&lt;/script>
+                &lt;script>
+                    cog.render();
+                &lt;/script>
+
+            &lt;/body>
+        </code>
+    </pre>
+    <hr/>
+
+    <h1>External Source Definition</h1>
+    <pre cog-escape>
+        <code>
+            &lt;body>
+
+                &lt;div cog-src="paragraph.html">&lt;/div>
+
+                &lt;div cog-set="json:fruits">
+                    &lt;div cog-src="url:'fruits.json', text:true, method:'POST', data:{search:'apple'}">&lt;/div>
+                &lt;/div>
+
+                &lt;div cog-set="temp:template_name;template_alias1, template_alias2">
+                    &lt;div cog-src="template.html">&lt;/div>
+                &lt;/div>
+                
+                &lt;script src="cog.js">&lt;/script>
+                &lt;script>
+                    cog.render();
+                &lt;/script>
+
+            &lt;/body>
+        </code>
+    </pre>
+    <hr/>
+
+    <h1>Event Definition</h1>
+    <pre cog-escape>
+        <code>
+            &lt;body>
+                
+                &lt;button cog-event="click:'clickButton()', mouseover:'hoverButton()', _prevent:true">Send&lt;/button>
+
+                &lt;script src="cog.js">&lt;/script>
+                &lt;script>
+                    function clickButton() {
+                        console.log("click");
+                    }
+                    function hoverButton() {
+                        console.log("hover");
+                    }
+                    cog.render();
+                &lt;/script>
+
+            &lt;/body>
+        </code>
+    </pre>
+    <hr/>
+
+    <h1>Live Definition</h1>
+    <pre cog-escape>
+        <code>
+            &lt;body>
+                
+                &lt;input cog-prop="context:{value:{{form.username}}}" cog-live="live:'form.username', event:'input'" type="text">
+
+                &lt;input cog-live="live:'form.gender'" type="radio" name="gender" value="male">
+                &lt;input cog-live="live:'form.gender'" type="radio" name="gender" value="female">
+
+                &lt;input cog-live="live:'form.favFood.food_pizza', data:'checked'" type="checkbox" name="food_pizza" value="Pizza">
+                &lt;input cog-live="live:'form.favFood.food_burger', data:'checked'" type="checkbox" name="food_burger" value="Burger">
+                &lt;input cog-live="live:'form.favFood.food_beans', data:'checked'" type="checkbox" name="food_beans" value="Beans">
+
+                &lt;select cog-live="live:'form.fruit'" name="fruit">
+                    &lt;option selected disabled>Choose&lt;/option>
+                    &lt;option value="apple">Apple&lt;/option>
+                    &lt;option value="banana">Banana&lt;/option>
+                    &lt;option value="berry">Berry&lt;/option>
+                    &lt;option value="Pear">Pear&lt;/option>
+                &lt;/select>
+
+                &lt;script src="cog.js">&lt;/script>
+                &lt;script>
+                    cog.data.form = {
+                        username: "",
+                        gender: "",
+                        favFood: {food_pizza: false, food_burger: false, food_beans: false},
+                        fruit: ""
+                    };
+                    cog.render();
+                &lt;/script>
+
+            &lt;/body>
+        </code>
+    </pre>
+    <hr/>
+
+    <h1>Conditional Definitions</h1>
+    <pre cog-escape>
+        <code>
+            &lt;body>
+
+                &lt;h1 cog-prop="if:[{{bool1}}, {style:{color:'red'}}, {if:[{{bool2}}, {style:{color:'blue'}}, {style:{color:'green'}}]}]">Title!&lt;/h1>
+
+                &lt;button cog-event="if:[{{bool2}}, {click:'clickButton()', mouseover:'hoverButton()', _prevent:true}]">Send&lt;/button>
+
+                &lt;input cog-live="if:[{{bool1}}, {live:'username', event:'input'}]" cog-prop="context:{value:{{username}}}" type="text">
+
+                &lt;p cog-if="{{bool1}}">Lorem ipsum&lt;/p>
+                &lt;p cog-if="{{bool2}}">Dolor sit amet&lt;/p>
+
+                &lt;script src="cog.js">&lt;/script>
+                &lt;script>
+                    cog.data.bool1 = false;
+                    cog.data.bool2 = true;
+
+                    function clickButton() {
+                        console.log("click");
+                    }
+                    function hoverButton() {
+                        console.log("hover");
+                    }
+                    cog.data.username =  "";
+                    cog.render();
+                &lt;/script>
+
+            &lt;/body>
+        </code>
+    </pre>
+    <hr/>
+
+
+    <h1>Template Definition</h1>
+    <pre cog-escape>
+        <code>
+            &lt;body>
+
+                &lt;div cog-set="temp:template_name;template_alias1, template_alias2">
+                    &lt;h1>{{template_alias1.title}}&lt;/h1>
+                    &lt;p>{{template_alias1.content}}&lt;/p>
+                    &lt;hr>
+                    &lt;a href="{{template_alias2.href}}">{{template_alias2.text}}&lt;/a>
+                &lt;/div>
+
+                &lt;div cog-temp="template_name;template_alias1, template_alias2;foo, bar">&lt;/div>
+
+                &lt;script src="cog.js">&lt;/script>
+                &lt;script>
+                    cog.data.foo = {title:"Title", content:"Lorem ipsum dolor sit amet."};
+                    cog.data.bar = {text:"http://google.com", href:"Link"};
+                    cog.render();
+                &lt;/script>
+
+            &lt;/body>
+        </code>
+    </pre>
+    <hr/>
+
+    <h1>Repeat Definition</h1>
+    <pre cog-escape>
+        <code>
+            &lt;body>
+                
+                &lt;ul>
+                    &lt;div cog-repeat="list_template;item;fruits">
+                        &lt;li>{{item._index}} - {{item}}&lt;/li>
+                    &lt;/div>
+                &lt;/ul>
+
+                &lt;script src="cog.js">&lt;/script>
+                &lt;script>
+                    cog.data.fruits = ["apple", "banana", "berry"];
+                    cog.render();
+                &lt;/script>
+
+            &lt;/body>
+        </code>
+    </pre>
+    <hr/>
+
+    <h1>Methods & Functions</h1>
+    <h2 style="text-decoration: underline;">cog.get()</h2>
+    <pre cog-escape>
+        <code>
+            &lt;script>
+
+                cog.data.greet = "Welcome";
+                cog.data.name = "Alex";
+                cog.data.fruits = ["apple", "banana", "berry"];
+
+                cog.render();
+
+                console.log(cog.get("greet") + " " + cog.get("name"));
+                console.log(cog.get("fruits.0"));
+                console.log(cog.get("fruits", "1"));
+                console.log(cog.get(["fruits", "2"]));
+
+            &lt;/script>
+        </code>
+    </pre>
+    <br/>
+    <h2 style="text-decoration: underline;">Token Keywords</h2>
+    <pre cog-escape>
+        <code>
+            &lt;script>
+
+                cog.data.fruits = ["apple", "banana", "berry"];
+                
+                cog.render();
+
+                console.log(cog.get("fruits._get"));
+                console.log(cog.get("fruits._type"));
+                console.log(cog.get("fruits._key"));
+                console.log(cog.get("fruits.0._keys"));
+                console.log(cog.get("fruits.0._parent"));
+
+            &lt;/script>
+        </code>
+    </pre>
+    <br/>
+    <h2 style="text-decoration: underline;">cog.set()</h2>
+    <pre cog-escape>
+        <code>
+            &lt;script>
+
+                cog.data.greet = "Welcome";
+                cog.data.name = "Alex";
+
+                cog.render();
+
+                cog.set("greet", "Howdy");
+
+            &lt;/script>
+        </code>
+    </pre>
+    <br/>
+    <h2 style="text-decoration: underline;">cog.addBound()</h2>
+    <pre cog-escape>
+        <code>
+            &lt;script>
+
+                cog.data.number1 = 56;
+                cog.data.number2 = 34;
+
+                cog.data.numbersMultiplied = function (parent, target) {
+                    var n1 = parent.concat(["number1"]);
+                    var n2 = parent.concat(["number2"]);
+
+                    cog.addBound(n1, target);
+                    cog.addBound(n2, target);
+
+                    return cog.get(n1) * cog.get(n2);
+                };
+
+                cog.data.numbersSubstracted = function () {
+                    return cog.get("number1") - cog.get("number2");
+                };
+                cog.addBound("number1", "numbersSubstracted");
+                cog.addBound("number2", "numbersSubstracted");
+
+                cog.render();
+
+            &lt;/script>
+        </code>
+    </pre>
+    <br/>
+    <h2 style="text-decoration: underline;">cog.removeBound()</h2>
+    <pre cog-escape>
+        <code>
+            &lt;script>
+            
+                cog.data.number1 = 56;
+                cog.data.number2 = 34;
+                cog.data.numbersSubstracted = function () {
+                    return cog.get("number1") - cog.get("number2");
+                };
+                cog.addBound("number1", "numbersSubstracted");
+                cog.addBound("number2", "numbersSubstracted");
+
+                cog.render();
+
+                cog.removeBound("number1", "numbersSubstracted");
+
+            &lt;/script>
+        </code>
+    </pre>
+    <br/>
+    <h2 style="text-decoration: underline;">Preset Events</h2>
+    <pre cog-escape>
+        <code>
+            &lt;script>
+
+                document.addEventListener(cog.event.beforeRender, function () {
+                    console.log(document.body.innerHTML);
+                });
+        
+                document.addEventListener(cog.event.afterRender, function () {
+                    console.log(document.body.innerHTML);
+                });
+
+            &lt;/script>
+        </code>
+    </pre>
+    <hr/>
+
+    <script src="dist/cog.js"></script>
+    <script>
+        function trimPreCode() {
+            var i, elems = document.querySelectorAll("pre code"), elem, html, pattern;
+            for (i = 0;i < elems.length;i++) {
+                elem = elems[i];
+                html = elem.innerHTML;
+                pattern = html.match(/\s*\n[\t\s]*/);
+                elem.innerHTML = html.replace(new RegExp(pattern, "g"),'\n').trim();
+                elem.parentNode.innerHTML = elem.parentNode.innerHTML.trim();
+            }
+        }
+        document.addEventListener(cog.event.afterRender, trimPreCode);
+        cog.render();
+    </script>
+</body>
+</html>

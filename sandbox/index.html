@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CognitiveJS | Sandbox</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+    integrity="sha384-SOnAn/m2fVJCwnbEYgD4xzrPtvsXdElhOVvR8ND1YjB5nhGNwwf7nBQlhfAwHAZC" crossorigin="anonymous">
+  <style>
+    html,
+    body {
+      height: 100%;
+    }
+
+    .split {
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .gutter {
+      background-repeat: no-repeat;
+      background-position: 50%;
+      background-color: #444;
+    }
+
+    .gutter.gutter-horizontal {
+      cursor: col-resize;
+      background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+    }
+
+    .gutter.gutter-vertical {
+      cursor: row-resize;
+      background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFAQMAAABo7865AAAABlBMVEVHcEzMzMzyAv2sAAAAAXRSTlMAQObYZgAAABBJREFUeF5jOAMEEAIEEFwAn3kMwcB6I2AAAAAASUVORK5CYII=');
+    }
+
+    .split.split-horizontal,
+    .gutter.gutter-horizontal {
+      height: 100%;
+      float: left;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="shareModalLabel">Share Code</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label for="shareInput" class="form-label">URL:</label>
+          <input class="form-control" id="shareInput">
+          <div id="shareLimit" class="form-text text-danger">Code length exceeds 4096 bytes limit!</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="shareCopy" onclick="sandbox.copyUrl()">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="copyToast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive"
+      aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          URL copied to the clipboard.
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+          aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid p-0 h-100">
+    <div class="h-100 d-flex flex-column">
+      <div class="row g-0 align-items-center bg-dark p-3">
+        <div class="col-12 col-md-auto text-white text-center">
+          <h2>CognitiveJS | Sandbox</h2>
+        </div>
+        <div class="col-auto ms-auto">
+          <button type="button" class="btn btn-outline-light" onclick="sandbox.toggleSplitDirection()"><i class="fa fa-columns" aria-hidden="true"></i></button>
+          <button type="button" class="btn btn-success" onclick="sandbox.shareModal()"><i class="fa fa-share-alt" aria-hidden="true"></i> Share</button>
+          <button type="button" class="btn btn-primary" onclick="sandbox.render()"><i class="fa fa-refresh" aria-hidden="true"></i> Render</button>
+        </div>
+      </div>
+      <div id="splitWrapper" class="flex-grow-1 d-flex flex-row">
+        <div id="codeWrapper" class="overflow-auto">
+          <div class="h-100 w-100" id="code">
+            &lt;!DOCTYPE html>
+            &lt;html>
+            &lt;body>
+
+            &lt;p>{{hello}}&lt;/p>
+
+            &lt;script src="../dist/cog.js">&lt;/script>
+            &lt;script>
+            cog.data.hello = "Hello World!";
+            cog.render();
+            &lt;/script>
+
+            &lt;/body>
+            &lt;/html>
+          </div>
+        </div>
+        <div id="previewWrapper" class="overflow-auto">
+          <iframe class="h-100 w-100" id="preview"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+    crossorigin="anonymous"></script>
+  <script src="ace/ace.js"></script>
+  <script src="split.js"></script>
+  <script>
+    var sandboxStart = true;
+  </script>
+  <script src="sandbox.js"></script>
+</body>
+
+</html>
