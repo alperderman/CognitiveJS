@@ -1,7 +1,7 @@
 <h1 cog-prop="attr:{id:{{section.id}}}">{{section.title}}</h1>
 <p>For rare cases, you might need to escape code pieces in CognitiveJS. For example in this documentation code snippets had to be escaped in order to properly display them. In such cases like this, there are different escape definitions for different situations.</p>
 <p>First escape method is adding underscore "_" before attributes to make them act like a normal attribute, but tokens inside them will be rendered. This definition is used to mitigate special attribute problem (especially style attribute) which browsers will try to process them before Cognitive does, which would result in unwanted circumstances. Adding an underscore solves that problem. After all the tokens are processed and render is completed, CognitiveJS will remove that underscore then browsers will initiate their own processing.</p>
-<p>Second one is element escape definition. Adding <code>cog-escape</code> attribute to the element will completely neutralize the element and its children, so that rendering process will not reach to that element. Escape attribute is also removed after render to keep the intended structure of DOM.</p>
+<p>Second one is element escape definition. Adding <code>cog-escape</code> attribute to the element will completely neutralize the element and its children, so that rendering process will not reach to that element.</p>
 <div class="d-flex justify-content-end">
     <button class="btn btn-info" code-id="esc_exp1" cog-event="click:'openSandbox()'">Open in Sandbox</button>
 </div>

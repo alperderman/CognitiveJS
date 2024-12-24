@@ -97,9 +97,9 @@
 
   <div cog-set="temp:sidebar">
     <nav cog-repeat="_sidebar;menu;sidebar" class="nav flex-column nav-pills">
-      <a cog-prop="attr:{href:'#'+{{menu.id}}}" class="nav-link">{{menu.title}}</a>
+      <a cog-prop="attr:{href:'#'+{{menu.id}}}" cog-event="click:'hideOffcanvas()'" class="nav-link">{{menu.title}}</a>
       <div cog-if="{{menu.sub}}" cog-repeat="_sidebarSub;sub;{{menu.sub}}">
-        <a cog-prop="attr:{href:'#'+{{sub.id}}}" class="ms-4 py-0 nav-link">{{sub.title}}</a>
+        <a cog-prop="attr:{href:'#'+{{sub.id}}}" cog-event="click:'hideOffcanvas()'" class="ms-4 py-0 nav-link">{{sub.title}}</a>
       </div>
     </nav>
   </div>

@@ -71,6 +71,10 @@
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="../sandbox/sandbox.js"></script>
   <script>
+    function hideOffcanvas() {
+      var offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById("offcanvasNavbar"));
+      offcanvas.hide();
+    }
     function openSandbox() {
       var id = cog.event.target.getAttribute("code-id");
       var code = sandbox.encode(document.getElementById(id).textContent);

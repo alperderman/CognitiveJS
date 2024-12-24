@@ -20,11 +20,11 @@
     <li><strong>_bound</strong>: other observables which are bound with this observable is stored inside this property, part of <code>cog.addBound()</code>and <code>cog.removeBound()</code> functions.</li>
     <li><strong>_iterate()</strong>: iterates through every single children observable.</li>
     <li><strong>_iterateParent()</strong>: iterates through every single parent observable.</li>
-    <li><strong>defineNewObservable()</strong>: defines new observable inside current one part of <strong>_set</strong> (it is not recommended to use this function)</li>
-    <li><strong>defineNewProperty()</strong>: defines new property under current one part of <strong>_set</strong> (it is not recommended to use this function)</li>
+    <li><strong>defineNewObservable()</strong>: defines new observable inside current one, part of <strong>_set</strong> property.</li>
+    <li><strong>defineNewProperty()</strong>: defines new property under current one, part of <strong>_set</strong> property.</li>
 </ul>
-<p><strong>BEWARE:</strong> many of these special properties are only used in rendering process such as (<strong>_nodes</strong>, <strong>_innerNodes</strong>, <strong>_repeats</strong>...).</p>
-<p><strong>NOTE:</strong> only <strong>_index</strong> and <strong>_length</strong> keywords can be stored as nodes which that means you can use them directly as tokens. However if you want to use other keywords such as <strong>_type</strong> or <strong>_key</strong> as tokens, you have to define a function token and bound that observable with <code>cog.addBound()</code>.</p>
+<p><strong>BEWARE:</strong> many of these special properties are only used in rendering process such as (<strong>_nodes</strong>, <strong>_innerNodes</strong>, <strong>_repeats</strong>...). It is not advisable to manually edit or use these properties.</p>
+<p><strong>NOTE:</strong> only <strong>_index</strong> and <strong>_length</strong> keywords can be stored as nodes which that means you can use them directly as tokens. However if you want to use other keywords such as <strong>_type</strong> or <strong>_key</strong> as tokens, you have to define a function token that returns desired value and bind that token with <code>cog.addBound()</code>.</p>
 <div class="d-flex justify-content-end">
     <button class="btn btn-info" code-id="code_exp1" cog-event="click:'openSandbox()'">Open in Sandbox</button>
 </div>
@@ -54,7 +54,7 @@
     </code>
 </pre>
 <h3 cog-prop="attr:{id:{{section.sub.1.id}}}">{{section.sub.1.title}}</h3>
-<p><code>cog.get()</code> and <code>cog.set()</code> functions allows us to retrieve, modify or create new values inside <code>cog.data</code>. The difference between direct declaration and using functions to do that is, to indicate the data, keys with dot delimiters in string form (eg. "fruits.0") is allowed in functions. In addition to this, creating new properties after render is only possible with <code>cog.set()</code> due to how <code>Object.defineProperty()</code> works.</p>
+<p><code>cog.get()</code> and <code>cog.set()</code> functions allows us to retrieve, modify or create new values inside <code>cog.data</code>. The difference between direct declaration and using functions to do that is, to indicate the data, keys with dot delimiters in string form (eg. "fruits.0") is used. In addition to this, creating new properties after render is only possible with <code>cog.set()</code> due to how <code>Object.defineProperty()</code> works.</p>
 <p>First parameter of <code>cog.get()</code> and <code>cog.set()</code> function is either keys with dot delimiter in string form as mentioned above or an observable.</p>
 <p>Second parameter for <code>cog.get()</code> is boolean to return observable instead of value itself, while second parameter for <code>cog.set()</code> is the value to be set for indicated key.</p>
 <div class="d-flex justify-content-end">
