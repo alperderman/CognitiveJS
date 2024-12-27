@@ -15,7 +15,7 @@
 
             &lt;h1 cog-prop="if:[{{bool1}}, {style:{color:'red'}}, {if:[{{bool2}}, {style:{color:'blue'}}, {style:{color:'green'}}]}]">Title!&lt;/h1>
 
-            &lt;button cog-event="if:[!{{bool2}}, {click:'clickButton()', mouseover:'hoverButton()', _prevent:true}]">Send&lt;/button>
+            &lt;button cog-event="if:[!{{bool2}}, {click:'clickButton()', mouseover:'hoverButton()'}]">Send&lt;/button>
         
             &lt;input cog-live="if:[{{bool1}}, {live:'username', event:'input'}]" cog-prop="context:{value:{{username}}}" type="text">
         

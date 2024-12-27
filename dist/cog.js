@@ -20,7 +20,6 @@ cog.label = {
     await: "cog-await"
 };
 cog.event = {
-    target: null,
     beforeRender: "COGBeforeRender",
     afterRender: "COGAfterRender"
 };
@@ -37,7 +36,6 @@ cog.keyword = {
     parent: "_parent",
     length: "_length",
     index: "_index",
-    prevent: "_prevent",
     nodes: "_nodes",
     innerNodes: "_innerNodes",
     repeats: "_repeats",
@@ -136,7 +134,7 @@ cog.render = function (layoutSrc) {
     }
 };
 cog.bind = function (dom, callback) {
-    var i, ii, iii, node, nodes = [], nodeType, nodeObj, newNodeLen, splitNodeContent, attrContentNodes, pureToken, token, content, idx, oldNode, parent, ob, nodeAttr, nodeAttrs, newNodeAttrs, attrKey, attrVal, attrContent, tempNode, tempAttr, tempId, tempToken, tempTokenObj, tempAlias, tempRender, nodeSplitTokens, nodeSplitToken, prop, propType, newNode, attrContentParse, attrContentObj, attrContentObjProp;
+    var i, ii, iii, node, nodes = [], nodeType, nodeObj, newNodeLen, splitNodeContent, attrContentNodes, pureToken, token, content, idx, oldNode, parent, ob, nodeAttr, nodeAttrs, nodeAttrsLen, newNodeAttrs, attrKey, attrVal, attrContent, tempNode, tempAttr, tempId, tempToken, tempTokenObj, tempAlias, tempRender, nodeSplitTokens, nodeSplitToken, prop, propType, newNode, attrContentParse, attrContentObj, attrContentObjProp;
     if (dom == null) { dom = document.body; }
     while (tempNode = dom.querySelector("[" + cog.label.temp + "]")) {
         tempAttr = cog.replaceText(tempNode.getAttribute(cog.label.temp)).split(";");
@@ -214,11 +212,13 @@ cog.bind = function (dom, callback) {
         } else {
             nodeAttrs = node.attributes;
             newNodeAttrs = [];
-            for (ii = 0; ii < nodeAttrs.length; ii++) {
+            nodeAttrsLen = nodeAttrs.length;
+            for (ii = 0; ii < nodeAttrsLen; ii++) {
                 nodeAttr = nodeAttrs[ii];
                 newNodeAttrs.push({ name: nodeAttr.name, value: nodeAttr.value });
             }
-            for (ii = 0; ii < newNodeAttrs.length; ii++) {
+            nodeAttrsLen = newNodeAttrs.length;
+            for (ii = 0; ii < nodeAttrsLen; ii++) {
                 nodeAttr = newNodeAttrs[ii];
                 attrKey = nodeAttr.name;
                 attrVal = nodeAttr.value;
@@ -311,6 +311,11 @@ cog.bind = function (dom, callback) {
                         prop.attr = attrKey;
                         prop.content = attrContent;
                     }
+                }
+                if (attrKey == cog.label.event) {
+                    cog.addEventListenerAll(node, cog.eventHandler);
+                } else if (attrKey == cog.label.live) {
+                    cog.addEventListenerAll(node, cog.liveHandler);
                 }
             }
         }
@@ -1777,15 +1782,10 @@ cog.extractAssets = function (elem) {
         document.body.appendChild(script);
     }
 };
-cog.eventListener = function (event) {
-    cog.eventHandler(event);
-};
-cog.eventHandler = function (event, elem) {
-    if (!elem) { elem = event.target; }
-    if (typeof elem.getAttribute !== 'function') { return; }
-    var events, attrEvents, prevent = false, i, ii, attr;
-    cog.event.target = elem;
-    attr = elem.getAttribute(cog.label.live);
+cog.liveHandler = function (event) {
+    var node = event.currentTarget;
+    if (typeof node.getAttribute !== 'function') { return; }
+    var i, attr = node.getAttribute(cog.label.live), events, attrEvents, data;
     if (attr != null) {
         attr = attr.trim();
         if (attr[0] == "{") {
@@ -1803,20 +1803,28 @@ cog.eventHandler = function (event, elem) {
                     if (!events.hasOwnProperty("data")) {
                         events.data = "value";
                     }
-                    if (typeof elem[events.data] !== "undefined") {
-                        events.data = elem[events.data];
+                    if (typeof node[events.data] !== "undefined") {
+                        data = node[events.data];
                     } else {
-                        events.data = cog.eval(events.data);
+                        data = cog.eval(events.data);
                     }
-                    cog.set(events.live, events.data);
-                }
-                if (events.hasOwnProperty(cog.keyword.prevent) && cog.if(events[cog.keyword.prevent])) {
-                    prevent = true;
+                    cog.set(events.live, data);
+                    if (events.hasOwnProperty("callback")) {
+                        if (typeof events.callback === 'function') {
+                            events.callback(events);
+                        } else {
+                            cog.eval(events.callback);
+                        }
+                    }
                 }
             }
         }
     }
-    attr = elem.getAttribute(cog.label.event);
+};
+cog.eventHandler = function (event) {
+    var node = event.currentTarget;
+    if (typeof node.getAttribute !== 'function') { return; }
+    var i, ii, attr = node.getAttribute(cog.label.event), events, attrEvents;
     if (attr != null) {
         attr = attr.trim();
         if (attr[0] == "{") {
@@ -1830,20 +1838,14 @@ cog.eventHandler = function (event, elem) {
                 for (ii in events) {
                     if (ii == event.type) {
                         if (typeof events[ii] === 'function') {
-                            events[ii]();
+                            events[ii](events);
                         } else {
                             cog.eval(events[ii]);
                         }
                     }
                 }
-                if (events.hasOwnProperty(cog.keyword.prevent) && cog.if(events[cog.keyword.prevent])) {
-                    prevent = true;
-                }
             }
         }
-    }
-    if (!prevent && elem.parentNode) {
-        cog.eventHandler(event, elem.parentNode);
     }
 };
 cog.addEventListenerAll = function (target, listener, capture) {
@@ -1851,7 +1853,7 @@ cog.addEventListenerAll = function (target, listener, capture) {
     if (capture == null) { capture = false; }
     for (key in target) {
         if (/^on/.test(key)) {
-            target.addEventListener(key.substr(2), listener, capture);
+            target.addEventListener(key.slice(2), listener, capture);
         }
     }
 };
@@ -2084,7 +2086,3 @@ cog.getScript = function (url, callback) {
         }
     }, { method: "GET" });
 };
-cog.init = function () {
-    cog.addEventListenerAll(document.documentElement, cog.eventListener);
-};
-cog.init();

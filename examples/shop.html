@@ -155,7 +155,7 @@
     function changeMenu(menu) {
       clearSort();
       if (menu == null) {
-        menu = cog.event.target.getAttribute("category");
+        menu = event.currentTarget.getAttribute("category");
       }
       var i, filtered = [], categories = cog.data.categories, products = cog.get("products");
       for (i = 0; i < categories.length; i++) {
@@ -194,7 +194,7 @@
       }
     }
     function sortItems() {
-      var i = 0, products = cog.get("productsFiltered"), columns = cog.data.columns, currentCol, sortBy = cog.event.target.getAttribute("col");
+      var i = 0, products = cog.get("productsFiltered"), columns = cog.data.columns, currentCol, sortBy = event.currentTarget.getAttribute("col");
       for (i = 0; i < columns._length; i++) {
         if (columns[i]["name"]._get == sortBy) {
           currentCol = columns[i];
@@ -228,7 +228,7 @@
       }
     }
     function addItem() {
-      var i, id = cog.event.target.getAttribute("product-id"), cart = cog.data.cart, addToQuantity = false, existingItem, product, products;
+      var i, id = event.currentTarget.getAttribute("product-id"), cart = cog.data.cart, addToQuantity = false, existingItem, product, products;
       for (i = 0; i < cart.length; i++) {
         item = cart[i];
         if (cog.get(item.id) == id) {
@@ -254,7 +254,7 @@
       }
     }
     function removeItem() {
-      var i, id = cog.event.target.getAttribute("product-id"), cart = cog.data.cart, item;
+      var i, id = event.currentTarget.getAttribute("product-id"), cart = cog.data.cart, item;
       for (i = 0; i < cart.length; i++) {
         item = cart[i];
         if (cog.get(item.id) == id) {

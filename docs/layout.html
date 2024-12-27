@@ -76,7 +76,7 @@
       offcanvas.hide();
     }
     function openSandbox() {
-      var id = cog.event.target.getAttribute("code-id");
+      var id = event.currentTarget.getAttribute("code-id");
       var code = sandbox.encode(document.getElementById(id).textContent);
       window.open("../sandbox/index.html?"+sandbox.param.code+"=" + code, '_blank').focus();
     }
