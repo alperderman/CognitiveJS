@@ -6,7 +6,7 @@
 <ul>
     <li><strong>_get()</strong>: function to return original value (similar to <code>cog.get()</code> function).</li>
     <li><strong>_set()</strong>: function to set new observable inside current one (recommended to use <strong>cog.set()</strong> function).</li>
-    <li><strong>_value</strong>: original value but unlike <strong>_get</strong> function, it keeps children as observable.</li>
+    <li><strong>_value</strong>: original value but unlike <strong>_get()</strong> function, it keeps the children as observable.</li>
     <li><strong>_index</strong>: index number (only for array values).</li>
     <li><strong>_parent</strong>: access parent observable.</li>
     <li><strong>_key</strong>: returns key of this observable.</li>
@@ -16,12 +16,12 @@
     <li><strong>_type</strong>: returns type of the value.</li>
     <li><strong>_nodes</strong>: text, props, HTML and fragment nodes stored.</li>
     <li><strong>_innerNodes</strong>: index and length nodes are stored in this property.</li>
-    <li><strong>_repeats</strong>: repeaters which are bound with this observable is stored under this property.</li>
+    <li><strong>_repeats</strong>: repeaters bound with this observable is stored under this property.</li>
     <li><strong>_bound</strong>: other observables which are bound with this observable is stored inside this property, part of <code>cog.addBound()</code>and <code>cog.removeBound()</code> functions.</li>
     <li><strong>_iterate()</strong>: iterates through every single children observable.</li>
     <li><strong>_iterateParent()</strong>: iterates through every single parent observable.</li>
-    <li><strong>defineNewObservable()</strong>: defines new observable inside current one, part of <strong>_set</strong> property.</li>
-    <li><strong>defineNewProperty()</strong>: defines new property under current one, part of <strong>_set</strong> property.</li>
+    <li><strong>defineNewObservable()</strong>: defines new observable inside current one, part of <strong>_set()</strong> property.</li>
+    <li><strong>defineNewProperty()</strong>: defines new property under current one, part of <strong>_set()</strong> property.</li>
 </ul>
 <p><strong>WARNING:</strong> Many of these special properties are only used in rendering process such as (<strong>_nodes</strong>, <strong>_innerNodes</strong>, <strong>_repeats</strong>...). It is not advisable to manually edit or use these properties.</p>
 <p><strong>BEWARE:</strong> Even if the value of the observable that you have defined is an object or a string, they can contain array properties (such as push, unshift, sort etc..). The reason for that is, these properties are embedded as a part of the tracking mechanism and they are defined whether the value is an array or not to make the type conversion process easier in the background.</p>
@@ -86,7 +86,7 @@
                         return name + " Johnson";
                     }, true);
                     console.log(cog.get("name", true));
-                    
+
                 });
             &lt;/script>
 
