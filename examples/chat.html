@@ -20,8 +20,9 @@
       <div class="col-10 col-md-6 col-lg-4 p-0">
         <div>Your Name:</div>
         <div class="input-group">
-          <input cog-prop="context:{value:{{chat.name}}}" cog-live="live:'chat.name', event:'input'"
-            cog-event="keypress:'chatLogin()'" class="form-control" type="text">
+          <input cog-prop="context:{value:{{chat.name}}}" 
+          cog-event="{input:{set:'chat.name'}}, {keypress:'chatLogin()'}" 
+          class="form-control" type="text">
           <button cog-event="click:'chatLogin()'" class="btn btn-primary">Enter</button>
         </div>
       </div>
@@ -49,7 +50,7 @@
     <div class="row justify-content-center" cog-if="{{chat.section_chat}}">
       <div class="col-12 col-md-8 p-0">
         <div class="input-group">
-          <input cog-event="keypress:'chatAdd()'" cog-live="live:'chat.input', event:'input'"
+          <input cog-event="{input:{set:'chat.input'}}, {keypress:'chatAdd()'}" cog-live="live:'chat.input', event:'input'"
             cog-prop="context:{value:{{chat.input}}}" class="form-control" type="text">
           <button cog-event="click:'chatAdd()'" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
@@ -83,7 +84,7 @@
 
     // FUNCTIONS
     function chatAdd() {
-      if (cog.get('chat.input') != null && (typeof event.keyCode === 'undefined' || event.keyCode == 13)) {
+      if (cog.get('chat.input') != '' && (typeof event.keyCode === 'undefined' || event.keyCode == 13)) {
         var msg = { user: cog.data.chat.name, text: cog.get('chat.input') };
         cog.data.chat.log.push(msg);
         cog.set('chat.input', '');
@@ -96,7 +97,7 @@
       el.scrollTop = el.scrollHeight;
     }
     function chatLogin() {
-      if (cog.data.chat.name != null && (typeof event.keyCode === 'undefined' || event.keyCode == 13)) {
+      if (cog.data.chat.name != '' && (typeof event.keyCode === 'undefined' || event.keyCode == 13)) {
         cog.set("chat.section_login", false);
         cog.set("chat.section_chat", true);
         localStorage.setItem("chatName", cog.get("chat.name"));

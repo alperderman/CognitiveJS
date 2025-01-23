@@ -4,7 +4,7 @@
 <p>Observables are custom objects that can observe changes and have special properties and functions. In terms of structure, they are singleton which means that they are initiated only once. <code>cog.data</code> object and its children will be converted to observable objects during rendering process.</p>
 <p>Special properties and functions follows as;</p>
 <ul>
-    <li><strong>_get()</strong>: function to return original value (same as <code>cog.get()</code> function).</li>
+    <li><strong>_get()</strong>: function to return original value (similar to <code>cog.get()</code> function).</li>
     <li><strong>_set()</strong>: function to set new observable inside current one (recommended to use <strong>cog.set()</strong> function).</li>
     <li><strong>_value</strong>: original value but unlike <strong>_get</strong> function, it keeps children as observable.</li>
     <li><strong>_index</strong>: index number (only for array values).</li>
@@ -16,15 +16,16 @@
     <li><strong>_type</strong>: returns type of the value.</li>
     <li><strong>_nodes</strong>: text, props, HTML and fragment nodes stored.</li>
     <li><strong>_innerNodes</strong>: index and length nodes are stored in this property.</li>
-    <li><strong>_repeats</strong>: repetars which are bound with this observable is stored under this property.</li>
+    <li><strong>_repeats</strong>: repeaters which are bound with this observable is stored under this property.</li>
     <li><strong>_bound</strong>: other observables which are bound with this observable is stored inside this property, part of <code>cog.addBound()</code>and <code>cog.removeBound()</code> functions.</li>
     <li><strong>_iterate()</strong>: iterates through every single children observable.</li>
     <li><strong>_iterateParent()</strong>: iterates through every single parent observable.</li>
     <li><strong>defineNewObservable()</strong>: defines new observable inside current one, part of <strong>_set</strong> property.</li>
     <li><strong>defineNewProperty()</strong>: defines new property under current one, part of <strong>_set</strong> property.</li>
 </ul>
-<p><strong>BEWARE:</strong> many of these special properties are only used in rendering process such as (<strong>_nodes</strong>, <strong>_innerNodes</strong>, <strong>_repeats</strong>...). It is not advisable to manually edit or use these properties.</p>
-<p><strong>NOTE:</strong> only <strong>_index</strong> and <strong>_length</strong> keywords can be stored as nodes which that means you can use them directly as tokens. However if you want to use other keywords such as <strong>_type</strong> or <strong>_key</strong> as tokens, you have to define a function token that returns desired value and bind that token with <code>cog.addBound()</code>.</p>
+<p><strong>WARNING:</strong> Many of these special properties are only used in rendering process such as (<strong>_nodes</strong>, <strong>_innerNodes</strong>, <strong>_repeats</strong>...). It is not advisable to manually edit or use these properties.</p>
+<p><strong>BEWARE:</strong> Even if the value of the observable that you have defined is an object or a string, they can contain array properties (such as push, unshift, sort etc..). The reason for that is, these properties are embedded as a part of the tracking mechanism and they are defined whether the value is an array or not to make the type conversion process easier in the background.</p>
+<p><strong>NOTE:</strong> Only <strong>_index</strong> and <strong>_length</strong> keywords can be stored as nodes which that means you can use them directly as tokens. However if you want to use other keywords such as <strong>_type</strong> or <strong>_key</strong> as tokens, you have to define a function token that returns desired value and bind that token with <code>cog.addBound()</code>.</p>
 <div class="d-flex justify-content-end">
     <button class="btn btn-info" code-id="code_exp1" cog-event="click:'openSandbox()'">Open in Sandbox</button>
 </div>
@@ -44,7 +45,7 @@
                     console.log(cog.data.fruits._length);
                     console.log(cog.data.fruits[0]._token);
                     console.log(cog.data.fruits[1]._parent);
-                    console.log(cog.data.fruits[1]._get);
+                    console.log(cog.data.fruits[1]._get());
                     console.log(cog.data.fruits[1]._type);
                 });
             &lt;/script>
@@ -57,6 +58,7 @@
 <p><code>cog.get()</code> and <code>cog.set()</code> functions allows us to retrieve, modify or create new values inside <code>cog.data</code>. The difference between direct declaration and using functions to do that is, to indicate the data, keys with dot delimiters in string form (eg. "fruits.0") is used. In addition to this, creating new properties after render is only possible with <code>cog.set()</code> due to how <code>Object.defineProperty()</code> works.</p>
 <p>First parameter of <code>cog.get()</code> and <code>cog.set()</code> function is either keys with dot delimiter in string form as mentioned above or an observable.</p>
 <p>Second parameter for <code>cog.get()</code> is boolean to return observable instead of value itself, while second parameter for <code>cog.set()</code> is the value to be set for indicated key.</p>
+<p>Third parameter of <code>cog.get()</code> function is a boolean, reserved for "function tokens" to execute them and get their values instead of directly returning them as function (second parameter has to be false for this to work). Whereas the third parameter of <code>cog.set()</code> is a boolean to define the value with a function, second parameter will be executed as a function (observable will be passed as parameter while executing this function) and returned value will be set as the new value.</p>
 <div class="d-flex justify-content-end">
     <button class="btn btn-info" code-id="code_exp2" cog-event="click:'openSandbox()'">Open in Sandbox</button>
 </div>
@@ -71,13 +73,20 @@
             &lt;script src="../dist/cog.js">&lt;/script>
             &lt;script>
                 cog.data.fruits = ["apple", "banana", "berry"];
+                cog.data.name = "Moira Brown";
                 cog.render();
                 document.addEventListener(cog.event.afterRender, function () {
+
                     console.log(cog.get("fruits"));
                     cog.set("fruits.0", "kiwi");
                     console.log(cog.get("fruits"));
-                    cog.set("name", "Moira Brown");
+
+                    cog.set("name", function (ob) {
+                        var name = ob._get();
+                        return name + " Johnson";
+                    }, true);
                     console.log(cog.get("name", true));
+                    
                 });
             &lt;/script>
 

@@ -6,15 +6,37 @@
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CognitiveJS | Docs</title>
+  <style>
+    #loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1100;
+      background-color: #fff;
+    }
+
+    #loading img {
+      width: 200px;
+      height: auto;
+    }
+
+    #loading p {
+      text-align: center;
+    }
+  </style>
 </head>
 
 <body>
 
-  <div id="loading"
-    style="display: flex;justify-content: center;align-items: center;position: fixed;top:0;left:0;width: 100vw;height: 100vh;z-index: 1100;background-color: #fff;">
+  <div id="loading">
     <div>
-      <img style="width:200px;" src="media/cog_logo.png">
-      <p style="text-align: center;">LOADING...</p>
+      <img src="media/cog_logo.png">
+      <p>LOADING...</p>
     </div>
   </div>
 
@@ -29,8 +51,11 @@
     {"id":"prop", "title":"Properties", "temp":"prop"},
     {"id":"src", "title":"External Sources", "temp":"src"},
     {"id":"esc", "title":"Escape Definitions", "temp":"esc"},
-    {"id":"event", "title":"Node Events", "temp":"event"},
-    {"id":"live", "title":"Live Tokens", "temp":"live"},
+    {"id":"event", "title":"Node Events", "temp":"event",
+    "sub":[
+    {"id":"twobind", "title":"Two-way Binding"}
+    ]
+    },
     {"id":"if", "title":"Conditional Rendering", "temp":"if"},
     {"id":"template", "title":"Templates", "temp":"template"},
     {"id":"repeat", "title":"Repeaters", "temp":"repeat"},
@@ -56,12 +81,12 @@
     },
     {
     "title":"Form Example",
-    "desc":"Form example showcases the live bindings.",
+    "desc":"Form example showcases the two-way binding.",
     "link":"../examples/form.html"
     },
     {
     "title":"Chat Room Example",
-    "desc":"Chat Room Example demonstrates how to deal with dynamic data using repeaters and templates.",
+    "desc":"Chat Room Example demonstrates how to deal with dynamic data using conditional rendering techniques.",
     "link":"../examples/chat.html"
     },
     {
@@ -84,8 +109,6 @@
 
   <div cog-src="sections/event.html" cog-set="temp:event;section"></div>
 
-  <div cog-src="sections/live.html" cog-set="temp:live;section"></div>
-
   <div cog-src="sections/if.html" cog-set="temp:if;section"></div>
 
   <div cog-src="sections/template.html" cog-set="temp:template;section"></div>
@@ -100,16 +123,17 @@
 
   <div cog-set="temp:sidebar">
     <nav cog-repeat="_sidebar;menu;sidebar" class="nav flex-column nav-pills">
-      <a cog-prop="attr:{href:'#'+{{menu.id}}}" cog-event="click:'hideOffcanvas()'" class="nav-link">{{menu.title}}</a>
+      <a cog-prop="attr:{href:'#'+{{menu.id}}}" cog-event="click:'hideOffcanvas()'" class="nav-link border-start">{{menu.title}}</a>
       <div cog-if="{{menu.sub}}" cog-repeat="_sidebarSub;sub;{{menu.sub}}">
-        <a cog-prop="attr:{href:'#'+{{sub.id}}}" cog-event="click:'hideOffcanvas()'" class="ms-4 py-0 nav-link">{{sub.title}}</a>
+        <a cog-prop="attr:{href:'#'+{{sub.id}}}" cog-event="click:'hideOffcanvas()'"
+          class="ms-4 py-0 nav-link">{{sub.title}}</a>
       </div>
     </nav>
   </div>
 
   <script src="../dist/cog.js"></script>
   <script>
-    cog.cache = false;
+    cog.cache = true;
     document.addEventListener(cog.event.afterRender, function () {
       document.getElementById("loading").parentElement.removeChild(document.getElementById("loading"));
     });

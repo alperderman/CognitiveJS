@@ -19,8 +19,8 @@
     <div class="row justify-content-center">
       <div class="col-12 col-md-6 col-xl-4 px-4 mb-3">
         <div class="input-group">
-          <input cog-prop="context:{value:{{todo.input}}}" cog-live="live:'todo.input', event:'input'"
-            cog-event="keypress:'todoAdd()'" class="form-control" type="text">
+          <input cog-prop="context:{value:{{todo.input}}}"
+            cog-event="{keypress:'todoAdd()'}, {input:{set:'todo.input'}}" class="form-control" type="text">
           <button cog-event="click:'todoAdd()'" class="btn btn-primary"><i class="fa-solid fa-plus"></i></button>
         </div>
       </div>
@@ -80,8 +80,6 @@
     function todoComplete(index) {
       var selected = cog.data.todo.list[index];
       selected.complete = true;
-      cog.data.todo.list.push(selected);
-      cog.data.todo.list.splice(index, 1);
     }
     function todoRevert(index) {
       cog.data.todo.list[index].complete = false;

@@ -21,41 +21,41 @@
         <form cog-event="submit:'submitForm()'" autocomplete="off">
           <div class="mb-2">
             <label class="form-label" for="username">User Name:</label>
-            <input cog-prop="context:{value:{{form.username}}}" cog-live="live:'form.username', event:'input'"
-              class="form-control" type="text" id="username" name="username">
+            <input cog-prop="context:{value:{{form.username}}}" cog-event="input:{set:'form.username'}" 
+            class="form-control" type="text" id="username" name="username">
           </div>
           <div class="mb-2">
             <label class="form-label" for="password">Password:</label>
-            <input cog-prop="context:{value:{{form.password}}}" cog-live="live:'form.password', event:'input'"
-              class="form-control" type="password" id="password" name="password">
+            <input cog-prop="context:{value:{{form.password}}}" cog-event="input:{set:'form.password'}" 
+            class="form-control" type="password" id="password" name="password">
           </div>
           <div class="mb-2">
             <p>Gender</p>
             <label class="form-label" for="male">Male:</label>
-            <input cog-live="live:'form.gender'" class="form-check-input" type="radio" id="male" name="gender"
+            <input cog-event="change:{set:'form.gender'}" class="form-check-input" type="radio" id="male" name="gender"
               value="male">
             <label class="form-label" for="female">Female:</label>
-            <input cog-live="live:'form.gender'" class="form-check-input" type="radio" id="female" name="gender"
+            <input cog-event="change:{set:'form.gender'}" class="form-check-input" type="radio" id="female" name="gender"
               value="female">
           </div>
           <div class="mb-2">
             <p>Favourite Food</p>
             <input cog-prop="context:{checked:{{form.favFood.food_pizza}}}"
-              cog-live="live:'form.favFood.food_pizza', data:'checked'" class="form-check-input" type="checkbox"
+              cog-event="change:{set:'form.favFood.food_pizza', data:'checked'}" class="form-check-input" type="checkbox"
               id="food_pizza" name="food_pizza" value="Pizza">
             <label class="form-label" for="food_pizza">Pizza</label>
             <input cog-prop="context:{checked:{{form.favFood.food_burger}}}"
-              cog-live="live:'form.favFood.food_burger', data:'checked'" class="form-check-input" type="checkbox"
+              cog-event="change:{set:'form.favFood.food_burger', data:'checked'}" class="form-check-input" type="checkbox"
               id="food_burger" name="food_burger" value="Burger">
             <label class="form-label" for="food_burger">Burger</label>
             <input cog-prop="context:{checked:{{form.favFood.food_beans}}}"
-              cog-live="live:'form.favFood.food_beans', data:'checked'" class="form-check-input" type="checkbox"
+              cog-event="change:{set:'form.favFood.food_beans', data:'checked'}" class="form-check-input" type="checkbox"
               id="food_beans" name="food_beans" value="Beans">
             <label class="form-label" for="food_beans">Beans</label>
           </div>
           <div class="mb-2">
             <label class="form-label" for="car">Choose a car:</label>
-            <select cog-live="live:'form.car'" class="form-select" id="car" name="car">
+            <select cog-event="change:{set:'form.car'}" class="form-select" id="car" name="car">
               <option selected disabled>Choose</option>
               <option value="volvo">Volvo</option>
               <option value="saab">Saab</option>

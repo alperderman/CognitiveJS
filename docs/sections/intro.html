@@ -14,7 +14,7 @@
 <hr>
 <h3 cog-prop="attr:{id:{{section.sub.1.id}}}">{{section.sub.1.title}}</h3>
 <p>Before we get in to the rest of the documentation I'd like first clarify the terms used inside the documentation;</p>
-<p><b>Tokens:</b> They are variables encapsulated with curly brackets and seperated with dots (even if the data is an array it is seperated with dots), sometimes they are also called keys in the documentation e.g. <code>{{foo.bar}}</code>, <code>{{employees.0.name}}</code>.</p>
+<p cog-escape><b>Tokens:</b> They are variables encapsulated with curly brackets and seperated with dots (even if the data is an array it is seperated with dots), sometimes they are also called keys in the documentation e.g. <code>{{foo.bar}}</code>, <code>{{employees.0.name}}</code>.</p>
 <p><b>Observables:</b> This term is taken directly from <a href="https://knockoutjs.com/" target="_blank">Knockout</a>. It represents the custom objects used to <i>observe</i> changes inside <code>cog.data</code>. More information at <a href="#code_ob">Observables</a> section.</p>
 <p>After downloading CognitiveJS from GitHub, There are two ways of using it:</p>
 <p>First way is the <strong>Internal Render</strong>, which is basically executing the render process directly on the current document.</p>
@@ -47,7 +47,7 @@
         &lt;/html>
     </code>
 </pre>
-<p>Second way is the <strong>External Render</strong> way, which renders another page. This is the intended way of using Cognitive and it makes it easier to manage contents and layouts seperately. External render, essenitally just stitches two pages together including their styles and scripts. Other than that, rendering process is exactly the same as the internal render.</p>
+<p>Second way is the <strong>External Render</strong> way, which renders another page. This is the intended way of using Cognitive and it makes it easier to manage contents and layouts seperately. External render, essentially just stitches two pages together including their styles and scripts. Other than that, rendering process is exactly the same as the internal render.</p>
 <div class="row">
     <div class="col-sm-12 col-md-6">
         <h3>Main Document</h3>

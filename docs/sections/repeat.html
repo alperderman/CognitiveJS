@@ -1,6 +1,6 @@
 <h1 cog-prop="attr:{id:{{section.id}}}">{{section.title}}</h1>
 <p>Repeaters' purpose in CognitiveJS is to iterate through given array (similar to ngRepeat in AngularJS). Repeaters can be defined with <code>cog-repeat</code> attribute.</p>
-<p>Repeaters are built on top of templating functionality, so every repeater has to include a template ID. If you haven't load the template with <code>cog-set</code> attribute, then it will automatically load the current elements inside the repeater as a template. If more than one repeater is defined with same template and datasets, Cognitive will only render the first repeater occurence and then it will copy the elements to the other occurences to increase performance.</p>
+<p>Repeaters are built on top of templating functionality, so every repeater has to include a template ID. If you haven't load the template with <code>cog-set</code> attribute, then it will automatically load the current elements inside the repeater as a template.</p>
 <p>Inside the repeaters, <code>_index</code> token keyword can be used to get the index number of each iteration. Multi-dimensional repeaters inside one another can be defined. Additionally repeater definitions inside normal template definitions is also allowed (though it makes things a bit complicated since you have to work on with multiple IDs and aliases).</p>
 <div class="d-flex justify-content-end">
     <button class="btn btn-info" code-id="repeat_exp1" cog-event="click:'openSandbox()'">Open in Sandbox</button>

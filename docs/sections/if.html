@@ -1,5 +1,5 @@
 <h1 cog-prop="attr:{id:{{section.id}}}">{{section.title}}</h1>
-<p>Conditional rendering is the way of showing elements or changing properties of elements based on set conditions. In order to display or hide element based on condition, <code>cog-if</code> attribute can be used. Conditions on props, events or lives can be set via an array with the key "if" inside their attribute.</p>
+<p>Conditional rendering is the way of showing elements or changing properties of elements based on set conditions. In order to display or hide element based on condition, <code>cog-if</code> attribute can be used. Conditions on props or events can be set via an array with the key "if" inside their attribute.</p>
 <p>Operation of "if array" inside props is simple. First value of "if array" is the condition itself, second value is if the condition returns true, third parameter is not required but it is for if it returns false.</p>
 <p>Multiple "if arrays" can be declared inside one another to achieve <code>else if</code> functionality.</p>
 <div class="d-flex justify-content-end">
@@ -15,17 +15,17 @@
 
             &lt;h1 cog-prop="if:[{{bool1}}, {style:{color:'red'}}, {if:[{{bool2}}, {style:{color:'blue'}}, {style:{color:'green'}}]}]">Title!&lt;/h1>
 
-            &lt;button cog-event="if:[!{{bool2}}, {click:'clickButton()', mouseover:'hoverButton()'}]">Send&lt;/button>
+            &lt;button cog-event="if:[!{{bool2}}, {click:'clickButton()', mouseenter:'hoverButton()'}]">Send&lt;/button>
         
-            &lt;input cog-live="if:[{{bool1}}, {live:'username', event:'input'}]" cog-prop="context:{value:{{username}}}" type="text">
+            &lt;input cog-event="if:[{{bool1}}, {input:{set:'username'}}]" cog-prop="context:{value:{{username}}}" type="text">
         
             &lt;p cog-if="{{bool1}}">Lorem ipsum&lt;/p>
             &lt;p cog-if="{{bool2}}">Dolor sit amet&lt;/p>
 
             &lt;script src="../dist/cog.js">&lt;/script>
             &lt;script>
-                cog.data.bool1 = false;
-                cog.data.bool2 = true;
+                cog.data.bool1 = true;
+                cog.data.bool2 = false;
                 cog.data.username = "";
 
                 function clickButton() {

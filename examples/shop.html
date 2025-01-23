@@ -13,6 +13,8 @@
 </head>
 
 <body style="display: none;">
+  <!--EXTERNAL PAGINATION COMPONENT-->
+  <div cog-src="pagination.html"></div>
   <!--TOAST CONTAINER-->
   <div id="toastContainer" cog-repeat="toastsTemplate;toast;toasts"
     class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 11">
@@ -75,31 +77,55 @@
           </ul>
         </div>
         <!--SEARCH BAR-->
-        <input cog-live="live:'search', event:'input'" cog-event="input:'searchProducts()'"
-          cog-prop="context:{value:{{search}}}" class="form-control mb-3 mt-3" placeholder="Search" type="text">
-        <div class="row">
-          <div class="col-6">
-            <p class="text-start m-0" cog-if="{{productsFiltered._length}} != {{products._length}}">
-              Shown <span class="fw-bold">{{productsFiltered._length}}</span> items
+        <input cog-event="{input:{set:'search'}}, {input:'searchProducts()'}" cog-prop="context:{value:{{search}}}"
+          class="form-control mb-3 mt-3" placeholder="Search" type="text">
+        <div class="row mb-3">
+          <div class="col">
+            <p class="m-0" cog-if="{{productsFiltered._length}} != {{products._length}}">
+              Shown <span class="fw-bold">{{productsPaginated._length}}</span> out of <span
+                class="fw-bold">{{productsFiltered._length}}</span> filtered items
             </p>
           </div>
-          <div class="col-6">
-            <p class="text-end m-0">Total of <span class="fw-bold">{{products._length}}</span> items</p>
+          <div class="col-auto">
+            <p class="m-0">Total of <span class="fw-bold">{{products._length}}</span> items</p>
+          </div>
+        </div>
+        <!--PAGINATION-->
+        <div class="row align-items-center">
+          <div class="col">
+            <div cog-temp="pagination;pag;paginationMeta"></div>
+          </div>
+          <div class="col-auto">
+            <div class="row gx-1 align-items-center">
+              <div class="col-auto">
+                <label class="form-label" for="limit">Items per page:</label>
+              </div>
+              <div class="col-auto">
+                <select cog-prop="context:{value:{{paginationMeta.limit}}}"
+                  cog-event="change:{set:'paginationMeta.limit'}" class="form-select" id="limit">
+                  <option disabled>Choose</option>
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">All</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
         <!--PRODUCTS TABLE-->
-        <table class="table table-striped">
+        <table class="table table-striped mt-3 mb-3">
           <thead>
             <tr class="fw-bold" cog-repeat="columns;col;columns">
               <td _col="{{col.name}}" style="text-transform: capitalize;"
-                cog-prop="if:[{{col.sort}} !== null, {style:{cursor:'pointer'}}]"
-                cog-event="if:[{{col.sort}} !== null, {click:'sortItems()'}]">{{col.name}}
-                <i cog-if="{{col.sort}} === 1" class="fa-solid fa-chevron-down"></i>
-                <i cog-if="{{col.sort}} === 2" class="fa-solid fa-chevron-up"></i>
+                cog-prop="if:[{{col.sortType}} !== null, {style:{cursor:'pointer'}}]"
+                cog-event="if:[{{col.sortType}} !== null, {click:'sortItems()'}]">{{col.name}}
+                <i cog-if="{{col.sortType}} === 1" class="fa-solid fa-chevron-down"></i>
+                <i cog-if="{{col.sortType}} === 2" class="fa-solid fa-chevron-up"></i>
               </td>
             </tr>
           </thead>
-          <tbody cog-repeat="products;product;productsFiltered">
+          <tbody cog-repeat="products;product;productsPaginated">
             <tr>
               <td>{{product.number}}</td>
               <td>{{product.title}}</td>
@@ -114,6 +140,12 @@
             </tr>
           </tbody>
         </table>
+        <!--PAGINATION-->
+        <div class="row align-items-center">
+          <div class="col">
+            <div cog-temp="pagination;pag;paginationMeta"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -125,14 +157,15 @@
   <script>
     // DEFINITIONS
     cog.data.search = "";
-    cog.data.products = null;
-    cog.data.productsFiltered = null;
+    cog.data.products = [];
+    cog.data.productsFiltered = [];
+    cog.data.productsPaginated = [];
     cog.data.columns = [
-      { name: "#", sort: null },
-      { name: "title", sort: 0 },
-      { name: "price", sort: 0 },
-      { name: "rating", sort: 0 },
-      { name: "category", sort: 0 }
+      { name: "#", sortType: null },
+      { name: "title", sortType: 0 },
+      { name: "price", sortType: 0 },
+      { name: "rating", sortType: 0 },
+      { name: "category", sortType: 0 }
     ];
     cog.data.categories = [{ title: "all", active: true }];
     cog.data.cart = [];
@@ -142,6 +175,12 @@
         total = total + (item.quantity * item.price);
       });
       return total;
+    };
+    cog.data.paginationMeta = {
+      data: "productsFiltered",
+      pageData: "productsPaginated",
+      limit: 25,
+      pagesAmount: 3
     };
     cog.data.toasts = [];
     cog.data.toastType = {};
@@ -160,7 +199,7 @@
       var i, filtered = [], categories = cog.data.categories, products = cog.get("products");
       for (i = 0; i < categories.length; i++) {
         categories[i].active = false;
-        if (categories[i].title._get == menu) {
+        if (categories[i].title._get() == menu) {
           categories[i].active = true;
         }
       }
@@ -196,22 +235,22 @@
     function sortItems() {
       var i = 0, products = cog.get("productsFiltered"), columns = cog.data.columns, currentCol, sortBy = event.currentTarget.getAttribute("col");
       for (i = 0; i < columns._length; i++) {
-        if (columns[i]["name"]._get == sortBy) {
+        if (columns[i]["name"]._get() == sortBy) {
           currentCol = columns[i];
         }
       }
-      if (currentCol["sort"]._get === 1) {
-        currentCol["sort"] = 2;
+      if (currentCol["sortType"]._get() === 1) {
+        currentCol["sortType"] = 2;
         cog.data.productsFiltered = products.sort(function (a, b) {
           if (a[sortBy] < b[sortBy]) { return 1; }
           if (a[sortBy] > b[sortBy]) { return -1; }
           return 0;
         });
       } else {
-        if (currentCol["sort"]._get === 0) {
+        if (currentCol["sortType"]._get() === 0) {
           clearSort();
         }
-        currentCol["sort"] = 1;
+        currentCol["sortType"] = 1;
         cog.data.productsFiltered = products.sort(function (a, b) {
           if (a[sortBy] < b[sortBy]) { return -1; }
           if (a[sortBy] > b[sortBy]) { return 1; }
@@ -222,8 +261,8 @@
     function clearSort() {
       var i, columns = cog.data.columns;
       for (i = 0; i < columns._length; i++) {
-        if (columns[i]["sort"]._get !== null) {
-          columns[i]["sort"] = 0;
+        if (columns[i]["sortType"]._get() !== null) {
+          columns[i]["sortType"] = 0;
         }
       }
     }

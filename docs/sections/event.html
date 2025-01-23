@@ -1,5 +1,6 @@
 <h1 cog-prop="attr:{id:{{section.id}}}">{{section.title}}</h1>
-<p>In CognitiveJS events are defined with <code>cog-event</code> attribute and they will stay after render is completed. Tokens and conditional rendering is allowed inside the attribute to make dynamic changes possible.</p>
+<p>In CognitiveJS events are defined with <code>cog-event</code> attribute and they will stay after render is completed.
+    Tokens and conditional rendering is allowed inside the attribute to make dynamic changes possible.</p>
 <div class="d-flex justify-content-end">
     <button class="btn btn-info" code-id="event_exp1" cog-event="click:'openSandbox()'">Open in Sandbox</button>
 </div>
@@ -21,6 +22,43 @@
                 function hoverButton() {
                     console.log("hover");
                 }
+                cog.render();
+            &lt;/script>
+
+        &lt;/body>
+        &lt;/html>
+    </code>
+</pre>
+<h3 cog-prop="attr:{id:{{section.sub.0.id}}}">{{section.sub.0.title}}</h3>
+<p>Two-way binding is achieved with a slight modification to the event attribute. Instead of defining a function, defining an object with <code>set</code> as the key and token as the value, will change the value of the token with the value of the input every time the specified event is fired. Combining this with context prop, will give you the ability to change the value of the input programatically, which completes the two-way binding circle.</p>
+<p>Default data (which is the "value" property of the input) to be set as the token value can be change via <code>data</code> property inside the object. For a better understanding about this technique, look at the "Form Example" in <a href="#examples">Examples</a> section.</p>
+<div class="d-flex justify-content-end">
+    <button class="btn btn-info" code-id="live_exp1" cog-event="click:'openSandbox()'">Open in Sandbox</button>
+</div>
+<pre cog-escape>
+    <code class="html" id="live_exp1">
+        &lt;html>
+        &lt;head>
+            &lt;title>CognitiveJS&lt;/title>
+        &lt;/head>
+        &lt;body>
+
+            &lt;input cog-prop="context:{value:{{username}}}" 
+            cog-event="input:{set:'username'}"
+            type="text">
+            
+            &lt;button cog-event="click:changeUsername">Change Input&lt;/button>
+
+            &lt;p>Username: {{username}}&lt;/p>
+
+            &lt;script src="../dist/cog.js">&lt;/script>
+            &lt;script>
+                cog.data.username = "";
+
+                function changeUsername() {
+                    cog.data.username = "my_username1995";
+                }
+
                 cog.render();
             &lt;/script>
 
