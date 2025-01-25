@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, shrink-to-fit=no">
   <title>CognitiveJS | Chat Room Example</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
@@ -20,9 +20,8 @@
       <div class="col-10 col-md-6 col-lg-4 p-0">
         <div>Your Name:</div>
         <div class="input-group">
-          <input cog-prop="context:{value:{{chat.name}}}" 
-          cog-event="{input:{set:'chat.name'}}, {keypress:'chatLogin()'}" 
-          class="form-control" type="text">
+          <input cog-prop="context:{value:{{chat.name}}}"
+            cog-event="{input:{set:'chat.name'}}, {keypress:'chatLogin()'}" class="form-control" type="text">
           <button cog-event="click:'chatLogin()'" class="btn btn-primary">Enter</button>
         </div>
       </div>
@@ -50,8 +49,9 @@
     <div class="row justify-content-center" cog-if="{{chat.section_chat}}">
       <div class="col-12 col-md-8 p-0">
         <div class="input-group">
-          <input cog-event="{input:{set:'chat.input'}}, {keypress:'chatAdd()'}" cog-live="live:'chat.input', event:'input'"
-            cog-prop="context:{value:{{chat.input}}}" class="form-control" type="text">
+          <input cog-event="{input:{set:'chat.input'}}, {keypress:'chatAdd()'}"
+            cog-live="live:'chat.input', event:'input'" cog-prop="context:{value:{{chat.input}}}" class="form-control"
+            type="text">
           <button cog-event="click:'chatAdd()'" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
       </div>

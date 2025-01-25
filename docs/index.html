@@ -4,8 +4,8 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CognitiveJS | Docs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, shrink-to-fit=no">
+  <title>CognitiveJS | Documentation</title>
   <style>
     #loading {
       display: flex;
@@ -26,7 +26,9 @@
     }
 
     #loading p {
+      font-size: 1.5rem;
       text-align: center;
+      color: #212529;
     }
   </style>
 </head>
@@ -123,7 +125,8 @@
 
   <div cog-set="temp:sidebar">
     <nav cog-repeat="_sidebar;menu;sidebar" class="nav flex-column nav-pills">
-      <a cog-prop="attr:{href:'#'+{{menu.id}}}" cog-event="click:'hideOffcanvas()'" class="nav-link border-start">{{menu.title}}</a>
+      <a cog-prop="attr:{href:'#'+{{menu.id}}}" cog-event="click:'hideOffcanvas()'"
+        class="nav-link border-start">{{menu.title}}</a>
       <div cog-if="{{menu.sub}}" cog-repeat="_sidebarSub;sub;{{menu.sub}}">
         <a cog-prop="attr:{href:'#'+{{sub.id}}}" cog-event="click:'hideOffcanvas()'"
           class="ms-4 py-0 nav-link">{{sub.title}}</a>
@@ -135,7 +138,8 @@
   <script>
     cog.cache = true;
     document.addEventListener(cog.event.afterRender, function () {
-      document.getElementById("loading").parentElement.removeChild(document.getElementById("loading"));
+      var loading = document.getElementById("loading");
+      loading.parentElement.removeChild(loading);
     });
     cog.render("layout.html");
   </script>

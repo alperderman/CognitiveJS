@@ -1,5 +1,21 @@
 var sandbox = {};
 sandbox.ui = {};
+sandbox.id = {
+    loading: "loading",
+    shareModal: "shareModal",
+    shareToast: "shareToast",
+    shareInput: "shareInput",
+    shareLimit: "shareLimit",
+    btnShare: "btnShare",
+    btnShareCopy: "btnShareCopy",
+    btnSplit: "btnSplit",
+    btnRender: "btnRender",
+    preview: "preview",
+    code: "code",
+    split: "split",
+    wrapperCode: "wrapperCode",
+    wrapperPreview: "wrapperPreview"
+};
 sandbox.editor = null;
 sandbox.base = null;
 sandbox.split = null;
@@ -9,28 +25,29 @@ sandbox.param = {
 };
 sandbox.splitDirection = 'horizontal';
 sandbox.init = function () {
-    if (typeof sandboxStart !== 'undefined') {
-        sandbox.ui.shareModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('shareModal'));
-        sandbox.ui.copyToast = bootstrap.Toast.getOrCreateInstance(document.getElementById("copyToast"));
-        sandbox.trimCode();
-        sandbox.setupEditor();
-        var url = new URL(window.location.href);
-        var urlCode = url.searchParams.get(sandbox.param.code);
-        var src = url.searchParams.get(sandbox.param.source);
-        if (src != null) {
-            sandbox.xhr(src, function (response) {
-                sandbox.editor.getSession().setValue(response);
-                var path = src.split("/");
-                path.pop();
-                sandbox.base = path.join("/") + "/";
-                sandbox.render();
-            });
-        } else {
-            if (urlCode != null) {
-                sandbox.editor.getSession().setValue(sandbox.decode(urlCode));
-            }
+    sandbox.ui.shareModal = bootstrap.Modal.getOrCreateInstance(document.getElementById(sandbox.id.shareModal));
+    sandbox.ui.copyToast = bootstrap.Toast.getOrCreateInstance(document.getElementById(sandbox.id.shareToast));
+    sandbox.trimCode();
+    sandbox.setupEditor();
+    sandbox.setupEvents();
+    var url = new URL(window.location.href);
+    var urlCode = url.searchParams.get(sandbox.param.code);
+    var src = url.searchParams.get(sandbox.param.source);
+    if (src != null) {
+        sandbox.xhr(src, function (response) {
+            sandbox.editor.getSession().setValue(response);
+            var path = src.split("/");
+            path.pop();
+            sandbox.base = path.join("/") + "/";
+            sandbox.removeLoading();
             sandbox.render();
+        });
+    } else {
+        if (urlCode != null) {
+            sandbox.editor.getSession().setValue(sandbox.decode(urlCode));
         }
+        sandbox.removeLoading();
+        sandbox.render();
     }
 };
 sandbox.xhr = function (url, callback) {
@@ -46,9 +63,9 @@ sandbox.xhr = function (url, callback) {
 sandbox.shareModal = function () {
     var url = sandbox.shareCheckLimit();
     if (url) {
-        document.getElementById("shareInput").value = url;
+        document.getElementById(sandbox.id.shareInput).value = url;
     } else {
-        document.getElementById("shareInput").value = "";
+        document.getElementById(sandbox.id.shareInput).value = "";
     }
     sandbox.ui.shareModal.show();
 };
@@ -60,14 +77,14 @@ sandbox.strByteSize = function (str) {
 sandbox.shareCheckLimit = function () {
     var url = sandbox.shareUrl();
     if (sandbox.strByteSize(url) > 4096) {
-        document.getElementById("shareInput").setAttribute("disabled", "");
-        document.getElementById("shareLimit").style.display = "";
-        document.getElementById("shareCopy").setAttribute("disabled", "");
+        document.getElementById(sandbox.id.shareInput).setAttribute("disabled", "");
+        document.getElementById(sandbox.id.shareLimit).style.display = "";
+        document.getElementById(sandbox.id.btnShareCopy).setAttribute("disabled", "");
         return false;
     } else {
-        document.getElementById("shareInput").removeAttribute("disabled");
-        document.getElementById("shareLimit").style.display = "none";
-        document.getElementById("shareCopy").removeAttribute("disabled");
+        document.getElementById(sandbox.id.shareInput).removeAttribute("disabled");
+        document.getElementById(sandbox.id.shareLimit).style.display = "none";
+        document.getElementById(sandbox.id.btnShareCopy).removeAttribute("disabled");
         return url;
     }
 };
@@ -75,21 +92,32 @@ sandbox.shareUrl = function () {
     return location.protocol + '//' + location.host + location.pathname + "?" + sandbox.param.code + "=" + sandbox.encode(sandbox.editor.getValue());
 };
 sandbox.copyUrl = function () {
-    navigator.clipboard.writeText(sandbox.shareUrl());
-    sandbox.ui.copyToast.show();
-};
-sandbox.trimCode = function () {
-    var i, elems = document.querySelectorAll("#code"), elem, html, pattern;
-    for (i = 0; i < elems.length; i++) {
-        elem = elems[i];
-        html = elem.innerHTML;
-        pattern = html.match(/\s*\n[\t\s]*/);
-        elem.innerHTML = html.replace(new RegExp(pattern, "g"), '\n').trim();
-        elem.parentNode.innerHTML = elem.parentNode.innerHTML.trim();
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(sandbox.shareUrl());
+        sandbox.ui.copyToast.show();
+    } else {
+        alert("Cannot copy to clipboard, try copying it manually!");
     }
 };
+sandbox.removeLoading = function () {
+    var loading = document.getElementById(sandbox.id.loading);
+    loading.parentElement.removeChild(loading);
+};
+sandbox.trimCode = function () {
+    var elem = document.getElementById(sandbox.id.code), html, pattern;
+    html = elem.innerHTML;
+    pattern = html.match(/\s*\n[\t\s]*/);
+    elem.innerHTML = html.replace(new RegExp(pattern, "g"), '\n').trim();
+    elem.parentNode.innerHTML = elem.parentNode.innerHTML.trim();
+};
+sandbox.setupEvents = function () {
+    document.getElementById(sandbox.id.btnSplit).onclick = sandbox.toggleSplitDirection;
+    document.getElementById(sandbox.id.btnShare).onclick = sandbox.shareModal;
+    document.getElementById(sandbox.id.btnShareCopy).onclick = sandbox.copyUrl;
+    document.getElementById(sandbox.id.btnRender).onclick = sandbox.render;
+};
 sandbox.setupEditor = function () {
-    sandbox.editor = ace.edit("code");
+    sandbox.editor = ace.edit(sandbox.id.code);
     sandbox.editor.setTheme("ace/theme/tomorrow_night");
     sandbox.editor.getSession().setMode("ace/mode/html");
     sandbox.editor.setOptions({
@@ -100,6 +128,11 @@ sandbox.setupEditor = function () {
     });
     sandbox.editor.setShowPrintMargin(false);
     sandbox.editor.setBehavioursEnabled(false);
+    if (screen.width > screen.height) {
+        sandbox.splitDirection = "horizontal";
+    } else {
+        sandbox.splitDirection = "vertical";
+    }
     sandbox.setupSplit(sandbox.splitDirection);
 };
 sandbox.toggleSplitDirection = function () {
@@ -112,8 +145,8 @@ sandbox.toggleSplitDirection = function () {
 sandbox.setupSplit = function (direction) {
     if (direction == 'vertical') {
         if (sandbox.split != null) { sandbox.split.destroy(); }
-        document.getElementById("splitWrapper").classList.remove("d-flex", "flex-row");
-        sandbox.split = Split(["#codeWrapper", "#previewWrapper"], {
+        document.getElementById(sandbox.id.split).classList.remove("d-flex", "flex-row");
+        sandbox.split = Split(["#" + sandbox.id.wrapperCode, "#" + sandbox.id.wrapperPreview], {
             sizes: [50, 50],
             minSize: 0,
             direction: 'vertical',
@@ -125,8 +158,8 @@ sandbox.setupSplit = function (direction) {
         sandbox.splitDirection = 'vertical';
     } else {
         if (sandbox.split != null) { sandbox.split.destroy(); }
-        document.getElementById("splitWrapper").classList.add("d-flex", "flex-row");
-        sandbox.split = Split(["#codeWrapper", "#previewWrapper"], {
+        document.getElementById(sandbox.id.split).classList.add("d-flex", "flex-row");
+        sandbox.split = Split(["#" + sandbox.id.wrapperCode, "#" + sandbox.id.wrapperPreview], {
             sizes: [50, 50],
             minSize: 0,
             direction: 'horizontal',
@@ -139,7 +172,7 @@ sandbox.setupSplit = function (direction) {
     }
 };
 sandbox.render = function () {
-    var code = sandbox.editor.getValue(), preview = document.getElementById('preview'), baseEl;
+    var code = sandbox.editor.getValue(), preview = document.getElementById(sandbox.id.preview), baseEl;
     preview.contentWindow.document.open();
     preview.contentWindow.document.write(code);
     if (sandbox.base != null && preview.contentDocument.head.querySelector("base") == null) {
@@ -527,4 +560,3 @@ sandbox.decompress = function (length, resetValue, getNextValue) {
         }
     }
 };
-sandbox.init();
