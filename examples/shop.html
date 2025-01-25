@@ -59,7 +59,7 @@
             <hr class="dropdown-divider mt-5">
             <div cog-repeat="cart;item;cart" style="max-height: 350px;overflow-y: auto;overflow-x: hidden;">
               <div class="row align-items-center p-1">
-                <div class="col">
+                <div class="col-auto me-auto">
                   <span>{{item.title}}</span>
                 </div>
                 <div class="col-auto">
@@ -79,8 +79,8 @@
         <!--SEARCH BAR-->
         <input cog-event="{input:{set:'search'}}, {input:'searchProducts()'}" cog-prop="context:{value:{{search}}}"
           class="form-control mb-3 mt-3" placeholder="Search" type="text">
-        <div class="row mb-3">
-          <div class="col">
+        <div class="row g-2 mb-3">
+          <div class="col-auto me-auto">
             <p class="m-0" cog-if="{{productsFiltered._length}} != {{products._length}}">
               Shown <span class="fw-bold">{{productsPaginated._length}}</span> out of <span
                 class="fw-bold">{{productsFiltered._length}}</span> filtered items
@@ -91,8 +91,8 @@
           </div>
         </div>
         <!--PAGINATION-->
-        <div class="row align-items-center">
-          <div class="col">
+        <div class="row g-2 align-items-center">
+          <div class="col-auto me-auto">
             <div cog-temp="pagination;pag;paginationMeta"></div>
           </div>
           <div class="col-auto">
