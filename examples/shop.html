@@ -18,7 +18,7 @@
   <!--TOAST CONTAINER-->
   <div id="toastContainer" cog-repeat="toastsTemplate;toast;toasts"
     class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-    <div cog-prop="class:{{toast.bg}}" _id="{{toast.id}}" data-bs-delay="2000"
+    <div cog-prop="class:{{toast.bg}}" id="{{toast.id}}" data-bs-delay="2000"
       class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="d-flex">
         <div class="toast-body">{{toast.product}} {{toast.text}}</div>
@@ -34,7 +34,7 @@
         <!--SIDEBAR-->
         <nav cog-repeat="categories;category;categories" class="nav flex-column nav-pills">
           <button cog-event="click:'changeMenu()'" cog-prop="if:[{{category.active}}, {class:'active'}]"
-            _category="{{category.title}}" class="nav-link"
+            category="{{category.title}}" class="nav-link"
             style="text-transform: capitalize;">{{category.title}}</button>
         </nav>
       </div>
@@ -117,7 +117,7 @@
         <table class="table table-striped mt-3 mb-3">
           <thead>
             <tr class="fw-bold" cog-repeat="columns;col;columns">
-              <td _col="{{col.name}}" style="text-transform: capitalize;"
+              <td col="{{col.name}}" style="text-transform: capitalize;"
                 cog-prop="if:[{{col.sortType}} !== null, {style:{cursor:'pointer'}}]"
                 cog-event="if:[{{col.sortType}} !== null, {click:'sortItems()'}]">{{col.name}}
                 <i cog-if="{{col.sortType}} === 1" class="fa-solid fa-chevron-down"></i>

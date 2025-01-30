@@ -6,7 +6,6 @@ cog.isRendered = false;
 cog.cache = true;
 cog.label = {
     head: "head",
-    escapeAttr: "_",
     escapeTag: "cog-escape",
     prop: "cog-prop",
     set: "cog-set",
@@ -221,10 +220,6 @@ cog.bind = function (dom, callback) {
                 nodeAttr = newNodeAttrs[ii];
                 attrKey = nodeAttr.name;
                 attrVal = nodeAttr.value;
-                if (attrKey.substring(0, cog.label.escapeAttr.length) == cog.label.escapeAttr) {
-                    node.removeAttribute(attrKey);
-                    attrKey = attrKey.substring(cog.label.escapeAttr.length, attrKey.length);
-                }
                 if (attrKey.indexOf(cog.label.prop) === 0) {
                     propType = "prop";
                 } else if (attrKey == cog.label.if) {
