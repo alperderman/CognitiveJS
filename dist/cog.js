@@ -2,6 +2,8 @@ if (typeof window.CustomEvent !== 'function') { window.CustomEvent = function (e
 var cog = {};
 cog.data = {};
 cog.templates = {};
+cog.id = {};
+cog.ids = {};
 cog.isRendered = false;
 cog.cache = true;
 cog.label = {
@@ -14,6 +16,7 @@ cog.label = {
     repeat: "cog-repeat",
     reverse: "cog-reverse",
     if: "cog-if",
+    id: "cog-id",
     event: "cog-event",
     await: "cog-await"
 };
@@ -151,9 +154,10 @@ cog.bind = function (dom, callback) {
         } else {
             tempTokenObj = null;
         }
-        tempNode.removeAttribute(cog.label.temp);
         if (cog.templates.hasOwnProperty(tempId)) {
-            tempRender = cog.template({ id: tempId, data: tempTokenObj, bind: true, fragment: true });
+            tempRender = cog.template({ id: tempId, data: tempTokenObj, fragment: false, bind: true });
+            tempRender.setAttribute(cog.label.id, tempId);
+            cog.defineId(tempId);
             tempNode.parentNode.replaceChild(tempRender, tempNode);
         }
     }
@@ -166,7 +170,7 @@ cog.bind = function (dom, callback) {
         } else {
             return NodeFilter.FILTER_REJECT;
         }
-    });
+    }, true);
     i = 0;
     while (node = nodes[i]) {
         if (node.nodeType === Node.TEXT_NODE) {
@@ -293,7 +297,7 @@ cog.bind = function (dom, callback) {
                             } else {
                                 return NodeFilter.FILTER_REJECT;
                             }
-                        });
+                        }, false);
                         cog.replaceTextNode(attrContentNodes, cog.splitTokens(attrVal), function (token, pureToken, content, parent, oldNode) {
                             newNode = document.createTextNode(content);
                             parent.insertBefore(newNode, oldNode);
@@ -334,6 +338,8 @@ cog.bindRepeats = function (dom) {
             repeatTokenObj[repeatAlias[i]] = repeatToken[i];
         }
         repeatNode.removeAttribute(cog.label.repeat);
+        repeatNode.setAttribute(cog.label.id, repeatId);
+        cog.defineId(repeatId);
         repeatDataToken = repeatToken[0];
         repeatData = cog.get(repeatDataToken, true);
         repeatNode.innerHTML = "";
@@ -818,20 +824,20 @@ cog.set = function (keys, val, exec) {
     }
 };
 cog.template = function (arg) {
-    var i, ii, iii, iiii, node, nodes = [], splitNodeContent, attrContentNodes, pureToken, token, idx, parent, oldNode, nodeAttr, nodeAttrs, aliasKeysLength, aliasKeys, aliasKey, aliasKeyArr, aliasKeyArrLength, aliasKeyArrResult, aliasReplace, aliasNode, aliasNodeItem, alias, tempNode, props, prop, cloneNode, newNode, tokenArr, attrContent, attrKey, attrVal, nodeSplitTokens;
+    var i, ii, iii, iiii, node, nodes = [], tempNodeAttrs, tempNodeAttrsLen, tempNodeAttr, splitNodeContent, attrContentNodes, pureToken, token, idx, parent, oldNode, nodeAttr, nodeAttrs, aliasKeysLength, aliasKeys, aliasKey, aliasKeyArr, aliasKeyArrLength, aliasKeyArrResult, aliasReplace, aliasNode, aliasNodeItem, alias, tempNode, props, prop, cloneNode, newNode, tokenArr, attrContent, attrKey, attrVal, nodeSplitTokens;
     if (arg.id == null) { return; }
     if (arg.fragment == null) { arg.fragment = false; }
     if (arg.bind == null) { arg.bind = false; }
     if (cog.templates[arg.id] == null && arg.node != null) {
         cog.templates[arg.id] = { alias: {}, props: [], node: arg.node.cloneNode(true) };
+        tempNode = cog.templates[arg.id]["node"];
+        tempNode.removeAttribute(cog.label.repeat);
+        tempNode.removeAttribute(cog.label.set);
         if (arg.alias != null) {
             aliasKeysLength = arg.alias.length;
             for (i = 0; i < aliasKeysLength; i++) {
                 cog.templates[arg.id]["alias"][arg.alias[i]] = [];
             }
-            tempNode = cog.templates[arg.id]["node"];
-            tempNode.removeAttribute(cog.label.repeat);
-            tempNode.removeAttribute(cog.label.temp);
             alias = cog.templates[arg.id]["alias"];
             props = cog.templates[arg.id]["props"];
             aliasKeys = arg.alias;
@@ -843,7 +849,7 @@ cog.template = function (arg) {
                 } else {
                     return NodeFilter.FILTER_REJECT;
                 }
-            });
+            }, true);
             i = 0;
             while (node = nodes[i]) {
                 if (node.nodeType === Node.TEXT_NODE) {
@@ -907,7 +913,7 @@ cog.template = function (arg) {
                                 } else {
                                     return NodeFilter.FILTER_REJECT;
                                 }
-                            });
+                            }, false);
                             cog.replaceTextNode(attrContentNodes, nodeSplitTokens, function (token, pureToken, content, parent, oldNode) {
                                 tokenArr = pureToken.split(".");
                                 aliasKeyArrResult = false;
@@ -981,6 +987,12 @@ cog.template = function (arg) {
             }
         }
         cloneNode = document.createElement(tempNode.tagName);
+        tempNodeAttrs = tempNode.attributes;
+        tempNodeAttrsLen = tempNodeAttrs.length
+        for (i = 0; i < tempNodeAttrsLen; i++) {
+            tempNodeAttr = tempNodeAttrs[i];
+            cloneNode.setAttribute(tempNodeAttr.name, tempNodeAttr.value);
+        }
         cloneNode.innerHTML = tempNode.innerHTML;
         if (arg.bind) {
             cloneNode = cog.bind(cloneNode);
@@ -996,19 +1008,22 @@ cog.setElems = function (callback) {
     cog.loadContents(function () {
         var setElem, setAttr, setAttrSplit, setType, setKey, propData, setKeys, setTemp, setTempId, setTempAlias, i, links = document.getElementsByTagName("link"), link, heads = document.querySelectorAll("[" + cog.label.head + "]"), head, tempNode, tempAttr, tempId, tempAlias;
         while (tempNode = document.querySelector("[" + cog.label.repeat + "]:not([" + cog.label.await + "])")) {
-            tempAttr = tempNode.getAttribute(cog.label.repeat).split(";");
-            tempId = tempAttr[0].trim();
-            tempAlias = tempAttr[1].split(",");
-            for (i in tempAlias) {
-                tempAlias[i] = tempAlias[i].trim();
-            }
             tempNode.setAttribute(cog.label.await, "");
-            if (!cog.templates.hasOwnProperty(tempId)) {
-                cog.template({ id: tempId, node: tempNode, alias: tempAlias });
+            if (tempNode.innerHTML.trim() !== "") {
+                tempAttr = tempNode.getAttribute(cog.label.repeat).split(";");
+                tempId = tempAttr[0].trim();
+                tempAlias = tempAttr[1].split(",");
+                for (i in tempAlias) {
+                    tempAlias[i] = tempAlias[i].trim();
+                }
+                if (!cog.templates.hasOwnProperty(tempId)) {
+                    cog.template({ id: tempId, node: tempNode, alias: tempAlias });
+                }
             }
         }
         while (tempNode = document.querySelector("[" + cog.label.repeat + "][" + cog.label.await + "]")) {
             tempNode.removeAttribute(cog.label.await);
+            tempNode.innerHTML = "";
         }
         for (i = 0; i < links.length; i++) {
             link = links[i];
@@ -1059,6 +1074,24 @@ cog.setElems = function (callback) {
             callback();
         }
     });
+};
+cog.defineId = function (id) {
+    if (!cog.id.hasOwnProperty(id) || !cog.ids.hasOwnProperty(id)) {
+        Object.defineProperty(cog.id, id, {
+            configurable: false,
+            enumerable: false,
+            get: function () {
+                return document.querySelector('[' + cog.label.id + '="' + id + '"]')
+            }
+        });
+        Object.defineProperty(cog.ids, id, {
+            configurable: false,
+            enumerable: false,
+            get: function () {
+                return document.querySelectorAll('[' + cog.label.id + '="' + id + '"]')
+            }
+        });
+    }
 };
 cog.observable = function (value, callback, parent) {
     if (value instanceof cog.observable) { return value; }
@@ -1658,9 +1691,13 @@ cog.replaceTextNode = function (nodes, replace, callback) {
         i++;
     }
 };
-cog.filterNodes = function (elem, show, filter) {
+cog.filterNodes = function (elem, show, filter, root) {
     var nodes = [];
+    if (root == null) { root = false; }
     var iterator = document.createTreeWalker(elem, show, filter, false);
+    if (root) {
+        nodes.push(iterator.root);
+    }
     while (iterator.nextNode()) {
         nodes.push(iterator.currentNode);
     }

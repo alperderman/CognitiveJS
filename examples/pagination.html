@@ -1,43 +1,40 @@
-<div cog-set="temp:pagination;pag">
+<div cog-set="temp:pagination;pag" pag-meta="{{pag._token}}">
     <style>
         .pagination {
             margin: 0;
         }
     </style>
-    <nav pag-meta="{{pag._token}}" class="user-select-none">
+    <nav class="user-select-none">
         <ul class="pagination">
             <li class="page-item" cog-prop="if:[!{{pag.checkPrev}}, {class:'disabled'}, {style:{cursor:'pointer'}}]">
-                <span class="page-link" cog-event="if:[{{pag.checkPrev}}, {click:pagination.prev}]">Previous</span>
+                <span class="page-link" pag-meta="{{pag._token}}" cog-event="if:[{{pag.checkPrev}}, {click:pagination.prev}]">Previous</span>
             </li>
             <ul class="pagination" cog-repeat="paginationList;pagItem;{{pag.pagesShown}}">
                 <li class="page-item" cog-prop="if:[{{pagItem.active}}, {class:'active'}, {style:{cursor:'pointer'}}]">
-                    <span class="page-link" pag-number="{{pagItem.number}}"
+                    <span class="page-link" pag-meta="{{pag._token}}" pag-number="{{pagItem.number}}"
                         cog-event="if:[!{{pagItem.active}}, {click:pagination.change}]">{{pagItem.number}}</span>
                 </li>
             </ul>
             <li class="page-item" cog-prop="if:[{{pag.checkNext}}, {class:'disabled'}, {style:{cursor:'pointer'}}]">
-                <span class="page-link" cog-event="if:[!{{pag.checkNext}}, {click:pagination.next}]">Next</span>
+                <span class="page-link" pag-meta="{{pag._token}}" cog-event="if:[!{{pag.checkNext}}, {click:pagination.next}]">Next</span>
             </li>
         </ul>
     </nav>
     <script>
         var pagination = {};
         pagination.change = function () {
-            var node = event.currentTarget.parentNode.parentNode.parentNode.parentNode;
-            var meta = cog.get(node.getAttribute("pag-meta"), true);
+            var meta = cog.get(event.currentTarget.getAttribute("pag-meta"), true);
             var newPageNumber = parseInt(event.currentTarget.getAttribute("pag-number"));
             meta.pageNumber = newPageNumber;
             pagination.update(meta);
         };
         pagination.next = function () {
-            var node = event.currentTarget.parentNode.parentNode.parentNode;
-            var meta = cog.get(node.getAttribute("pag-meta"), true);
+            var meta = cog.get(event.currentTarget.getAttribute("pag-meta"), true);
             meta.pageNumber = meta.pageNumber._get() + 1;
             pagination.update(meta);
         };
         pagination.prev = function () {
-            var node = event.currentTarget.parentNode.parentNode.parentNode;
-            var meta = cog.get(node.getAttribute("pag-meta"), true);
+            var meta = cog.get(event.currentTarget.getAttribute("pag-meta"), true);
             meta.pageNumber = meta.pageNumber._get() - 1;
             pagination.update(meta);
         };
@@ -110,7 +107,7 @@
             cog.set(meta.pageData._get(), arr);
         };
         document.addEventListener(cog.event.afterRender, function () {
-            var i, node, nodes = document.querySelectorAll("[pag-meta]"), nodesLen = nodes.length, meta;
+            var i, node, nodes = cog.ids.pagination, nodesLen = nodes.length, meta;
             for (i = 0; i < nodesLen; i++) {
                 node = nodes[i];
                 meta = cog.get(node.getAttribute("pag-meta"), true);
