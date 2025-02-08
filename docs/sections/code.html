@@ -134,6 +134,11 @@
     </code>
 </pre>
 <h3 cog-prop="attr:{id:{{section.sub.3.id}}}">{{section.sub.3.title}}</h3>
+<p><code>cog.id</code>, <code>cog.ids</code> objects and <code>cog.templateRoot()</code>, <code>cog.templateData()</code> functions are used exclusively for templates and its derivatives (repeaters and components).</p>
+<p>As mentioned in the <a href="#template">Templates</a> section, <code>cog.id</code> and <code>cog.ids</code> objects are for accessing template elements that are currently reside in DOM. What they do behind the scenes is, CognitiveJS will mark template elements with <code>cog-id</code> attribute during the rendering process. Then, when the objects are called, <code>document.querySelector()</code> or <code>document.querySelectorAll()</code> function will be executed to find these marked elements.</p>
+<p><code>cog.templateRoot()</code> function is for returning the root of the template element based on its children node. <code>cog.templateData()</code> function on the other is used for returning the dataset of the template. These functions are especially useful for data communication between templates and methods.</p>
+<p>Example for these functionalities are given in <a href="#template">Templates</a> and <a href="#comp">Components</a> sections.</p>
+<h3 cog-prop="attr:{id:{{section.sub.4.id}}}">{{section.sub.4.title}}</h3>
 <p><code>beforeRender</code> and <code>afterRender</code> events are used to execute scripts before or after rendering process.</p>
 <div class="d-flex justify-content-end">
     <button class="btn btn-info" code-id="code_exp4" cog-event="click:'openSandbox()'">Open in Sandbox</button>
@@ -167,15 +172,15 @@
         &lt;/html>
     </code>
 </pre>
-<h3 cog-prop="attr:{id:{{section.sub.4.id}}}">{{section.sub.4.title}}</h3>
+<h3 cog-prop="attr:{id:{{section.sub.5.id}}}">{{section.sub.5.title}}</h3>
 <p>Render priority in CognitiveJS follows as;</p>
 <ol>
-    <li>Loads external contents.</li>
-    <li>Sets declared data and templates on DOM.</li>
+    <li>Loads all external contents (<code>cog-src</code>).</li>
+    <li>Sets declared data and templates on DOM (<code>cog-set</code> attributes including <code>cog-repeat</code> templates).</li>
     <li>Converts <code>cog.data</code> and children values to observables.</li>
     <li>Executes <code>beforeRender</code> event.</li>
     <li>Render elements and templates.</li>
-    <li>Execute all scripts.</li>
+    <li>Executes all scripts.</li>
     <li>Imitates document load events.</li>
     <li>Scrolls to hash ID</li>
     <li>Executes <code>afterRender</code> event.</li>

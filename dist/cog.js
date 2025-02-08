@@ -17,6 +17,7 @@ cog.label = {
     reverse: "cog-reverse",
     if: "cog-if",
     id: "cog-id",
+    data: "cog-data",
     event: "cog-event",
     await: "cog-await"
 };
@@ -156,8 +157,7 @@ cog.bind = function (dom, callback) {
         }
         if (cog.templates.hasOwnProperty(tempId)) {
             tempRender = cog.template({ id: tempId, data: tempTokenObj, fragment: false, bind: true });
-            tempRender.setAttribute(cog.label.id, tempId);
-            cog.defineId(tempId);
+            cog.defineTempAttrs(tempRender, tempId, tempToken);
             tempNode.parentNode.replaceChild(tempRender, tempNode);
         }
     }
@@ -228,12 +228,14 @@ cog.bind = function (dom, callback) {
                     propType = "prop";
                 } else if (attrKey == cog.label.if) {
                     propType = "if";
+                } else if (attrKey == cog.label.event) {
+                    propType = "event";
                 } else {
                     propType = "attr";
                 }
                 if (cog.regex.token.test(attrVal) || propType != "attr") {
                     prop = { node: node };
-                    if (propType != "attr") {
+                    if (propType != "attr" && propType != "event") {
                         attrContentParse = cog.prepareTokenStr(attrVal);
                         nodeSplitTokens = cog.splitTokens(attrVal, true);
                         for (nodeSplitToken in nodeSplitTokens) {
@@ -299,19 +301,22 @@ cog.bind = function (dom, callback) {
                             }
                         }, false);
                         cog.replaceTextNode(attrContentNodes, cog.splitTokens(attrVal), function (token, pureToken, content, parent, oldNode) {
+                            ob = cog.get(pureToken, true);
                             newNode = document.createTextNode(content);
                             parent.insertBefore(newNode, oldNode);
-                            ob = cog.get(pureToken, true);
                             cog.pushNode(pureToken, ob, { prop: prop, node: newNode });
                         });
-                        node.setAttribute(attrKey, attrContent.textContent);
-                        prop.type = "attr";
-                        prop.attr = attrKey;
+                        if (propType == "attr") {
+                            node.setAttribute(attrKey, attrContent.textContent);
+                            prop.type = "attr";
+                            prop.attr = attrKey;
+                        } else {
+                            node.removeAttribute(cog.label.event);
+                            prop.type = "event";
+                            cog.addEventProperties(node, prop);
+                        }
                         prop.content = attrContent;
                     }
-                }
-                if (attrKey == cog.label.event) {
-                    cog.addEventProperties(node, cog.eventHandler);
                 }
             }
         }
@@ -338,8 +343,7 @@ cog.bindRepeats = function (dom) {
             repeatTokenObj[repeatAlias[i]] = repeatToken[i];
         }
         repeatNode.removeAttribute(cog.label.repeat);
-        repeatNode.setAttribute(cog.label.id, repeatId);
-        cog.defineId(repeatId);
+        cog.defineTempAttrs(repeatNode, repeatId, repeatToken);
         repeatDataToken = repeatToken[0];
         repeatData = cog.get(repeatDataToken, true);
         repeatNode.innerHTML = "";
@@ -622,6 +626,10 @@ cog.rebindNodes = function (nodes, content) {
                     if (node.node.nodeValue != content) {
                         node.node.nodeValue = content;
                         prop.node.setAttribute(prop.attr, prop.content.innerHTML);
+                    }
+                } else if (prop.type == "event") {
+                    if (node.node.nodeValue != content) {
+                        node.node.nodeValue = content;
                     }
                 }
             } else {
@@ -1075,7 +1083,36 @@ cog.setElems = function (callback) {
         }
     });
 };
-cog.defineId = function (id) {
+cog.templateRoot = function (node, tempId) {
+    if ((tempId == null && node.hasAttribute(cog.label.id)) || (tempId != null && node.getAttribute && node.getAttribute(cog.label.id) === tempId)) {
+        return node;
+    }
+    var i, ids = cog.ids[tempId], idsLen = ids.length, id;
+    for (i = 0; i < idsLen; i++) {
+        id = ids[i];
+        if (cog.isChild(id, node)) {
+            return id;
+        }
+    }
+};
+cog.templateData = function (node, tempId, all) {
+    var root = cog.templateRoot(node, tempId);
+    if (!cog.isElement(root) || !root.hasAttribute(cog.label.data)) { return; }
+    if (all == null) { all = false; }
+    var i, data = root.getAttribute(cog.label.data).split(","), dataLen, result;
+    if (all) {
+        result = [];
+        for (i = 0; i < dataLen; i++) {
+            result.push(cog.get(data[i], true));
+        }
+    } else {
+        result = cog.get(data[0], true);
+    }
+    return result;
+};
+cog.defineTempAttrs = function (node, id, data) {
+    node.setAttribute(cog.label.id, id);
+    if (data != null) { node.setAttribute(cog.label.data, data.join(",")); }
     if (!cog.id.hasOwnProperty(id) || !cog.ids.hasOwnProperty(id)) {
         Object.defineProperty(cog.id, id, {
             configurable: false,
@@ -1627,15 +1664,18 @@ cog.getKeyByValue = function (obj, val) {
         }
     }
 };
-cog.isInDocument = function (el) {
-    var html = document.body.parentNode;
-    while (el) {
-        if (el === html) {
+cog.isChild = function (parent, child) {
+    var node = child;
+    while (node) {
+        if (node === parent) {
             return true;
         }
-        el = el.parentNode;
+        node = node.parentNode;
     }
     return false;
+};
+cog.isInDocument = function (node) {
+    return cog.isChild(document.body.parentNode, node);
 };
 cog.pushNode = function (keys, ob, node) {
     if (!(ob instanceof cog.observable)) { return; }
@@ -1804,50 +1844,52 @@ cog.extractAssets = function (elem) {
         document.body.appendChild(script);
     }
 };
-cog.eventHandler = function (event) {
-    var node = event.currentTarget;
-    if (typeof node.getAttribute !== 'function') { return; }
-    var i, ii, attr = node.getAttribute(cog.label.event), events, attrEvents, attrEventsLen, setEvents, data;
-    if (attr != null) {
-        attr = attr.trim();
-        if (attr[0] == "{") {
-            attrEvents = cog.eval("([" + attr + "])");
-        } else {
-            attrEvents = cog.eval("([{" + attr + "}])");
-        }
-        attrEventsLen = attrEvents.length;
-        for (i = 0; i < attrEventsLen; i++) {
-            events = cog.propCondition(attrEvents[i]);
-            if (events) {
-                for (ii in events) {
-                    if (ii == event.type) {
-                        if (typeof events[ii] === 'function') {
-                            events[ii](events);
-                        } else if (typeof events[ii] === 'object') {
-                            setEvents = events[ii];
-                            if (!setEvents.hasOwnProperty("data")) {
-                                setEvents.data = "value";
+cog.addEventProperties = function (elem, prop) {
+    var eventName;
+    for (eventName in elem) {
+        if (/^on/.test(eventName)) {
+            elem[eventName] = function (event) {
+                var node = event.currentTarget;
+                if (typeof node.getAttribute !== 'function') { return; }
+                var i, ii, props = prop, attr = props.content.textContent, events, eventsValue, attrEvents, attrEventsLen, setEvents, data;
+                if (attr != null) {
+                    attr = attr.trim();
+                    if (attr[0] == "{") {
+                        attrEvents = cog.eval("([" + attr + "])");
+                    } else {
+                        attrEvents = cog.eval("([{" + attr + "}])");
+                    }
+                    attrEventsLen = attrEvents.length;
+                    for (i = 0; i < attrEventsLen; i++) {
+                        events = cog.propCondition(attrEvents[i]);
+                        if (events) {
+                            for (ii in events) {
+                                eventsValue = events[ii];
+                                if (ii == event.type) {
+                                    if (typeof eventsValue === 'function') {
+                                        eventsValue(events);
+                                    } else if (eventsValue instanceof cog.observable && eventsValue[cog.keyword.type] == "function") {
+                                        eventsValue[cog.keyword.get](true);
+                                    } else if (typeof eventsValue === 'object') {
+                                        setEvents = eventsValue;
+                                        if (!setEvents.hasOwnProperty("data")) {
+                                            setEvents.data = "value";
+                                        }
+                                        if (typeof node[setEvents.data] !== "undefined") {
+                                            data = node[setEvents.data];
+                                        } else {
+                                            data = cog.eval(setEvents.data);
+                                        }
+                                        cog.set(setEvents["set"], data);
+                                    } else {
+                                        cog.eval(eventsValue);
+                                    }
+                                }
                             }
-                            if (typeof node[setEvents.data] !== "undefined") {
-                                data = node[setEvents.data];
-                            } else {
-                                data = cog.eval(setEvents.data);
-                            }
-                            cog.set(setEvents["set"], data);
-                        } else {
-                            cog.eval(events[ii]);
                         }
                     }
                 }
-            }
-        }
-    }
-};
-cog.addEventProperties = function (node, func) {
-    var eventName;
-    for (eventName in node) {
-        if (/^on/.test(eventName)) {
-            node[eventName] = func;
+            };
         }
     }
 };
