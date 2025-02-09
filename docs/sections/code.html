@@ -95,8 +95,9 @@
     </code>
 </pre>
 <h3 cog-prop="attr:{id:{{section.sub.2.id}}}">{{section.sub.2.title}}</h3>
-<p><code>cog.addBound()</code> and <code>cog.removeBound()</code> functions are used to bind or remove binding of two tokens, so any of the changes made to one will also update the other token in DOM.</p>
-<p>These functions especially huseful for function tokens which use other tokens to return value.</p>
+<p><code>cog.addBound()</code> and <code>cog.removeBound()</code> functions are used to bind or remove binding of two tokens. When bound together, any of the changes made to one will also update the other token in DOM.</p>
+<p>For the parameters, either observables themselves or token keys of the observables can be passed.</p>
+<p>Instead of binding two tokens, A plain function can also be bound with a token, bound function will be executed everytime the token value changes.</p>
 <div class="d-flex justify-content-end">
     <button class="btn btn-info" code-id="code_exp3" cog-event="click:'openSandbox()'">Open in Sandbox</button>
 </div>
@@ -125,6 +126,13 @@
                 function addButton() {
                     cog.data.number1 = cog.get("number1") + 1;
                 }
+
+                function onNumberChange(parent, self) {
+                    console.log(self._token + " has changed!");
+                }
+
+                cog.addBound("number1", onNumberChange);
+                cog.addBound("number2", onNumberChange);
 
                 cog.render();
             &lt;/script>

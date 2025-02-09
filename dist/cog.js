@@ -421,12 +421,16 @@ cog.rebound = function (ob) {
     var i, bob;
     for (i in ob[cog.keyword.bound]) {
         bob = ob[cog.keyword.bound][i];
-        bob[cog.keyword.iterate](function (cob) {
-            cog.rebindNodes(cob[cog.keyword.nodes], cog.get(cob, false, true));
-            cog.rebindNodes(cob[cog.keyword.innerNodes][cog.keyword.index], cob[cog.keyword.index]);
-            cog.rebindNodes(cob[cog.keyword.innerNodes][cog.keyword.length], cob[cog.keyword.length]);
-            cog.correctIndex(cob);
-        });
+        if (bob instanceof cog.observable) {
+            bob[cog.keyword.iterate](function (cob) {
+                cog.rebindNodes(cob[cog.keyword.nodes], cog.get(cob, false, true));
+                cog.rebindNodes(cob[cog.keyword.innerNodes][cog.keyword.index], cob[cog.keyword.index]);
+                cog.rebindNodes(cob[cog.keyword.innerNodes][cog.keyword.length], cob[cog.keyword.length]);
+                cog.correctIndex(cob);
+            });
+        } else {
+            bob(ob[cog.keyword.parent], ob);
+        }
     }
 };
 cog.correctIndex = function (ob) {
@@ -713,20 +717,20 @@ cog.addBound = function (dataKeys, targetKeys) {
         });
     } else {
         var dataKey, targetKey;
-        if (dataKeys instanceof cog.observable) {
+        if (dataKeys instanceof cog.observable || typeof dataKeys === "function") {
             dataKey = dataKeys;
         } else {
             dataKey = cog.get(dataKeys, true);
         }
-        if (targetKeys instanceof cog.observable) {
+        if (targetKeys instanceof cog.observable || typeof targetKeys === "function") {
             targetKey = targetKeys;
         } else {
             targetKey = cog.get(targetKeys, true);
         }
-        if (dataKey[cog.keyword.bound].indexOf(targetKey) === -1) {
+        if (dataKey instanceof cog.observable && dataKey[cog.keyword.bound].indexOf(targetKey) === -1) {
             dataKey[cog.keyword.bound].push(targetKey);
         }
-        if (targetKey[cog.keyword.bound].indexOf(dataKey) === -1) {
+        if (targetKey instanceof cog.observable && targetKey[cog.keyword.bound].indexOf(dataKey) === -1) {
             targetKey[cog.keyword.bound].push(dataKey);
         }
     }
@@ -738,20 +742,20 @@ cog.removeBound = function (dataKeys, targetKeys) {
         });
     } else {
         var dataKey, targetKey;
-        if (dataKeys instanceof cog.observable) {
+        if (dataKeys instanceof cog.observable || typeof dataKeys === "function") {
             dataKey = dataKeys;
         } else {
             dataKey = cog.get(dataKeys, true);
         }
-        if (targetKeys instanceof cog.observable) {
+        if (targetKeys instanceof cog.observable || typeof targetKeys === "function") {
             targetKey = targetKeys;
         } else {
             targetKey = cog.get(targetKeys, true);
         }
-        if (dataKey[cog.keyword.bound].indexOf(targetKey) !== -1) {
+        if (dataKey instanceof cog.observable && dataKey[cog.keyword.bound].indexOf(targetKey) !== -1) {
             dataKey[cog.keyword.bound].splice(dataKey[cog.keyword.bound].indexOf(targetKey), 1);
         }
-        if (targetKey[cog.keyword.bound].indexOf(dataKey) !== -1) {
+        if (targetKey instanceof cog.observable && targetKey[cog.keyword.bound].indexOf(dataKey) !== -1) {
             targetKey[cog.keyword.bound].splice(targetKey[cog.keyword.bound].indexOf(dataKey), 1);
         }
     }

@@ -38,6 +38,20 @@
             meta.pageNumber = meta.pageNumber._get() - 1;
             pagination.update(meta);
         };
+        pagination.checkPrev = function (meta) {
+            return meta["pageNumber"]._get() > 1;
+        };
+        pagination.checkNext = function (meta) {
+            return meta["pageNumber"]._get() >= meta["pagesTotal"]._get();
+        };
+        pagination.onLimitChange = function (meta) {
+            meta["pageNumber"] = 1;
+            pagination.update(meta);
+        };
+        pagination.onDataChange = function (meta) {
+            meta["pageNumber"] = 1;
+            pagination.update(meta);
+        };
         pagination.update = function (meta) {
             var data = cog.get(meta.data._get(), true);
             var limit = meta.limit._get();
@@ -106,14 +120,16 @@
             }
             cog.set(meta.pageData._get(), arr);
         };
-        document.addEventListener(cog.event.afterRender, function () {
+        pagination.initialize = function () {
             var i, node, nodes = cog.ids.pagination, nodesLen = nodes.length, meta;
             for (i = 0; i < nodesLen; i++) {
                 node = nodes[i];
                 meta = cog.templateData(node);
+
                 cog.set([...meta._keys, "pages"], []);
                 cog.set([...meta._keys, "pagesTotal"], 0);
                 cog.set([...meta._keys, "pagesShown"], []);
+
                 cog.set([...meta._keys, "pageNumber"], function (ob) {
                     if (ob._get() >= 1) {
                         return ob._get();
@@ -121,6 +137,7 @@
                         return 1;
                     }
                 }, true);
+
                 cog.set([...meta._keys, "pagesAmount"], function (ob) {
                     if (ob._get() >= 1) {
                         return ob._get();
@@ -128,6 +145,7 @@
                         return 3;
                     }
                 }, true);
+
                 cog.set([...meta._keys, "limit"], function (ob) {
                     if (ob._get() >= 1) {
                         return ob._get();
@@ -135,39 +153,39 @@
                         return 25;
                     }
                 }, true);
+
                 cog.set([...meta._keys, "onLimitChange"], function (ob) {
                     if (ob._type === "function") {
                         return ob._get();
                     } else {
-                        return function () {
-                            meta["pageNumber"] = 1;
-                            pagination.update(meta);
-                        };
+                        return function () { return pagination.onLimitChange(meta) };
                     }
                 }, true);
                 cog.addBound(meta["limit"], meta["onLimitChange"]);
+
                 cog.set([...meta._keys, "onDataChange"], function (ob) {
                     if (ob._type === "function") {
                         return ob._get();
                     } else {
-                        return function () {
-                            meta["pageNumber"] = 1;
-                            pagination.update(meta);
-                        };
+                        return function () { return pagination.onDataChange(meta) };
                     }
                 }, true);
                 cog.addBound(meta.data._get(), meta["onDataChange"]);
-                cog.set([...meta._keys, "checkPrev"], function (parent, self) {
-                    return meta["pageNumber"]._get() > 1;
+
+                cog.set([...meta._keys, "checkPrev"], function () {
+                    return pagination.checkPrev(meta);
                 });
                 cog.addBound(meta["checkPrev"], meta["pageNumber"]);
-                cog.set([...meta._keys, "checkNext"], function (parent, self) {
-                    return meta["pageNumber"]._get() >= meta["pagesTotal"]._get();
+
+                cog.set([...meta._keys, "checkNext"], function () {
+                    return pagination.checkNext(meta);
                 });
                 cog.addBound(meta["checkNext"], meta["pageNumber"]);
                 cog.addBound(meta["checkNext"], meta["pagesTotal"]);
+
                 pagination.update(meta);
             }
-        });
+        };
+        document.addEventListener(cog.event.afterRender, pagination.initialize);
     </script>
 </div>
