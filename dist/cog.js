@@ -22,10 +22,12 @@ cog.label = {
     await: "cog-await"
 };
 cog.event = {
-    beforeRender: "COGBeforeRender",
-    afterRender: "COGAfterRender"
+    beforeRender: "COG_beforeRender",
+    afterRender: "COG_afterRender",
+    onTemplateLoad: "COG_onTemplateLoad"
 };
 cog.keyword = {
+    this: "_this",
     get: "_get",
     set: "_set",
     iterate: "_iterate",
@@ -159,6 +161,7 @@ cog.bind = function (dom, callback) {
             tempRender = cog.template({ id: tempId, data: tempTokenObj, fragment: false, bind: true });
             cog.defineTempAttrs(tempRender, tempId, tempToken);
             tempNode.parentNode.replaceChild(tempRender, tempNode);
+            cog.dispatchOnTemplateLoad(tempRender, tempId);
         }
     }
     cog.bindRepeats(dom);
@@ -235,59 +238,69 @@ cog.bind = function (dom, callback) {
                 }
                 if (cog.regex.token.test(attrVal) || propType != "attr") {
                     prop = { node: node };
-                    if (propType != "attr" && propType != "event") {
-                        attrContentParse = cog.prepareTokenStr(attrVal);
-                        nodeSplitTokens = cog.splitTokens(attrVal, true);
-                        for (nodeSplitToken in nodeSplitTokens) {
-                            ob = cog.get(nodeSplitToken, true);
-                            cog.pushNode(nodeSplitToken, ob, { prop: prop });
-                        }
-                        if (propType == "if") {
-                            if (cog.if(cog.constructTokenStr(attrContentParse))) {
-                                node.style.display = "";
+                    prop.type = propType;
+                    if (propType != "attr") {
+                        if (propType == "event") {
+                            attrVal = attrVal.trim();
+                            if (attrVal[0] == "{") {
+                                attrVal = "[" + attrVal + "]";
                             } else {
-                                node.style.display = "none";
+                                attrVal = "[{" + attrVal + "}]";
                             }
-                            prop.type = "if";
+                            attrContentParse = cog.prepareTokenStr(attrVal);
                             prop.content = attrContentParse;
+                            cog.addEventProperties(node, prop);
                         } else {
-                            attrContentObj = cog.eval("({" + cog.constructTokenStr(attrContentParse) + "})");
-                            attrContentObj = cog.propCondition(attrContentObj);
-                            if (attrContentObj) {
-                                if (attrContentObj.hasOwnProperty("style")) {
-                                    attrContentObjProp = attrContentObj["style"];
-                                    for (iii in attrContentObjProp) {
-                                        node.style[iii] = attrContentObjProp[iii];
-                                    }
+                            attrContentParse = cog.prepareTokenStr(attrVal);
+                            prop.content = attrContentParse;
+                            nodeSplitTokens = cog.splitTokens(attrVal, true);
+                            for (nodeSplitToken in nodeSplitTokens) {
+                                ob = cog.get(nodeSplitToken, true);
+                                cog.pushNode(nodeSplitToken, ob, { prop: prop });
+                            }
+                            if (propType == "if") {
+                                if (cog.if(cog.constructTokenStr(attrContentParse))) {
+                                    node.style.display = "";
+                                } else {
+                                    node.style.display = "none";
                                 }
-                                if (attrContentObj.hasOwnProperty("class")) {
-                                    if (typeof attrContentObj["class"] === "string") {
-                                        attrContentObjProp = attrContentObj["class"].trim().split(" ");
-                                    } else {
-                                        attrContentObjProp = attrContentObj["class"];
+                            } else {
+                                attrContentObj = cog.eval("({" + cog.constructTokenStr(attrContentParse) + "})");
+                                attrContentObj = cog.propCondition(attrContentObj);
+                                if (attrContentObj) {
+                                    if (attrContentObj.hasOwnProperty("style")) {
+                                        attrContentObjProp = attrContentObj["style"];
+                                        for (iii in attrContentObjProp) {
+                                            node.style[iii] = attrContentObjProp[iii];
+                                        }
                                     }
-                                    for (iii in attrContentObjProp) {
-                                        if (attrContentObjProp[iii]) {
-                                            node.classList.add(attrContentObjProp[iii]);
+                                    if (attrContentObj.hasOwnProperty("class")) {
+                                        if (typeof attrContentObj["class"] === "string") {
+                                            attrContentObjProp = attrContentObj["class"].trim().split(" ");
+                                        } else {
+                                            attrContentObjProp = attrContentObj["class"];
+                                        }
+                                        for (iii in attrContentObjProp) {
+                                            if (attrContentObjProp[iii]) {
+                                                node.classList.add(attrContentObjProp[iii]);
+                                            }
+                                        }
+                                    }
+                                    if (attrContentObj.hasOwnProperty("context")) {
+                                        attrContentObjProp = attrContentObj["context"];
+                                        for (iii in attrContentObjProp) {
+                                            node[iii] = attrContentObjProp[iii];
+                                        }
+                                    }
+                                    if (attrContentObj.hasOwnProperty("attr")) {
+                                        attrContentObjProp = attrContentObj["attr"];
+                                        for (iii in attrContentObjProp) {
+                                            node.setAttribute(iii, attrContentObjProp[iii]);
                                         }
                                     }
                                 }
-                                if (attrContentObj.hasOwnProperty("context")) {
-                                    attrContentObjProp = attrContentObj["context"];
-                                    for (iii in attrContentObjProp) {
-                                        node[iii] = attrContentObjProp[iii];
-                                    }
-                                }
-                                if (attrContentObj.hasOwnProperty("attr")) {
-                                    attrContentObjProp = attrContentObj["attr"];
-                                    for (iii in attrContentObjProp) {
-                                        node.setAttribute(iii, attrContentObjProp[iii]);
-                                    }
-                                }
+                                prop.old = attrContentObj;
                             }
-                            prop.type = "prop";
-                            prop.content = attrContentParse;
-                            prop.old = attrContentObj;
                         }
                         node.removeAttribute(attrKey);
                     } else {
@@ -306,15 +319,8 @@ cog.bind = function (dom, callback) {
                             parent.insertBefore(newNode, oldNode);
                             cog.pushNode(pureToken, ob, { prop: prop, node: newNode });
                         });
-                        if (propType == "attr") {
-                            node.setAttribute(attrKey, attrContent.textContent);
-                            prop.type = "attr";
-                            prop.attr = attrKey;
-                        } else {
-                            node.removeAttribute(cog.label.event);
-                            prop.type = "event";
-                            cog.addEventProperties(node, prop);
-                        }
+                        node.setAttribute(attrKey, attrContent.textContent);
+                        prop.attr = attrKey;
                         prop.content = attrContent;
                     }
                 }
@@ -362,6 +368,7 @@ cog.bindRepeats = function (dom) {
                 }
             }
         }
+        cog.dispatchOnTemplateLoad(repeatNode, repeatId);
     }
 };
 cog.rebind = function (task) {
@@ -387,29 +394,29 @@ cog.rebind = function (task) {
     }
     if (task.action == "set") {
         ob[cog.keyword.iterate](function (cob) {
-            cog.rebindNodes(cob[cog.keyword.nodes], cog.get(cob, false, true));
-            cog.rebindNodes(cob[cog.keyword.innerNodes][cog.keyword.index], cob[cog.keyword.index]);
-            cog.rebindNodes(cob[cog.keyword.innerNodes][cog.keyword.length], cob[cog.keyword.length]);
+            cog.rebindNodes(cob[cog.keyword.nodes], cob);
+            cog.rebindNodes(cob[cog.keyword.innerNodes][cog.keyword.index], cob, cog.keyword.index);
+            cog.rebindNodes(cob[cog.keyword.innerNodes][cog.keyword.length], cob, cog.keyword.length);
             cog.correctIndex(cob);
             cog.rebound(cob);
         });
     }
     if (task.action == "push" || task.action == "pop") {
-        cog.rebindNodes(ob[cog.keyword.innerNodes][cog.keyword.length], ob[cog.keyword.length]);
+        cog.rebindNodes(ob[cog.keyword.innerNodes][cog.keyword.length], ob, cog.keyword.length);
         ob[cog.keyword.iterate](function (cob) {
             cog.rebound(cob);
         });
     }
     if (task.action == "unshift" || task.action == "shift" || task.action == "splice") {
-        cog.rebindNodes(ob[cog.keyword.innerNodes][cog.keyword.length], ob[cog.keyword.length]);
+        cog.rebindNodes(ob[cog.keyword.innerNodes][cog.keyword.length], ob, cog.keyword.length);
         ob[cog.keyword.iterate](function (cob) {
-            cog.rebindNodes(cob[cog.keyword.innerNodes][cog.keyword.index], cob[cog.keyword.index]);
+            cog.rebindNodes(cob[cog.keyword.innerNodes][cog.keyword.index], cob, cog.keyword.index);
             cog.rebound(cob);
         });
     }
     if (task.action == "reverse") {
         ob[cog.keyword.iterate](function (cob) {
-            cog.rebindNodes(cob[cog.keyword.innerNodes][cog.keyword.index], cob[cog.keyword.index]);
+            cog.rebindNodes(cob[cog.keyword.innerNodes][cog.keyword.index], cob, cog.keyword.index);
             cog.rebound(cob);
         });
     }
@@ -423,9 +430,9 @@ cog.rebound = function (ob) {
         bob = ob[cog.keyword.bound][i];
         if (bob instanceof cog.observable) {
             bob[cog.keyword.iterate](function (cob) {
-                cog.rebindNodes(cob[cog.keyword.nodes], cog.get(cob, false, true));
-                cog.rebindNodes(cob[cog.keyword.innerNodes][cog.keyword.index], cob[cog.keyword.index]);
-                cog.rebindNodes(cob[cog.keyword.innerNodes][cog.keyword.length], cob[cog.keyword.length]);
+                cog.rebindNodes(cob[cog.keyword.nodes], cob[cog.keyword.get](true));
+                cog.rebindNodes(cob[cog.keyword.innerNodes][cog.keyword.index], cob, cog.keyword.index);
+                cog.rebindNodes(cob[cog.keyword.innerNodes][cog.keyword.length], cob, cog.keyword.length);
                 cog.correctIndex(cob);
             });
         } else {
@@ -434,10 +441,9 @@ cog.rebound = function (ob) {
     }
 };
 cog.correctIndex = function (ob) {
-    var i, ii, iii, repeats = ob[cog.keyword.repeats], repeatsKeys, repeatBeforeChildNodes, repeatAfterChildNodes, realIndex, repeat, repeatChildren, checkLRepeat, checkLRepeatChildrenLength, checkLRepeatChildren, checkLRepeatChild, repeatChild;
-    repeatsKeys = Object.keys(repeats);
-    if (!(repeatsKeys.length > 0)) { return; }
-    checkLRepeat = ob[cog.keyword.repeats][repeatsKeys[0]];
+    var i, ii, iii, repeats = ob[cog.keyword.repeats], repeatBeforeChildNodes, repeatAfterChildNodes, realIndex, repeat, repeatChildren, checkLRepeat, checkLRepeatChildrenLength, checkLRepeatChildren, checkLRepeatChild, repeatChild;
+    if (!(repeats.length > 0)) { return; }
+    checkLRepeat = repeats[0];
     checkLRepeatChildrenLength = checkLRepeat["children"].length;
     if (checkLRepeatChildrenLength > ob.length) {
         cog.spliceRepeats(ob, ob.length, checkLRepeatChildrenLength - ob.length, 0);
@@ -519,13 +525,23 @@ cog.spliceRepeats = function (ob, index, remove, add) {
         }
     }
 };
-cog.rebindNodes = function (nodes, content) {
-    var i, ii, node, oldNode, oldNodeLen, newNode, newNodeLen, prop, attrContentObj, attrContentObjProp, isContentElement = cog.isElement(content);
+cog.accessTokenValue = function (ob, key) {
+    if (!(ob instanceof cog.observable)) { return ob; }
+    if (!key) {
+        return cog.get(ob, false, true);
+    } else {
+        return ob[key];
+    }
+};
+cog.rebindNodes = function (nodes, cob, key) {
+    var i, ii, node, oldNode, oldNodeLen, newNode, newNodeLen, prop, attrContentObj, attrContentObjProp, content, isContentElement;
     for (i = 0; i < nodes.length; i++) {
         node = nodes[i];
         if (node.hasOwnProperty("text")) {
             oldNode = node.text;
             if (cog.isInDocument(oldNode)) {
+                content = cog.accessTokenValue(cob, key);
+                isContentElement = cog.isElement(content);
                 if (isContentElement) {
                     newNode = cog.bind(content.cloneNode(true));
                     if (content.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
@@ -627,13 +643,10 @@ cog.rebindNodes = function (nodes, content) {
                         prop.node.style.display = "none";
                     }
                 } else if (prop.type == "attr") {
+                    content = cog.accessTokenValue(cob, key);
                     if (node.node.nodeValue != content) {
                         node.node.nodeValue = content;
                         prop.node.setAttribute(prop.attr, prop.content.innerHTML);
-                    }
-                } else if (prop.type == "event") {
-                    if (node.node.nodeValue != content) {
-                        node.node.nodeValue = content;
                     }
                 }
             } else {
@@ -649,6 +662,8 @@ cog.rebindNodes = function (nodes, content) {
                 }
             }
             if (oldNode.length > 0) {
+                content = cog.accessTokenValue(cob, key);
+                isContentElement = cog.isElement(content);
                 if (isContentElement) {
                     newNode = cog.bind(content.cloneNode(true));
                     if (content.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
@@ -684,6 +699,8 @@ cog.rebindNodes = function (nodes, content) {
         } else if (node.hasOwnProperty("elem")) {
             oldNode = node.elem;
             if (cog.isInDocument(oldNode)) {
+                content = cog.accessTokenValue(cob, key);
+                isContentElement = cog.isElement(content);
                 if (isContentElement) {
                     newNode = cog.bind(content.cloneNode(true));
                     if (content.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
@@ -765,7 +782,6 @@ cog.get = function (keys, ob, exec) {
     if (keys instanceof cog.observable) {
         if (ob) { return keys; }
         ref = keys;
-        keys = ref[cog.keyword.keys];
         refType = ref[cog.keyword.type];
         if (refType !== 'object' && refType !== 'array') {
             ref = ref[cog.keyword.get](exec);
@@ -778,7 +794,7 @@ cog.get = function (keys, ob, exec) {
         }
         keysLength = keys.length;
         lastKey = keys[keysLength - 1];
-        if (ob && (lastKey == cog.keyword.index || lastKey == cog.keyword.length)) {
+        if (lastKey == cog.keyword.this || (ob && (lastKey == cog.keyword.index || lastKey == cog.keyword.length))) {
             keys.pop();
             return cog.get(keys, true);
         }
@@ -1103,7 +1119,7 @@ cog.templateData = function (node, tempId, all) {
     var root = cog.templateRoot(node, tempId);
     if (!cog.isElement(root) || !root.hasAttribute(cog.label.data)) { return; }
     if (all == null) { all = false; }
-    var i, data = root.getAttribute(cog.label.data).split(","), dataLen, result;
+    var i, data = root.getAttribute(cog.label.data).split(","), dataLen = data.length, result;
     if (all) {
         result = [];
         for (i = 0; i < dataLen; i++) {
@@ -1413,6 +1429,12 @@ cog.observable = function (value, callback, parent) {
         get: function () {
             return cog.checkType(_self[cog.keyword.value]);
         }
+    });
+    Object.defineProperty(_self, cog.keyword.this, {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: _self
     });
     Object.defineProperty(_self, cog.keyword.parent, {
         configurable: false,
@@ -1780,7 +1802,7 @@ cog.prepareTokenStr = function (str) {
                 content = cog.get(m[1], true);
                 if (content !== undefined) {
                     lastKey = cog.getLastKey(m[1]);
-                    if (lastKey == cog.keyword.index || lastKey == cog.keyword.length) {
+                    if (lastKey == cog.keyword.index || lastKey == cog.keyword.length || lastKey == cog.keyword.this) {
                         result.push({ ob: content, keyword: lastKey });
                     } else {
                         result.push({ ob: content });
@@ -1848,6 +1870,29 @@ cog.extractAssets = function (elem) {
         document.body.appendChild(script);
     }
 };
+cog.dispatchOnTemplateLoad = function (root, id) {
+    if (!cog.isRendered) {
+        document.addEventListener(cog.event.afterRender, function () {
+            cog.dispatchOnTemplateLoad(root, id);
+        });
+    } else {
+        var dataset = cog.templateData(root, id, true), data;
+        if (typeof dataset === "undefined") {
+            dataset = [];
+            data = null;
+        } else {
+            data = dataset[0];
+        }
+        document.dispatchEvent(new CustomEvent(cog.event.onTemplateLoad, {
+            "detail": {
+                id: id,
+                root: root,
+                dataset: dataset,
+                data: data
+            }
+        }));
+    }
+};
 cog.addEventProperties = function (elem, prop) {
     var eventName;
     for (eventName in elem) {
@@ -1855,17 +1900,12 @@ cog.addEventProperties = function (elem, prop) {
             elem[eventName] = function (event) {
                 var node = event.currentTarget;
                 if (typeof node.getAttribute !== 'function') { return; }
-                var i, ii, props = prop, attr = props.content.textContent, events, eventsValue, attrEvents, attrEventsLen, setEvents, data;
-                if (attr != null) {
-                    attr = attr.trim();
-                    if (attr[0] == "{") {
-                        attrEvents = cog.eval("([" + attr + "])");
-                    } else {
-                        attrEvents = cog.eval("([{" + attr + "}])");
-                    }
-                    attrEventsLen = attrEvents.length;
-                    for (i = 0; i < attrEventsLen; i++) {
-                        events = cog.propCondition(attrEvents[i]);
+                var i, ii, props = cog.constructTokenStr(prop.content), events, eventsValue, setEvents, data;
+                propEvents = cog.eval("(" + props + ")");
+                if (propEvents) {
+                    propEventsLen = propEvents.length;
+                    for (i = 0; i < propEventsLen; i++) {
+                        events = cog.propCondition(propEvents[i]);
                         if (events) {
                             for (ii in events) {
                                 eventsValue = events[ii];

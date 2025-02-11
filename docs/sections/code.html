@@ -148,6 +148,7 @@
 <p>Example for these functionalities are given in <a href="#template">Templates</a> and <a href="#comp">Components</a> sections.</p>
 <h3 cog-prop="attr:{id:{{section.sub.4.id}}}">{{section.sub.4.title}}</h3>
 <p><code>beforeRender</code> and <code>afterRender</code> events are used to execute scripts before or after rendering process.</p>
+<p><code>onTemplateLoad</code> event is dispatched every time a template is loaded. Template ID, root of the template, dataset and data (first data definition in dataset) can be accessed via detail object.</p>
 <div class="d-flex justify-content-end">
     <button class="btn btn-info" code-id="code_exp4" cog-event="click:'openSandbox()'">Open in Sandbox</button>
 </div>
@@ -161,9 +162,20 @@
 
             &lt;h1>{{title}}&lt;/h1>
 
+            &lt;div cog-set="temp:template_id;template_alias1, template_alias2">
+                &lt;h1>{{template_alias1.title}}&lt;/h1>
+                &lt;p>{{template_alias1.content}}&lt;/p>
+                &lt;hr>
+                &lt;a href="{{template_alias2.href}}">{{template_alias2.text}}&lt;/a>
+            &lt;/div>
+        
+            &lt;div cog-temp="template_id;template_alias1, template_alias2;foo, bar">&lt;/div>
+
             &lt;script src="../dist/cog.js">&lt;/script>
             &lt;script>
                 cog.data.title = "Hello World!";
+                cog.data.foo = {title:"Title", content:"Lorem ipsum dolor sit amet."};
+                cog.data.bar = {text:"Link", href:"http://google.com"};
 
                 document.addEventListener(cog.event.beforeRender, function () {
                     console.log(document.body.innerHTML);
@@ -171,6 +183,13 @@
                     
                 document.addEventListener(cog.event.afterRender, function () {
                     console.log(document.body.innerHTML);
+                });
+
+                document.addEventListener(cog.event.onTemplateLoad, function (e) {
+                    console.log(e.detail.id);
+                    console.log(e.detail.root);
+                    console.log(e.detail.dataset);
+                    console.log(e.detail.data);
                 });
 
                 cog.render();
@@ -190,6 +209,6 @@
     <li>Render elements and templates.</li>
     <li>Executes all scripts.</li>
     <li>Imitates document load events.</li>
-    <li>Scrolls to hash ID</li>
-    <li>Executes <code>afterRender</code> event.</li>
+    <li>Scrolls to hash ID.</li>
+    <li>Executes <code>afterRender</code> event, alongside with <code>onTemplateLoad</code> events when needed.</li>
 </ol>
