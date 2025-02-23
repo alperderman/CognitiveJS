@@ -82,7 +82,6 @@
             if (pagesAmount >= pagesLen) {
                 arr = [];
                 arr = arr.concat(meta.pages._get());
-                meta.pagesShown = arr;
             } else {
                 var pageNumberBefore, pageNumberAfter;
                 pageNumberBefore = (pageNumber - 1) - Math.floor(pagesAmount / 2);
@@ -104,10 +103,10 @@
                 }
                 arr = [];
                 for (i = pageNumberBefore; i < pageNumberAfter; i++) {
-                    arr.push(pages[i]);
+                    arr.push(pages[i]._get());
                 }
-                meta.pagesShown = arr;
             }
+            meta.pagesShown = arr;
             var offset = (pageNumber - 1) * limit;
             arr = [];
             for (i = 0; i < limit; i++) {
