@@ -1329,7 +1329,7 @@ cog.observable = function (value, callback, parent) {
         enumerable: false,
         writable: false,
         value: function (exec) {
-            var obType = _self[cog.keyword.type], data, i;
+            var i, data, obType = _self[cog.keyword.type];
             if (exec == null) { exec = false; }
             if (obType === 'array') {
                 data = [];
@@ -1344,7 +1344,7 @@ cog.observable = function (value, callback, parent) {
                 for (i in _self) {
                     data[i] = _self[i][cog.keyword.get](exec);
                 }
-                return data
+                return data;
             } else if (exec && obType === 'function') {
                 return _self[cog.keyword.value](_self[cog.keyword.parent], _self);
             } else {
@@ -1376,7 +1376,7 @@ cog.observable = function (value, callback, parent) {
             if (typeof func === 'function') {
                 if (obKeys == null) { obKeys = [] }
                 func(_self, obKeys);
-                var obType = _self[cog.keyword.type], obKey, i;
+                var i, obKey, obType = _self[cog.keyword.type];
                 if (obType === 'array') {
                     i = 0;
                     while (typeof _self[cog.keyword.value][i] !== 'undefined') {
