@@ -76,7 +76,6 @@ cog.render = function (layoutSrc, arg) {
         cog.isRendering = true;
         cog.loadAssets();
         if (typeof layoutSrc === "string") {
-            layoutSrc = cog.urlAbsolute(layoutSrc);
             cog.xhr(layoutSrc, function (xhr) {
                 if (xhr.status == 200) {
                     layout = xhr.responseText;
@@ -2239,20 +2238,6 @@ cog.getUrlParams = function (url) {
         return queryString
     }
     return result;
-};
-cog.url = function () {
-    return location.protocol + '//' +
-        location.hostname +
-        (location.port ? ":" + location.port : "") +
-        location.pathname +
-        (location.search ? location.search : "");
-};
-cog.urlAbsolute = function (url) {
-    var div = document.createElement('div');
-    div.innerHTML = "<a></a>";
-    div.firstChild.href = url;
-    div.innerHTML = div.innerHTML;
-    return div.firstChild.href.split('#')[0];
 };
 cog.urlEncode = function (obj) {
     var key, result;
