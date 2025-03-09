@@ -13,6 +13,8 @@
 </head>
 
 <body style="display: none;">
+  <!--EXTERNAL PRODUCTS-->
+  <div cog-src="products.json" cog-set="json:productsResponse"></div>
   <!--EXTERNAL PAGINATION COMPONENT-->
   <div cog-src="pagination.html"></div>
   <!--TOAST CONTAINER-->
@@ -317,9 +319,8 @@
       });
     }
 
-    // getting the products data, executing cog.render() function after we process the categories and lastly removing the display none style from body (I've done it with internal cog.xhr() function but you can use any other API or library you want)
-    cog.xhr("products.json", function (xhr) {
-      cog.data.products = JSON.parse(xhr.responseText).products;
+    document.addEventListener(cog.event.beforeRender, function () {
+      cog.data.products = cog.get("productsResponse.products");
       cog.data.products.forEach(function (product) {
         var push = true;
         product["number"] = function (parent, target) {
@@ -327,7 +328,7 @@
           return parseInt(parent[cog.keyword.index]) + 1;
         };
         cog.data.categories.forEach(function (val) {
-          if (val.title == product.category) {
+          if (val.title._get() == product.category._get()) {
             push = false;
           }
         });
@@ -336,11 +337,11 @@
         }
       });
       cog.data.productsFiltered = cog.get("products");
-      document.addEventListener(cog.event.afterRender, function () {
-        document.body.style.display = "";
-      });
-      cog.render();
     });
+    document.addEventListener(cog.event.afterRender, function () {
+      document.body.style.display = "";
+    });
+    cog.render();
   </script>
 </body>
 

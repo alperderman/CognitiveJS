@@ -94,7 +94,8 @@
     },
     {
     "title":"Shopping Example",
-    "desc":"Shopping example uses CognitiveJS in its full potential, it includes all of the features mentioned in the documentation.",
+    "desc":"Shopping example uses CognitiveJS in its full potential, it includes all of the features mentioned in the
+    documentation.",
     "link":"../examples/shop.html"
     }
     ]
@@ -140,7 +141,9 @@
     cog.cache = true;
     document.addEventListener(cog.event.afterRender, function () {
       var loading = document.getElementById("loading");
-      loading.parentElement.removeChild(loading);
+      if (loading) {
+        loading.parentElement.removeChild(loading);
+      }
     });
     cog.render("layout.html");
   </script>
