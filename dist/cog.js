@@ -2075,7 +2075,7 @@ cog.addEventProperties = function (elem, prop) {
     var handleEvent = function (event) {
         var node = event.currentTarget;
         if (typeof node.getAttribute !== 'function') { return; }
-        var i, ii, props = cog.constructTokenStr(prop.content), events, eventsValue, setEvents, data;
+        var i, ii, props = cog.constructTokenStr(prop.content), events, eventsValue, setEvents, data, propEvents, propEventsLen;
         propEvents = cog.eval("(" + props + ")");
         if (propEvents) {
             propEventsLen = propEvents.length;
