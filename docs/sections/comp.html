@@ -1,7 +1,8 @@
 <h1 cog-prop="attr:{id:{{section.id}}}">{{section.title}}</h1>
 <p>Component in CognitiveJS is an arbitrary term to define independent templates that have their own script and style tags.</p>
 <p>In a normal template (and HTML) definition, style and script tags inside them will be extracted and then executed. This grants us the ability to seperate interactive design elements such as modals, pop-ups, toasts from the main algorithm, making things easier to manage and maintain.</p>
-<p>Since CognitiveJS doesn't embrace a scope based principle, we have to manually find a way to distinguish them and communicate between components and methods. This can be achieved easily thanks to <code>cog.templateRoot()</code> and <code>cog.templateData()</code> functions.</p>
+<p>Since CognitiveJS doesn't embrace a scope based principle, we have to manually find a way to distinguish them and communicate between components and methods. This can be achieved easily thanks to <code>cog.templateRoot()</code> and <code>cog.templateData()</code> functions or their shorthand definitions.</p>
+<p><b>NOTE:</b> Components are encouraged to be called externally via <code>cog-src</code> attribute. See <a href="#src">External Sources</a> section for more information.</p>
 <div class="d-flex justify-content-end">
     <button class="btn btn-info" code-id="comp_exp1" cog-event="click:'openSandbox()'">Open in Sandbox</button>
 </div>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CognitiveJS | Modal Component Example</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+    integrity="sha384-SOnAn/m2fVJCwnbEYgD4xzrPtvsXdElhOVvR8ND1YjB5nhGNwwf7nBQlhfAwHAZC" crossorigin="anonymous">
+</head>
+
+<body style="display: none;">
+
+  <!--MODAL COMPONENT-->
+  <div cog-set="temp:modal;obj">
+    <style>
+      .modal,
+      .modal-backdrop {
+        display: none;
+      }
+
+      .modal-backdrop {
+        opacity: 0.5;
+      }
+    </style>
+
+    <div class="modal" cog-event="click:modal.closeThis" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5">{{obj.title}}</h1>
+            <button type="button" class="btn-close" cog-event="click:modal.closeThis" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            {{obj.content}}
+          </div>
+          <div class="modal-footer" cog-repeat="modalButtons;btn;{{obj.buttons}}">
+            <button type="button" class="btn" cog-prop="class:{{btn.class}}"
+              cog-event="click:'{{btn.action}}'">{{btn.title}}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-backdrop"></div>
+
+    <script>
+      var modal = {};
+      modal.open = function (meta) {
+        var root = cog.get(meta.root);
+        var modal = root.querySelector(".modal");
+        var backdrop = root.querySelector(".modal-backdrop");
+        modal.style.display = "block";
+        backdrop.style.display = "block";
+      };
+      modal.close = function (meta) {
+        var root = cog.get(meta.root);
+        var modal = root.querySelector(".modal");
+        var backdrop = root.querySelector(".modal-backdrop");
+        modal.style.display = "none";
+        backdrop.style.display = "none";
+      };
+      modal.closeThis = function () {
+        event.stopPropagation();
+        if (event.target !== event.currentTarget) { return; }
+        var meta = cog.templates.modal.currentData(event.currentTarget);
+        modal.close(meta);
+      };
+      document.addEventListener("COG_beforeRender", function () {
+        //beforeRender event is wrapped around the onTemplateLoad function for the sake of this internal render example
+        //Normally components are externally called via cog-src attribute so you don't need to wrap around beforeRender event
+        cog.onTemplateLoad.modal = function (root, dataset, data) {
+          var meta = data;
+          cog.set([...meta._keys, "buttons"], function (ob) {
+            if (ob._type === "array") {
+              return ob._get();
+            } else {
+              return [];
+            }
+          }, true);
+          cog.set([...meta._keys, "open"], function () {
+            return modal.open(meta);
+          });
+          cog.set([...meta._keys, "root"], root);
+          cog.set([...meta._keys, "close"], function () {
+            return modal.close(meta);
+          });
+        };
+
+      });
+    </script>
+  </div>
+
+  <!--MODALS-->
+  <div cog-temp="modal;obj;modal1"></div>
+  <div cog-temp="modal;obj;modal2"></div>
+
+  <div class="container">
+    <h1 class="mb-5 text-center">CognitiveJS Modal Component Example</h1>
+    <div class="row justify-content-center">
+      <div class="col-auto">
+        <button type="button" cog-event="click:'{{modal1.open}}'" class="btn btn-primary">
+          Launch demo modal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../dist/cog.js"></script>
+  <script>
+    //DEFINITIONS
+    cog.data.modal1 = {
+      title: "Save changes?",
+      content: "If this dialog is closed, changes will be lost forever.",
+      buttons: [{
+        title: "Close",
+        class: "btn-secondary",
+        action: function () {
+          modal.closeThis();
+        }
+      }, {
+        title: "Save",
+        class: "btn-primary",
+        action: function () {
+          modal.closeThis();
+          modal.open(cog.data.modal2);
+        }
+      }]
+    };
+    cog.data.modal2 = {
+      title: "Success!",
+      content: "Changes are saved.",
+      buttons: [{
+        title: "Close",
+        class: "btn-secondary",
+        action: function () {
+          modal.closeThis();
+        }
+      }]
+    };
+
+    // executing cog.render() and removing display none style from body
+    document.addEventListener(cog.event.afterRender, function () {
+      document.body.style.display = "";
+    });
+    cog.render();
+  </script>
+</body>
+
+</html>

@@ -2,8 +2,7 @@ if (typeof window.CustomEvent !== 'function') { window.CustomEvent = function (e
 var cog = {};
 cog.data = {};
 cog.templates = {};
-cog.id = {};
-cog.ids = {};
+cog.onTemplateLoad = {};
 cog.assets = {
     sources: [],
     nodes: [],
@@ -190,7 +189,7 @@ cog.bind = function (dom, callback) {
             tempTokenObj = null;
         }
         if (cog.templates.hasOwnProperty(tempId)) {
-            tempRender = cog.template({ id: tempId, data: tempTokenObj, bind: true });
+            tempRender = cog.initTemplate({ id: tempId, data: tempTokenObj, bind: true });
             cog.defineTempAttrs(tempRender, tempId, tempToken);
             tempNode.parentNode.replaceChild(tempRender, tempNode);
             cog.dispatchOnTemplateLoad(tempRender, tempId);
@@ -370,7 +369,7 @@ cog.bindRepeats = function (dom) {
             repeatDataLength = repeatData.length;
             for (i = 0; i < repeatDataLength; i++) {
                 repeatTokenObj[repeatAlias[0]] = repeatDataToken + "." + i;
-                repeatTemp = cog.template({ id: repeatId, data: repeatTokenObj, bind: true });
+                repeatTemp = cog.initTemplate({ id: repeatId, data: repeatTokenObj, bind: true });
                 repeatsNew["children"].push({ ob: repeatData[i], nodes: [] });
                 repeatsNewChildren = repeatsNew["children"][i];
                 while (repeatTemp.firstChild) {
@@ -527,7 +526,7 @@ cog.spliceRepeats = function (ob, index, remove, add) {
                 }
                 repeatAlias = cog.shallowClone(repeat["alias"]);
                 repeatAlias[repeat["dataAlias"]] = ob[cog.keyword.token] + "." + sumIndex;
-                repeatTemp = cog.template({ id: repeat["template"], data: repeatAlias, bind: true, parent: repeat });
+                repeatTemp = cog.initTemplate({ id: repeat["template"], data: repeatAlias, bind: true, parent: repeat });
                 repeatNewChildren = [];
                 if (repeatBeforeChildNodes) {
                     while (repeatTemp.firstChild) {
@@ -811,12 +810,27 @@ cog.set = function (keys, val, exec) {
         }
     }
 };
-cog.template = function (arg) {
+cog.initTemplate = function (arg) {
     var i, ii, iii, iiii, node, nodes = [], tempNodeAttrs, tempNodeAttrsLen, tempNodeAttr, splitNodeContent, attrContentNodes, pureToken, token, idx, parent, oldNode, nodeAttr, nodeAttrs, aliasKeysLength, aliasKeys, aliasKey, aliasKeyArr, aliasKeyArrLength, aliasKeyArrResult, aliasReplace, aliasNode, aliasNodeItem, alias, tempNode, props, prop, cloneNode, newNode, tokenArr, attrContent, attrKey, attrVal, nodeSplitTokens;
     if (arg.id == null) { return; }
     if (arg.bind == null) { arg.bind = false; }
     if (cog.templates[arg.id] == null && arg.node != null) {
-        cog.templates[arg.id] = { alias: {}, props: [], node: arg.node.cloneNode(true) };
+        cog.templates[arg.id] = {
+            alias: {}, props: [], node: arg.node.cloneNode(true),
+            currentData: function (elem, all) {
+                return cog.templateData(elem, arg.id, all);
+            },
+            currentRoot: function (elem) {
+                return cog.templateRoot(elem, arg.id);
+            }
+        };
+        Object.defineProperty(cog.templates[arg.id], "roots", {
+            configurable: false,
+            enumerable: false,
+            get: function () {
+                return document.querySelectorAll('[' + cog.label.id + '="' + arg.id + '"]');
+            }
+        });
         tempNode = cog.templates[arg.id]["node"];
         tempNode.removeAttribute(cog.label.repeat);
         tempNode.removeAttribute(cog.label.set);
@@ -1001,7 +1015,7 @@ cog.setElems = function (callback) {
                 i++;
             }
             if (!cog.templates.hasOwnProperty(tempId)) {
-                cog.template({ id: tempId, node: tempNode, alias: tempAlias });
+                cog.initTemplate({ id: tempId, node: tempNode, alias: tempAlias });
             }
         }
     }
@@ -1047,7 +1061,7 @@ cog.setElems = function (callback) {
             } else {
                 setTempAlias = null;
             }
-            cog.template({ id: setTempId, node: setElem, alias: setTempAlias });
+            cog.initTemplate({ id: setTempId, node: setElem, alias: setTempAlias });
         }
         setElem.parentNode.removeChild(setElem);
     }
@@ -1056,16 +1070,13 @@ cog.setElems = function (callback) {
     }
 };
 cog.templateRoot = function (node, tempId) {
-    if ((tempId == null && node.hasAttribute(cog.label.id)) || (tempId != null && node.getAttribute && node.getAttribute(cog.label.id) === tempId)) {
-        return node;
-    }
-    var i, ids = cog.ids[tempId], idsLen = ids.length, id;
-    for (i = 0; i < idsLen; i++) {
-        id = ids[i];
-        if (cog.isChild(id, node)) {
-            return id;
+    while (node) {
+        if (node.getAttribute && node.getAttribute(cog.label.id) === tempId) {
+            return node;
         }
+        node = node.parentNode;
     }
+    return false;
 };
 cog.templateData = function (node, tempId, all) {
     var root = cog.templateRoot(node, tempId);
@@ -1085,22 +1096,6 @@ cog.templateData = function (node, tempId, all) {
 cog.defineTempAttrs = function (node, id, data) {
     node.setAttribute(cog.label.id, id);
     if (data != null) { node.setAttribute(cog.label.data, data.join(",")); }
-    if (!cog.id.hasOwnProperty(id) || !cog.ids.hasOwnProperty(id)) {
-        Object.defineProperty(cog.id, id, {
-            configurable: false,
-            enumerable: false,
-            get: function () {
-                return document.querySelector('[' + cog.label.id + '="' + id + '"]')
-            }
-        });
-        Object.defineProperty(cog.ids, id, {
-            configurable: false,
-            enumerable: false,
-            get: function () {
-                return document.querySelectorAll('[' + cog.label.id + '="' + id + '"]')
-            }
-        });
-    }
 };
 cog.observable = function (value, callback, parent) {
     if (value instanceof cog.observable) {
@@ -2059,6 +2054,9 @@ cog.dispatchOnTemplateLoad = function (root, id) {
             data = null;
         } else {
             data = dataset[0];
+        }
+        if (cog.onTemplateLoad.hasOwnProperty(id) && typeof cog.onTemplateLoad[id] === "function") {
+            cog.onTemplateLoad[id](root, dataset, data);
         }
         document.dispatchEvent(new CustomEvent(cog.event.onTemplateLoad, {
             "detail": {

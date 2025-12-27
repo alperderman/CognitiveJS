@@ -1,187 +1,185 @@
 <div cog-set="temp:pagination;pag">
-    <style>
-        .pagination {
-            margin: 0;
+  <style>
+    .pagination {
+      margin: 0;
+    }
+  </style>
+  <nav class="user-select-none">
+    <ul class="pagination">
+      <li class="page-item" cog-prop="if:[!{{pag.checkPrev}}, {class:'disabled'}, {style:{cursor:'pointer'}}]">
+        <span class="page-link" cog-event="if:[{{pag.checkPrev}}, {click:pagination.prev}]">Previous</span>
+      </li>
+      <ul class="pagination" cog-repeat="paginationList;pagItem;{{pag.pagesShown}}">
+        <li class="page-item" cog-prop="if:[{{pagItem.active}}, {class:'active'}, {style:{cursor:'pointer'}}]">
+          <span class="page-link" pag-number="{{pagItem.number}}"
+            cog-event="if:[!{{pagItem.active}}, {click:pagination.change}]">{{pagItem.number}}</span>
+        </li>
+      </ul>
+      <li class="page-item" cog-prop="if:[{{pag.checkNext}}, {class:'disabled'}, {style:{cursor:'pointer'}}]">
+        <span class="page-link" cog-event="if:[!{{pag.checkNext}}, {click:pagination.next}]">Next</span>
+      </li>
+    </ul>
+  </nav>
+  <script>
+    var pagination = {};
+    pagination.change = function () {
+      var meta = cog.templateData(event.currentTarget, "pagination");
+      var newPageNumber = parseInt(event.currentTarget.getAttribute("pag-number"));
+      meta.pageNumber = newPageNumber;
+      pagination.update(meta);
+    };
+    pagination.next = function () {
+      var meta = cog.templateData(event.currentTarget, "pagination");
+      meta.pageNumber = meta.pageNumber._get() + 1;
+      pagination.update(meta);
+    };
+    pagination.prev = function () {
+      var meta = cog.templateData(event.currentTarget, "pagination");
+      meta.pageNumber = meta.pageNumber._get() - 1;
+      pagination.update(meta);
+    };
+    pagination.checkPrev = function (meta) {
+      return meta["pageNumber"]._get() > 1;
+    };
+    pagination.checkNext = function (meta) {
+      return meta["pageNumber"]._get() >= meta["pagesTotal"]._get();
+    };
+    pagination.onLimitChange = function (meta) {
+      meta["pageNumber"] = 1;
+      pagination.update(meta);
+    };
+    pagination.onDataChange = function (meta) {
+      meta["pageNumber"] = 1;
+      pagination.update(meta);
+    };
+    pagination.update = function (meta) {
+      var data = cog.get(meta.data._get(), true);
+      var limit = meta.limit._get();
+      var pages = meta.pages;
+      var pagesAmount = meta.pagesAmount._get();
+      var pagesLen = pages.length;
+      var pageNumber = meta.pageNumber._get();
+      var pagesTotal = Math.ceil(data.length / limit);
+      meta.pagesTotal = pagesTotal;
+      var i, page, dataItem, arr;
+      if (pagesTotal > pagesLen) {
+        arr = meta.pages._get();
+        for (i = pagesLen + 1; i <= pagesTotal; i++) {
+          arr.push({ number: i, active: false });
         }
-    </style>
-    <nav class="user-select-none">
-        <ul class="pagination">
-            <li class="page-item" cog-prop="if:[!{{pag.checkPrev}}, {class:'disabled'}, {style:{cursor:'pointer'}}]">
-                <span class="page-link" cog-event="if:[{{pag.checkPrev}}, {click:pagination.prev}]">Previous</span>
-            </li>
-            <ul class="pagination" cog-repeat="paginationList;pagItem;{{pag.pagesShown}}">
-                <li class="page-item" cog-prop="if:[{{pagItem.active}}, {class:'active'}, {style:{cursor:'pointer'}}]">
-                    <span class="page-link" pag-number="{{pagItem.number}}"
-                        cog-event="if:[!{{pagItem.active}}, {click:pagination.change}]">{{pagItem.number}}</span>
-                </li>
-            </ul>
-            <li class="page-item" cog-prop="if:[{{pag.checkNext}}, {class:'disabled'}, {style:{cursor:'pointer'}}]">
-                <span class="page-link" cog-event="if:[!{{pag.checkNext}}, {click:pagination.next}]">Next</span>
-            </li>
-        </ul>
-    </nav>
-    <script>
-        var pagination = {};
-        pagination.change = function () {
-            var meta = cog.templateData(event.currentTarget, "pagination");
-            var newPageNumber = parseInt(event.currentTarget.getAttribute("pag-number"));
-            meta.pageNumber = newPageNumber;
-            pagination.update(meta);
-        };
-        pagination.next = function () {
-            var meta = cog.templateData(event.currentTarget, "pagination");
-            meta.pageNumber = meta.pageNumber._get() + 1;
-            pagination.update(meta);
-        };
-        pagination.prev = function () {
-            var meta = cog.templateData(event.currentTarget, "pagination");
-            meta.pageNumber = meta.pageNumber._get() - 1;
-            pagination.update(meta);
-        };
-        pagination.checkPrev = function (meta) {
-            return meta["pageNumber"]._get() > 1;
-        };
-        pagination.checkNext = function (meta) {
-            return meta["pageNumber"]._get() >= meta["pagesTotal"]._get();
-        };
-        pagination.onLimitChange = function (meta) {
-            meta["pageNumber"] = 1;
-            pagination.update(meta);
-        };
-        pagination.onDataChange = function (meta) {
-            meta["pageNumber"] = 1;
-            pagination.update(meta);
-        };
-        pagination.update = function (meta) {
-            var data = cog.get(meta.data._get(), true);
-            var limit = meta.limit._get();
-            var pages = meta.pages;
-            var pagesAmount = meta.pagesAmount._get();
-            var pagesLen = pages.length;
-            var pageNumber = meta.pageNumber._get();
-            var pagesTotal = Math.ceil(data.length / limit);
-            meta.pagesTotal = pagesTotal;
-            var i, page, dataItem, arr;
-            if (pagesTotal > pagesLen) {
-                arr = meta.pages._get();
-                for (i = pagesLen + 1; i <= pagesTotal; i++) {
-                    arr.push({ number: i, active: false });
-                }
-                meta.pages = arr;
-            } else if (pagesTotal < pagesLen) {
-                pages.splice(pagesTotal, pagesLen - pagesTotal);
-            }
-            pagesLen = pages.length;
-            for (i = 0; i < pagesLen; i++) {
-                page = pages[i];
-                page.active = false;
-                if (page.number._get() === pageNumber) {
-                    page.active = true;
-                }
-            }
-            if (pagesAmount >= pagesLen) {
-                arr = [];
-                arr = arr.concat(meta.pages._get());
-            } else {
-                var pageNumberBefore, pageNumberAfter;
-                pageNumberBefore = (pageNumber - 1) - Math.floor(pagesAmount / 2);
-                pageNumberAfter = pageNumber + Math.floor(pagesAmount / 2);
-                if (pageNumberBefore < 0) {
-                    pageNumberAfter = pageNumberAfter - pageNumberBefore;
-                    pageNumberBefore = 0;
-                }
-                if (pageNumberAfter > pagesLen) {
-                    pageNumberBefore = pageNumberBefore - (pageNumberAfter - pagesLen);
-                    pageNumberAfter = pagesLen;
-                }
-                if (pagesAmount % 2 === 0) {
-                    if (pageNumber >= Math.ceil(pagesLen / 2)) {
-                        pageNumberBefore++;
-                    } else {
-                        pageNumberAfter--;
-                    }
-                }
-                arr = [];
-                for (i = pageNumberBefore; i < pageNumberAfter; i++) {
-                    arr.push(pages[i]._get());
-                }
-            }
-            meta.pagesShown = arr;
-            var offset = (pageNumber - 1) * limit;
-            arr = [];
-            for (i = 0; i < limit; i++) {
-                if (typeof data[offset + i] !== 'undefined') {
-                    dataItem = data[offset + i];
-                    arr.push(dataItem._get(true));
-                } else {
-                    break;
-                }
-            }
-            cog.set(meta.pageData._get(), arr);
-        };
-        pagination.initialize = function (e) {
-            if (e.detail.id != "pagination") { return; }
-            var meta = e.detail.data;
+        meta.pages = arr;
+      } else if (pagesTotal < pagesLen) {
+        pages.splice(pagesTotal, pagesLen - pagesTotal);
+      }
+      pagesLen = pages.length;
+      for (i = 0; i < pagesLen; i++) {
+        page = pages[i];
+        page.active = false;
+        if (page.number._get() === pageNumber) {
+          page.active = true;
+        }
+      }
+      if (pagesAmount >= pagesLen) {
+        arr = [];
+        arr = arr.concat(meta.pages._get());
+      } else {
+        var pageNumberBefore, pageNumberAfter;
+        pageNumberBefore = (pageNumber - 1) - Math.floor(pagesAmount / 2);
+        pageNumberAfter = pageNumber + Math.floor(pagesAmount / 2);
+        if (pageNumberBefore < 0) {
+          pageNumberAfter = pageNumberAfter - pageNumberBefore;
+          pageNumberBefore = 0;
+        }
+        if (pageNumberAfter > pagesLen) {
+          pageNumberBefore = pageNumberBefore - (pageNumberAfter - pagesLen);
+          pageNumberAfter = pagesLen;
+        }
+        if (pagesAmount % 2 === 0) {
+          if (pageNumber >= Math.ceil(pagesLen / 2)) {
+            pageNumberBefore++;
+          } else {
+            pageNumberAfter--;
+          }
+        }
+        arr = [];
+        for (i = pageNumberBefore; i < pageNumberAfter; i++) {
+          arr.push(pages[i]._get());
+        }
+      }
+      meta.pagesShown = arr;
+      var offset = (pageNumber - 1) * limit;
+      arr = [];
+      for (i = 0; i < limit; i++) {
+        if (typeof data[offset + i] !== 'undefined') {
+          dataItem = data[offset + i];
+          arr.push(dataItem._get(true));
+        } else {
+          break;
+        }
+      }
+      cog.set(meta.pageData._get(), arr);
+    };
+    cog.onTemplateLoad.pagination = function (root, dataset, data) {
+      var meta = data;
 
-            cog.set([...meta._keys, "pages"], []);
-            cog.set([...meta._keys, "pagesTotal"], 0);
-            cog.set([...meta._keys, "pagesShown"], []);
+      cog.set([...meta._keys, "pages"], []);
+      cog.set([...meta._keys, "pagesTotal"], 0);
+      cog.set([...meta._keys, "pagesShown"], []);
 
-            cog.set([...meta._keys, "pageNumber"], function (ob) {
-                if (ob._get() >= 1) {
-                    return ob._get();
-                } else {
-                    return 1;
-                }
-            }, true);
+      cog.set([...meta._keys, "pageNumber"], function (ob) {
+        if (ob._get() >= 1) {
+          return ob._get();
+        } else {
+          return 1;
+        }
+      }, true);
 
-            cog.set([...meta._keys, "pagesAmount"], function (ob) {
-                if (ob._get() >= 1) {
-                    return ob._get();
-                } else {
-                    return 3;
-                }
-            }, true);
+      cog.set([...meta._keys, "pagesAmount"], function (ob) {
+        if (ob._get() >= 1) {
+          return ob._get();
+        } else {
+          return 3;
+        }
+      }, true);
 
-            cog.set([...meta._keys, "limit"], function (ob) {
-                if (ob._get() >= 1) {
-                    return ob._get();
-                } else {
-                    return 25;
-                }
-            }, true);
+      cog.set([...meta._keys, "limit"], function (ob) {
+        if (ob._get() >= 1) {
+          return ob._get();
+        } else {
+          return 25;
+        }
+      }, true);
 
-            cog.set([...meta._keys, "onLimitChange"], function (ob) {
-                if (ob._type === "function") {
-                    return ob._get();
-                } else {
-                    return function () { return pagination.onLimitChange(meta) };
-                }
-            }, true);
-            cog.addBound(meta["limit"], meta["onLimitChange"]);
+      cog.set([...meta._keys, "onLimitChange"], function (ob) {
+        if (ob._type === "function") {
+          return ob._get();
+        } else {
+          return function () { return pagination.onLimitChange(meta) };
+        }
+      }, true);
+      cog.addBound(meta["limit"], meta["onLimitChange"]);
 
-            cog.set([...meta._keys, "onDataChange"], function (ob) {
-                if (ob._type === "function") {
-                    return ob._get();
-                } else {
-                    return function () { return pagination.onDataChange(meta) };
-                }
-            }, true);
-            cog.addBound(meta.data._get(), meta["onDataChange"]);
+      cog.set([...meta._keys, "onDataChange"], function (ob) {
+        if (ob._type === "function") {
+          return ob._get();
+        } else {
+          return function () { return pagination.onDataChange(meta) };
+        }
+      }, true);
+      cog.addBound(meta.data._get(), meta["onDataChange"]);
 
-            cog.set([...meta._keys, "checkPrev"], function () {
-                return pagination.checkPrev(meta);
-            });
-            cog.addBound(meta["checkPrev"], meta["pageNumber"]);
+      cog.set([...meta._keys, "checkPrev"], function () {
+        return pagination.checkPrev(meta);
+      });
+      cog.addBound(meta["checkPrev"], meta["pageNumber"]);
 
-            cog.set([...meta._keys, "checkNext"], function () {
-                return pagination.checkNext(meta);
-            });
-            cog.addBound(meta["checkNext"], meta["pageNumber"]);
-            cog.addBound(meta["checkNext"], meta["pagesTotal"]);
+      cog.set([...meta._keys, "checkNext"], function () {
+        return pagination.checkNext(meta);
+      });
+      cog.addBound(meta["checkNext"], meta["pageNumber"]);
+      cog.addBound(meta["checkNext"], meta["pagesTotal"]);
 
-            pagination.update(meta);
-        };
-        document.addEventListener(cog.event.onTemplateLoad, pagination.initialize);
-    </script>
+      pagination.update(meta);
+    };
+  </script>
 </div>

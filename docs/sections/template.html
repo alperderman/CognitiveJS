@@ -1,9 +1,10 @@
 <h1 cog-prop="attr:{id:{{section.id}}}">{{section.title}}</h1>
 <p>Templates, allows us to reduce code duplication by saving HTML elements to be called when desired with specified dataset.</p>
 <p>In order to use them, first, templates need to be defined with either <code>cog-set</code> attribute with an unique ID and alias names for datasets. After that templates can be loaded using <code>cog-temp</code> attribute with the corresponding ID.</p>
-<p>Templates can be accessed by their ID, using <code>cog.id</code> and <code>cog.ids</code> objects respectfully. <code>cog.id</code> will only return the first occurrence of a template, <code>cog.ids</code> will return all of the occurrences of a template parsed into DOM.</p>
-<p>Additionally, <code>cog.templateRoot()</code> function can be used in order to get the root element of a template based on the child element. First parameter is the child element and the second parameter is the template ID.</p>
-<p>And <code>cog.templateData()</code> function can be used to retrieve the dataset of the template, either based on the child element or the template root element itself. First parameter is the node and the second parameter is the template ID, the ID can be ommited if the root element is passed as node. These functions, allows us to make complicated data communication between components and methods with ease, example is given in <a href="#comp">Components</a> section.</p>
+<p>Rendered templates can be accessed by <code>roots</code> value inside <code>cog.templates</code> object with corresponding key (e.g. <code>cog.templates.modal.roots</code>).</p>
+<p>Additionally, <code>cog.templateRoot()</code> function (or for shorthand <code>currentRoot</code> inside <code>cog.templates</code> object) can be used in order to get the root element of a template based on the child element. First parameter is the child element and the second parameter is the template ID (no need to define ID for the shorthand declaration).</p>
+<p>And <code>cog.templateData()</code> function (or for shorthand <code>currentData</code> inside <code>cog.templates</code> object) can be used to retrieve the dataset of the template, either based on the child element or the template root element itself. First parameter is the node and the second parameter is the template ID, the ID can be ommited if the root element is passed as node (no need to define ID for the shorthand declaration).</p>
+<p>These functions, allows us to make complicated data communication between components and methods with ease, example is given in <a href="#comp">Components</a> section.</p>
 <div class="d-flex justify-content-end">
     <button class="btn btn-info" code-id="template_exp1" cog-event="click:'openSandbox()'">Open in Sandbox</button>
 </div>
@@ -29,8 +30,7 @@
                 cog.data.foo = {title:"Title", content:"Lorem ipsum dolor sit amet."};
                 cog.data.bar = {text:"Link", href:"http://google.com"};
                 document.addEventListener(cog.event.afterRender, function () {
-                    console.log(cog.id["template_id"]);
-                    console.log(cog.ids["template_id"]);
+                    console.log(cog.templates["template_id"].roots);
                 });
                 cog.render();
             &lt;/script>
